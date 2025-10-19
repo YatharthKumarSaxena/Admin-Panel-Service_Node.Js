@@ -20,5 +20,9 @@ module.exports = {
     checkUserDeviceSessions: {
         maxRequests: 5,
         windowMs: 10 * 60 * 1000     // every 10 minutes
+    },
+    malformedRequest: {
+        maxRequests: 3,
+        windowMs: 15 * 1000          // every 15 seconds
     }
 };
