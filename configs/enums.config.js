@@ -38,8 +38,9 @@ const UnblockVia = Object.freeze({
 });
 
 const UserType = Object.freeze({
-  CUSTOMER: "customer",                                 // DB-safe
-  ADMIN: "admin"
+  ADMIN: "admin",
+  SUPER_ADMIN: "super_admin",
+  MID_ADMIN: "mid_admin"
 });
 
 const DeviceType = Object.freeze({
@@ -50,9 +51,16 @@ const DeviceType = Object.freeze({
 
 const PerformedBy = Object.freeze({
   ADMIN: "admin",
-  SYSTEM: "system"
+  SYSTEM: "system",
+  MID_ADMIN: "mid_admin",
+  SUPER_ADMIN: "super_admin"
 });
 
+const AuthModes = Object.freeze({
+  EMAIL: "email",
+  PHONE: "phone",
+  BOTH: "both"
+});
 
 module.exports = {
   AdminActionReasons,   // PascalCase values → audit logs
@@ -62,5 +70,6 @@ module.exports = {
   UnblockVia,
   UserType,
   DeviceType,
-  PerformedBy
+  PerformedBy,
+  AuthModes
 };
