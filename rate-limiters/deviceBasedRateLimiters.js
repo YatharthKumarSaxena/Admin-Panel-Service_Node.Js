@@ -12,7 +12,7 @@ const malformedAndWrongRequestRateLimiter = createRedisDeviceRateLimiter({
 const unknownRouteLimiter = createRedisDeviceRateLimiter({
   maxRequests: unknownRoute.maxRequests,
   windowMs: unknownRoute.windowMs,
-  prefix: "unknown",
+  prefix: "unknownRoute",
   reason: "Unknown route access",
   message: "Too many invalid or unauthorized requests. Please slow down."
 });
