@@ -11,10 +11,11 @@ const createRateLimiter = ({ maxRequests, windowMs }) => {
       sendCommand: (...args) => redisClient.call(...args)
     }),
     keyGenerator: (req) => {
-      const userID = req?.user?.userID || "ANON_USER";
-      const deviceID = req?.deviceID || "UNKNOWN_DEVICE";
+      const adminID = req.admin.adminID; // ❌ remove fallback
+      const deviceID = req.deviceID;   // ❌ remove fallback
       const path = req.originalUrl || req.url;
-      return `${userID}:${deviceID}:${path}`;
+
+      return `${adminID}:${deviceID}:${path}`;
     },
     windowMs,
     max: maxRequests,
@@ -27,14 +28,14 @@ const createRateLimiter = ({ maxRequests, windowMs }) => {
     handler: (req, res, next, options) => {
       const ip = req.ip || req.headers["x-forwarded-for"] || "UNKNOWN_IP";
       const path = req.originalUrl || req.url;
-      const userID = req?.user?.userID || "UNKNOWN_USER";
-      const deviceID = req?.deviceID || "UNKNOWN_DEVICE";
+      const adminID = req.admin.adminID;
+      const deviceID = req.deviceID;
       const resetTime = req.rateLimit?.resetTime;
       const retryAfterSeconds = resetTime
         ? Math.ceil((resetTime.getTime() - Date.now()) / 1000)
         : null;
       logWithTime("🚫 Rate Limit Triggered:");
-      logWithTime(`IP: ${ip} | Path: ${path} | User: ${userID} | Device: ${deviceID}`);
+      logWithTime(`IP: ${ip} | Path: ${path} | User: ${adminID} | Device: ${deviceID}`);
       errorMessage(new Error("Rate limit exceeded"));
       const responsePayload = {
         code: "RATE_LIMIT_EXCEEDED",

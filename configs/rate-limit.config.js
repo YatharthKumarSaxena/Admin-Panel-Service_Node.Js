@@ -24,5 +24,9 @@ module.exports = {
     malformedRequest: {
         maxRequests: 3,
         windowMs: 15 * 1000          // every 15 seconds
+    },
+    unknownRoute: {
+        maxRequests: 5,
+        windowMs: 60 * 1000          // every 60 seconds
     }
 };

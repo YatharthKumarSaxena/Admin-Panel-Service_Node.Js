@@ -1,5 +1,5 @@
 const { createRedisDeviceRateLimiter } = require("../factories/createRedisDeviceRateLimiter");
-const { malformedRequest } = require("../configs/rate-limit.config");
+const { malformedRequest, unknownRoute } = require("../configs/rate-limit.config");
 
 const malformedAndWrongRequestRateLimiter = createRedisDeviceRateLimiter({
   maxRequests: malformedRequest.maxRequests,
@@ -9,6 +9,15 @@ const malformedAndWrongRequestRateLimiter = createRedisDeviceRateLimiter({
   message: "Too many malformed requests. Please fix your payload and try again later."
 });
 
+const unknownRouteLimiter = createRedisDeviceRateLimiter({
+  maxRequests: unknownRoute.maxRequests,
+  windowMs: unknownRoute.windowMs,
+  prefix: "unknown",
+  reason: "Unknown route access",
+  message: "Too many invalid or unauthorized requests. Please slow down."
+});
+
 module.exports = {
-  malformedAndWrongRequestRateLimiter
+  malformedAndWrongRequestRateLimiter,
+  unknownRouteLimiter
 };
