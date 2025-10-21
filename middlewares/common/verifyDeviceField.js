@@ -1,6 +1,7 @@
 const { logWithTime } = require("../../utils/time-stamps.utils");
-const { errorMessage, throwInternalServerError, throwAccessDeniedError, logMiddlewareError, throwResourceNotFoundError, throwInvalidResourceError } = require("../../configs/error-handler.configs");
-const {  } = require("../../utils/validatorsFactory.utils");
+const { errorMessage, throwInternalServerError, throwResourceNotFoundError, logMiddlewareError } = require("../../configs/error-handler.configs");
+const { validateUUID, validateDeviceNameLength } = require("../../utils/fieldValidators.utils");
+const { DeviceTypeHelper } = require("../../utils/enumValidators.utils");
 
 const verifyDeviceField = async (req,res,next) => {
     try{
@@ -14,22 +15,23 @@ const verifyDeviceField = async (req,res,next) => {
         }
         // Attach to request object for later use in controller
         req.deviceID = deviceID.trim();
-        if (!isValidRegex(deviceID,UUID_V4_REGEX)) {
-            logMiddlewareError("Verify Device Field, Invalid Device ID format",req);
-            return throwInvalidResourceError(res, `Device UUID, Provided Device UUID (${req.deviceID}) is not in a valid UUID v4 format`);
+        if(!validateUUID(res,req.deviceID)){
+            logMiddlewareError("Verify Device Field",req);
+            return;
         }
         if (deviceName && deviceName.trim() !== "") {
             deviceName = deviceName.trim();
-            if(!validateLength(deviceName,deviceNameLength.min,deviceNameLength.max)){
-                logMiddlewareError(`Verify Device Field, Invalid Device Name length.`,req);
-                return throwAccessDeniedError(res, `Device Name length should be between ${deviceNameLength.min} and ${deviceNameLength.max} characters`);
+            if(!validateDeviceNameLength(res,deviceName)){
+                logMiddlewareError("Verify Device Field",req);
+                return;
             }
+            req.deviceName = deviceName;
         }
         if (deviceType && deviceType.trim() !=="") {
             const type = deviceType.toUpperCase().trim();
-            if (!DEVICE_TYPES.includes(type)) {
-                logMiddlewareError("Verify Device Field, Invalid Device Type Provided",req);
-                return throwInvalidResourceError(res, `Device Type. Use Valid Device Type: ${DEVICE_TYPES}`);
+            if(!DeviceTypeHelper.validate(type,res)){
+                logMiddlewareError("Verify Device Field",req);
+                return;
             }
             req.deviceType = type;
         }

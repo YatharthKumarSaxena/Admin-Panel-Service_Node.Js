@@ -81,22 +81,6 @@ exports.throwAccessDeniedError = (res, reason = "Access Denied") => {
     });
 }
 
-/*
-  ✅ SRP + DRY:
-  Handles Blocked Account responses.
-*/
-
-exports.throwBlockedAccountError = (req,res) => {
-    const reason = req.admin.blockReason;
-    logWithTime("⛔️ Blocked Account: " + reason);
-    return res.status(FORBIDDEN).json({
-        success: false,
-        type: "BlockedAccount",
-        warning: reason,
-        message: "Please contact support if you believe this is an error."
-    });
-}
-
 exports.logMiddlewareError = (context, req) => {
     const adminID = req?.admin?.adminID || req?.admin?.userID || "UNKNOWN_admin";
     logWithTime(`❌ Middleware Error: [${context}] | admin: (${adminID}) | Device: (${req.deviceID})`);

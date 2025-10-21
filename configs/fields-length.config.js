@@ -8,5 +8,9 @@ module.exports = {
   emailLength: {
     min: 5,
     max: 254
+  },
+  deviceNameLength: {
+    min: 3,
+    max: 64
   }
 };
