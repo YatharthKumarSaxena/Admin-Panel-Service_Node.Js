@@ -65,7 +65,7 @@ const adminSchema = mongoose.Schema({
         type: Boolean,
         default: true
     },
-    userType: {
+    adminType: {
         type: String,
         enum: Object.values(UserType),
         default: UserType.ADMIN

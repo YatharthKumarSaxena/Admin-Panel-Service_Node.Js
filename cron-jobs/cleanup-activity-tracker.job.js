@@ -17,7 +17,7 @@ const cleanActivityLogs = async () => {
       createdAt: { $lt: cutoffDate }
     });
     await logAuthEvent({
-      user: { userID: "SYSTEM_BATCH_CRON", userType: "SYSTEM" },
+      admin: { adminID: "SYSTEM_BATCH_CRON", adminType: "SYSTEM" },
       deviceID: process.env.DEVICE_UUID,
       deviceName: process.env.DEVICE_NAME,
       deviceType: process.env.DEVICE_TYPE

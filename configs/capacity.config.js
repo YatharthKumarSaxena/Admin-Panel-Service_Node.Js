@@ -1,3 +1,3 @@
 module.exports = {
-  userDataCapacity: Number(process.env.USER_DATA_CAPACITY)
+  adminDataCapacity: Number(process.env.admin_DATA_CAPACITY)
 };

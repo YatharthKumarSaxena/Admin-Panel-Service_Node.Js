@@ -23,14 +23,14 @@ try {
         handler: (req, res, next, options) => {
             const ip = req.ip || req.headers["x-forwarded-for"] || "UNKNOWN_IP";
             const path = req.originalUrl || req.url;
-            const adminID = req?.admin?.adminID || "UNKNOWN_USER";
+            const adminID = req?.admin?.adminID || "UNKNOWN_Admin";
             const deviceID = req.deviceID;
             const resetTime = req.rateLimit?.resetTime;
             const retryAfterSeconds = resetTime
                 ? Math.ceil((resetTime.getTime() - Date.now()) / 1000)
                 : null;
             logWithTime("🚫 Rate Limit Triggered:");
-            logWithTime(`IP: ${ip} | Path: ${path} | User: ${adminID} | Device: ${deviceID}`);
+            logWithTime(`IP: ${ip} | Path: ${path} | Admin: ${adminID} | Device: ${deviceID}`);
             errorMessage(new Error("Rate limit exceeded"));
             const responsePayload = {
                 code: "RATE_LIMIT_EXCEEDED",

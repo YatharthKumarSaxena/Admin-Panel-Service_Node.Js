@@ -91,7 +91,7 @@ exports.throwAccessDeniedError = (res, reason = "Access Denied") => {
 */
 
 exports.throwBlockedAccountError = (req,res) => {
-    const reason = req.user.blockReason;
+    const reason = req.admin.blockReason;
     logWithTime("⛔️ Blocked Account: " + reason);
     if (res.headersSent) return; // 🔐 Prevent duplicate send
     return res.status(FORBIDDEN).json({
@@ -103,8 +103,8 @@ exports.throwBlockedAccountError = (req,res) => {
 }
 
 exports.logMiddlewareError = (context, req) => {
-    const userID = req?.foundUser?.userID || req?.user?.userID || "UNKNOWN_USER";
-    logWithTime(`❌ Middleware Error: [${context}] | User: (${userID}) | Device: (${req.deviceID})`);
+    const adminID = req?.admin?.adminID || req?.admin?.userID || "UNKNOWN_admin";
+    logWithTime(`❌ Middleware Error: [${context}] | admin: (${adminID}) | Device: (${req.deviceID})`);
 };
 
 exports.throwConflictError = (res, message, suggestion) => {
@@ -118,6 +118,6 @@ exports.throwConflictError = (res, message, suggestion) => {
 };
 
 exports.getLogIdentifiers = (req) => {
-    const userID = req?.foundUser?.userID || req?.user?.userID || "UNKNOWN_USER";
-    return `with User ID: (${userID}). Request is made from device ID: (${req.deviceID})`;
+    const adminID = req?.foundAdmin?.adminID || req?.admin?.adminID || "UNKNOWN_admin";
+    return `with admin ID: (${adminID}). Request is made from device ID: (${req.deviceID})`;
 };

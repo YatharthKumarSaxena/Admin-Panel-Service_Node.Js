@@ -35,7 +35,7 @@ const createRateLimiter = ({ maxRequests, windowMs }) => {
         ? Math.ceil((resetTime.getTime() - Date.now()) / 1000)
         : null;
       logWithTime("🚫 Rate Limit Triggered:");
-      logWithTime(`IP: ${ip} | Path: ${path} | User: ${adminID} | Device: ${deviceID}`);
+      logWithTime(`IP: ${ip} | Path: ${path} | Admin: ${adminID} | Device: ${deviceID}`);
       errorMessage(new Error("Rate limit exceeded"));
       const responsePayload = {
         code: "RATE_LIMIT_EXCEEDED",

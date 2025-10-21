@@ -14,6 +14,7 @@ const { errorMessage } = require("../configs/error-handler.configs");
  * @param {string} options.reason - Logging reason (e.g. "Malformed request", "OTP resend")
  * @param {string} options.message - Response message to client
  */
+
 const createRedisDeviceRateLimiter = ({ maxRequests, windowMs, prefix, reason, message }) => {
   return rateLimit({
     store: new RedisStore({
