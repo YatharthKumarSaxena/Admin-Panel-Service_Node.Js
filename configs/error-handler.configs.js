@@ -16,7 +16,6 @@ exports.errorMessage = (err) => {
     console.log(err.stack)
     logWithTime("Error Message is displayed below:- ")
     console.error(err.message);
-    return;
 }
 
 /*
@@ -27,7 +26,6 @@ exports.errorMessage = (err) => {
 exports.throwResourceNotFoundError = (res,resource) =>{
     logWithTime("⚠️ Missing required fields in the request:");
     console.log(resource);
-    if (res.headersSent) return; // 🔐 Prevent duplicate send
     return res.status(BAD_REQUEST).json({
         success: false,
         warning: "The following required field(s) are missing:",
@@ -43,7 +41,6 @@ exports.throwResourceNotFoundError = (res,resource) =>{
 
 exports.throwInternalServerError = (res) => {
     logWithTime("💥 Internal Server Error occurred.");
-    if (res.headersSent) return; // 🔐 Prevent duplicate send
     return res.status(INTERNAL_ERROR).json({
         success: false,
         response: "An internal server error occurred while processing your request.",
@@ -56,14 +53,14 @@ exports.throwInternalServerError = (res) => {
   Handles all credentials failure responses.
 */
 
-exports.throwInvalidResourceError = (res,resource) => {
+exports.throwInvalidResourceError = (res,resource,reason) => {
     logWithTime("⚠️ Invalid "+resource);
     logWithTime("❌ Invalid Credentials! Please try again.");
-    if (res.headersSent) return; // 🔐 Prevent duplicate send
     return res.status(UNAUTHORIZED).json({
         success: false,
         type: "InvalidResource",
         resource: resource,
+        reason: reason,
         warning: "Invalid "+ resource + " Entered",
         message: "Please enter a Valid "+ resource
     })
@@ -76,7 +73,6 @@ exports.throwInvalidResourceError = (res,resource) => {
 
 exports.throwAccessDeniedError = (res, reason = "Access Denied") => {
     logWithTime("⛔️ Access Denied: " + reason);
-    if (res.headersSent) return; // 🔐 Prevent duplicate send
     return res.status(FORBIDDEN).json({
         success: false,
         type: "AccessDenied",
@@ -93,7 +89,6 @@ exports.throwAccessDeniedError = (res, reason = "Access Denied") => {
 exports.throwBlockedAccountError = (req,res) => {
     const reason = req.admin.blockReason;
     logWithTime("⛔️ Blocked Account: " + reason);
-    if (res.headersSent) return; // 🔐 Prevent duplicate send
     return res.status(FORBIDDEN).json({
         success: false,
         type: "BlockedAccount",
@@ -109,7 +104,6 @@ exports.logMiddlewareError = (context, req) => {
 
 exports.throwConflictError = (res, message, suggestion) => {
     logWithTime("⚔️ Conflict Detected: " + message);
-    if (res.headersSent) return;
     return res.status(CONFLICT).json({
         success: false,
         message,
@@ -121,3 +115,14 @@ exports.getLogIdentifiers = (req) => {
     const adminID = req?.foundAdmin?.adminID || req?.admin?.adminID || "UNKNOWN_admin";
     return `with admin ID: (${adminID}). Request is made from device ID: (${req.deviceID})`;
 };
+
+exports.throwDBResourceNotFoundError = (res, resource) => {
+    logWithTime("⚠️ Resource Not Found in Database: " + resource);
+    return res.status(BAD_REQUEST).json({
+        success: false,
+        type: "ResourceNotFound",
+        resource,
+        warning: `${resource} not found.`,
+        message: `The specified ${resource} does not exist. Please verify and try again.`
+    });
+}
