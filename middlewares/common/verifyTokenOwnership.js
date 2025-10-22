@@ -1,132 +1,113 @@
-// Extracting the Required Modules
+const { createClient } = require("redis");
 const jwt = require("jsonwebtoken");
-const UserModel = require("../models/user.model");
+const {
+  throwAccessDeniedError,
+  throwInternalServerError,
+  throwSessionExpiredError
+} = require("../../configs/error-handler.configs");
+const { extractAccessToken } = require("../utils/extract-token.utils");
 const { logWithTime } = require("../utils/time-stamps.utils");
-const { throwAccessDeniedError, errorMessage, throwInternalServerError, throwResourceNotFoundError, throwInvalidResourceError, getLogIdentifiers, logMiddlewareError } = require("../configs/error-handler.configs");
-const { secretCodeOfAccessToken, secretCodeOfRefreshToken, expiryTimeOfAccessToken } = require("../configs/user-id.config");
-const { makeTokenWithMongoID } = require("../utils/issue-token.utils");
-const { extractAccessToken, extractRefreshToken } = require("../utils/extract-token.utils");
-const { checkUserIsNotVerified } = require("../controllers/auth.controllers");
-const { setAccessTokenHeaders } = require("../utils/token-headers.utils");
-const {  FORBIDDEN } = require("../configs/http-status.config");
+const { FORBIDDEN } = require("../configs/http-status.config");
+const UserModel = require("../../models/user.model");
+const AdminModel = require("../../models/admin.model");
+const redis = createClient(); // Inject via DI if needed
 
-// Logic to Verify Token and Update jwtTokenIssuedAt time
-const verifyToken = (req,res,next) => {
+const verifyTokenRedis = async (req, res, next) => {
+  try {
     const accessToken = extractAccessToken(req);
-    if(!accessToken){
-        logMiddlewareError("Verify Token , Access Token not found",req);
-        return throwResourceNotFoundError(res,"Access Token");
+    const deviceID = req.deviceID;
+
+    if (!accessToken) {
+      logWithTime("❌ Access token missing in request");
+      return throwSessionExpiredError(res);
     }
-    // Now Verifying whether the provided JWT Token is valid token or not
-    jwt.verify(accessToken,secretCodeOfAccessToken,async (err,decoded)=>{
-        try{
-            let user = req.user;
-            if (err || !decoded || !decoded.id) { // Means Access Token Provided is found invalid  
-                if (!user) {
-                    // Try extracting from refreshToken again (defensive fallback)
-                    const refreshToken = extractRefreshToken(req);
-                    const decodedRefresh = jwt.verify(refreshToken, secretCodeOfRefreshToken);
-                    user = await UserModel.findById(decodedRefresh.id);
-                    req.user = user;
-                }         
-                const isRefreshTokenInvalid = await checkUserIsNotVerified(req,res);
-                if(isRefreshTokenInvalid){
-                    //  Validate Token Payload Strictly
-                    logWithTime(`⚠️ Access Denied, User with userID: (${user.userID}) is logged out`);
-                    return res.status(FORBIDDEN).send({
-                        success: false,
-                        message: "Access Denied to perform action",
-                        reason: "You are not logged in, please login to continue"
-                    });
-                }
-                if(res.headersSent)return;
-                // Logic to generate new access token
-                const newAccessToken = await makeTokenWithMongoID(req,res,expiryTimeOfAccessToken);
-                // Set this token in Response Headers
-                const isAccessTokenSet = setAccessTokenHeaders(res,newAccessToken);
-                if(!isAccessTokenSet){
-                    logWithTime(`❌ Access token set in header failed for User (${user.userID}) at the time of token verification. Request is made from device id: (${req.deviceID})`);
-                    return throwInternalServerError(res);
-                }
-                if(!res.headersSent)return next();
-            }
-            logWithTime(`✅ Token Validated and User Fetched for device ID: ${req.deviceID}`);
-            // Very next line should be:
-            if (!res.headersSent) return next();
-        }catch(err){
-            const getIdentifiers = getLogIdentifiers(req);
-            logWithTime(`❌ An Internal Error Occurred while verifying access token ${getIdentifiers}`);
-            errorMessage(err);
-            return throwInternalServerError(res);
-        }
-    })
-}
 
-
-const verifyTokenOwnership = async(req, res, next) => {
+    let decodedAccess;
     try {
-        // 1. Extract refresh token from cookies (assuming 'token' key stores the refresh token)
-        const refreshToken = extractRefreshToken(req);
-        if (!refreshToken) { // if refreshToken Not Found
-            logMiddlewareError(`Verify Token Ownnership,Refresh Token Missing in Cookies`, req);
-            return throwResourceNotFoundError(res, "Refresh token");
-        }
-        // 2. Verify refresh token
-        let decodedRefresh;
-        try{
-            decodedRefresh = jwt.verify(refreshToken, secretCodeOfRefreshToken);
-        }catch(err){
-            logWithTime(`⚠️ Decoded Refresh Token lacks user ID. Device: (${req.deviceID})`);
-            return throwInvalidResourceError(res, "Refresh token");
-        }
-        // 3. Check Whether Refresh Token Provided is Valid or Not
-        const tokenExists = await UserModel.findOne({ refreshToken: refreshToken }); // or Redis GET
-        if (!tokenExists) {
-            logWithTime(`⚠️ Stale Refresh Token detected. User: (${decodedRefresh.id}) | Device: (${req.deviceID})`);
-            return throwAccessDeniedError(res, "Stale Refresh Token");
-        }
-        // 4. Extract Access token
-        const accessToken = extractAccessToken(req);
-        if(!accessToken){
-            req.user = tokenExists;
-            logMiddlewareError(`Verify Token Ownership, Access Token Field Missing`, req);
-            return throwResourceNotFoundError(res, "Access token");
-        }
-        let decodedAccess;
-        try {
-            decodedAccess = jwt.verify(accessToken, secretCodeOfAccessToken);
-        } catch (err) {
-        if (err.name === "TokenExpiredError") {
-            logWithTime("⚠️ Access token is expired, passing control to next middleware");
-            if (!res.headersSent) return next(); // ✅ Let next middleware handle it
-        }
-        logWithTime("❌ Access token is invalid");
-        return throwInvalidResourceError(res, "Access Token");
-        }
-        // 5. Match both token owners
-        if (decodedAccess && String(decodedAccess.id) !== String(decodedRefresh.id)) {
-            logWithTime("Token mismatch: Access and Refresh tokens belong to different users");
-            return throwAccessDeniedError(res,"Access and Refresh tokens belong to different users");
-        }
-        // 🔍  Find user from DB
-        const user = await UserModel.findById(decodedRefresh.id);
-        if (!user) {
-            logMiddlewareError(`Verify Access Token, Unauthorized User Provided from Refresh Token`, req);
-            return throwResourceNotFoundError(res, "User");
-        }
-        // ✅ Tokens are valid and synced – attach user to req
-        req.user = user;
-        // ✅ All checks passed
-        if(!res.headersSent)next();
-        } catch (err) {
-        const getIdentifiers = getLogIdentifiers(req);
-        logWithTime(`❌ An Internal Error Occurred while verifying token ownership ${getIdentifiers}`);
-        errorMessage(err)
-        return throwInternalServerError(res);
+      decodedAccess = jwt.decode(accessToken);
+      if (!decodedAccess?.id) throw new Error("Invalid access token payload");
+    } catch {
+      logWithTime("❌ Failed to decode access token");
+      return throwAccessDeniedError(res, "Invalid access token");
     }
+
+    if (!redis.isOpen) await redis.connect();
+
+    const redisKey = `auth:token:${decodedAccess.id}:${deviceID}`;
+    const tokenDataRaw = await redis.get(redisKey);
+
+    if (!tokenDataRaw) {
+      logWithTime(`⚠️ Redis entry not found for userID: ${decodedAccess.id}, deviceID: ${deviceID}`);
+      return throwSessionExpiredError(res);
+    }
+
+    const tokenData = JSON.parse(tokenDataRaw);
+    const now = Date.now();
+
+    // 🔐 Token mismatch check
+    if (tokenData.accessToken && tokenData.accessToken !== accessToken) {
+      const redisDecoded = jwt.decode(tokenData.accessToken);
+      if (!redisDecoded?.id || redisDecoded.id !== decodedAccess.id) {
+        logWithTime("❌ Redis token belongs to different userID");
+        return throwAccessDeniedError(res, "Token mismatch or exploit detected");
+      }
+
+      logWithTime(`🔄 Redis has newer token for userID: ${decodedAccess.id}, syncing frontend`);
+      return res.status(FORBIDDEN).send({
+        success: false,
+        message: "Access token mismatch",
+        reason: "Please refresh your session to sync latest token"
+      });
+    }
+
+    // ⏳ Access token expiry check
+    if (tokenData.accessExpiry && tokenData.accessExpiry < now) {
+      logWithTime(`⚠️ Access token expired for userID: ${decodedAccess.id}`);
+
+      let decodedRefresh;
+      try {
+        decodedRefresh = jwt.decode(tokenData.refreshToken);
+        if (!decodedRefresh?.id || decodedRefresh.id !== decodedAccess.id) {
+          logWithTime("❌ Refresh token belongs to different user");
+          return throwAccessDeniedError(res, "Refresh token exploit detected");
+        }
+      } catch {
+        logWithTime("❌ Failed to decode refresh token");
+        return throwAccessDeniedError(res, "Invalid refresh token");
+      }
+
+      if (!tokenData.refreshExpiry || tokenData.refreshExpiry < now) {
+        logWithTime(`❌ Refresh token also expired for userID: ${decodedAccess.id}`);
+        return res.status(FORBIDDEN).send({
+          success: false,
+          message: "Session expired",
+          reason: "Please login again to continue"
+        });
+      }
+
+      logWithTime(`🔁 Access expired but refresh valid — trigger rotation`);
+      return res.status(FORBIDDEN).send({
+        success: false,
+        message: "Access token expired",
+        reason: "Please refresh your session"
+      });
+    }
+
+    // ✅ Token is valid
+    req.user = {
+      userID: decodedAccess.id,
+      deviceID,
+      ip: tokenData.ip || req.ip,
+      userAgent: tokenData.userAgent || req.headers["user-agent"]
+    };
+
+    logWithTime(`✅ Token verified for userID: ${decodedAccess.id}, deviceID: ${deviceID}`);
+    next();
+  } catch (err) {
+    logWithTime("❌ Internal error during Redis token verification");
+    console.error(err);
+    return throwInternalServerError(res);
+  }
 };
 
-module.exports = {
-    verifyToken: verifyToken,
-    verifyTokenOwnership: verifyTokenOwnership
-}
+module.exports = { verifyTokenRedis };

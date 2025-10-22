@@ -110,3 +110,13 @@ exports.throwDBResourceNotFoundError = (res, resource) => {
         message: `The specified ${resource} does not exist. Please verify and try again.`
     });
 }
+
+exports.throwSessionExpiredError = (res, reason = "Session expired") => {
+    logWithTime("⏳ Session Expired: " + reason);
+    return res.status(FORBIDDEN).json({
+        success: false,
+        type: "SessionExpired",
+        warning: reason,
+        message: "Your session has expired. Please login again to continue."
+    });
+};
