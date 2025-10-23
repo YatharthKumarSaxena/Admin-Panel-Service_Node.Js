@@ -21,8 +21,8 @@ const createRedisDeviceRateLimiter = ({ maxRequests, windowMs, prefix, reason, m
       sendCommand: (...args) => redisClient.call(...args)
     }),
     keyGenerator: (req) => {
-      const deviceID = req.headers["x-device-uuid"] || req.deviceID || "UNKNOWN_DEVICE";
-      return `${prefix}:${deviceID}`;
+      const deviceId = req.headers["x-device-uuid"] || req.deviceId || "UNKNOWN_DEVICE";
+      return `${prefix}:${deviceId}`;
     },
     windowMs,
     max: maxRequests,
@@ -33,13 +33,13 @@ const createRedisDeviceRateLimiter = ({ maxRequests, windowMs, prefix, reason, m
     standardHeaders: true,
     legacyHeaders: false,
     handler: (req, res, next, options) => {
-      const deviceID = req.headers["x-device-uuid"] || req.deviceID || "UNKNOWN_DEVICE";
+      const deviceId = req.headers["x-device-uuid"] || req.deviceId || "UNKNOWN_DEVICE";
       const resetTime = req.rateLimit?.resetTime;
       const retryAfterSeconds = resetTime
         ? Math.ceil((resetTime.getTime() - Date.now()) / 1000)
         : null;
 
-      logWithTime(`🚫 ${reason} rate limit exceeded for deviceID: ${deviceID}`);
+      logWithTime(`🚫 ${reason} rate limit exceeded for deviceId: ${deviceId}`);
       errorMessage(new Error(`${reason} rate limit exceeded`));
 
       const responsePayload = {

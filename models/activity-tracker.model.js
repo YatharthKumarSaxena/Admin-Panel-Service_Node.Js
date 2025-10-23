@@ -5,7 +5,7 @@ const { emailRegex, fullPhoneNumberRegex } = require("../configs/regex.config");
 const { fullPhoneNumberLength, emailLength } = require("../configs/fields-length.config");
 
 const activityTrackerSchema = new mongoose.Schema({
-  adminID: {
+  adminId: {
     type: String,
     required: true,
     index: true
@@ -37,7 +37,7 @@ const activityTrackerSchema = new mongoose.Schema({
     required: true
   },
 
-  deviceID: {
+  deviceId: {
     type: String,
     required: true
   },
@@ -80,7 +80,7 @@ const activityTrackerSchema = new mongoose.Schema({
 
   adminActions: {
     type: new mongoose.Schema({
-      targetUserID: {
+      targetUserId: {
         type: String,
         default: null
       },
@@ -144,4 +144,6 @@ activityTrackerSchema.path("adminDetails").validate(function (v) {
   return true;
 }, "adminDetails must include required fields based on DEFAULT_AUTH_MODE");
 
-module.exports = mongoose.model("ActivityTracker", activityTrackerSchema);
+module.exports = {
+  ActivityTrackerModel: mongoose.model("ActivityTracker", activityTrackerSchema)
+}

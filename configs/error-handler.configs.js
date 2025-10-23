@@ -81,10 +81,12 @@ exports.throwAccessDeniedError = (res, reason = "Access Denied") => {
     });
 }
 
-exports.logMiddlewareError = (context, req) => {
-    const adminID = req?.admin?.adminID || req?.admin?.userID || "UNKNOWN_admin";
-    logWithTime(`❌ Middleware Error: [${context}] | admin: (${adminID}) | Device: (${req.deviceID})`);
+exports.logMiddlewareError = (middlewareName, reason, req) => {
+  const adminId = req?.admin?.adminId || req?.admin?.userId || "UNKNOWN_admin";
+  const deviceId = req?.deviceId || "UNKNOWN_device";
+  logWithTime(`❌ [${middlewareName}] Error: ${reason} | admin: (${adminId}) | device: (${deviceId})`);
 };
+
 
 exports.throwConflictError = (res, message, suggestion) => {
     logWithTime("⚔️ Conflict Detected: " + message);
@@ -96,8 +98,8 @@ exports.throwConflictError = (res, message, suggestion) => {
 };
 
 exports.getLogIdentifiers = (req) => {
-    const adminID = req?.foundAdmin?.adminID || req?.admin?.adminID || "UNKNOWN_admin";
-    return `with admin ID: (${adminID}). Request is made from device ID: (${req.deviceID})`;
+    const adminId = req?.foundAdmin?.adminId || req?.admin?.adminId || req?.admin?.userId || "UNKNOWN_admin";
+    return `with admin ID: (${adminId}). Request is made from device ID: (${req.deviceId})`;
 };
 
 exports.throwDBResourceNotFoundError = (res, resource) => {

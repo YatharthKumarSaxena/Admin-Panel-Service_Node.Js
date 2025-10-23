@@ -1,6 +1,6 @@
 const { validateLength, isValidRegex } = require("./validatorsFactory.utils");
 const { logWithTime } = require("./time-stamps.utils");
-const { UUID_V4_REGEX, emailRegex, fullPhoneNumberRegex } = require("../configs/regex.config");
+const { UUID_V4_REGEX, emailRegex, fullPhoneNumberRegex, mongoIdRegex, customIdRegex } = require("../configs/regex.config");
 const { emailLength, fullPhoneNumberLength, deviceNameLength } = require("../configs/fields-length.config");
 const { throwInvalidResourceError } = require("../configs/error-handler.configs");
 
@@ -79,12 +79,34 @@ const validateUUID = (res, uuid) => {
   return true;
 };
 
+const validateCustomID = (res, customID) => {
+  if (!isValidRegex(customID, customIdRegex)) {
+    logWithTime(`❌ [validateCustomID] ${customID} Custom ID format invalid`);
+    throwInvalidResourceError(res, "custom ID", "Custom ID must follow format like ABC1234567.");
+    return false;
+  }
+  logWithTime("✅ [validateCustomID] Custom ID format valid");
+  return true;
+};
+
+const validateMongoID = (res, mongoID) => {
+  if (!isValidRegex(mongoID, mongoIdRegex)) {
+    logWithTime(`❌ [validateMongoID] ${mongoID} Mongo ID format invalid`);
+    throwInvalidResourceError(res, "Mongo ID", "Mongo ID must be a 24-character hexadecimal string.");
+    return false;
+  }
+  logWithTime("✅ [validateMongoID] Mongo ID format valid");
+  return true;
+}
+
 module.exports = {
   validateEmailLength,
   validateEmailRegex,
   validatePhoneLength,
   validatePhoneRegex,
   validateUUID,
-  validateDeviceNameLength
+  validateDeviceNameLength,
+  validateCustomID,
+  validateMongoID
 };
 

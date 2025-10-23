@@ -42,7 +42,7 @@ const userSchema = mongoose.Schema({
             message: `${AuthModes.PHONE} is required for phone or ${AuthModes.BOTH} auth modes.`
         }
     },
-    userID: {
+    userId: {
         type: String,
         unique: true,
         immutable: true,
@@ -119,5 +119,7 @@ const userSchema = mongoose.Schema({
 
 // Creating a Collection named Users that will Include User Documents / Records
 // module.exports convert the whole file into a Module
-module.exports = mongoose.model("User", userSchema);
+module.exports = {
+    UserModel: mongoose.model("User", userSchema)
+};
 // By Default Mongoose Convert User into Plural Form i.e Users

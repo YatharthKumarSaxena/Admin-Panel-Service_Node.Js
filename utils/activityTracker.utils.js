@@ -1,11 +1,9 @@
 const ActivityTrackerModel = require("../models/activity-tracker.model");
 const { logWithTime } = require("../utils/time-stamps.utils");
-const { errorMessage, throwResourceNotFoundError } = require("../configs/error-handler.configs");
-
+const { errorMessage } = require("../configs/error-handler.configs");
+const { validateEmailLength, validateEmailRegex, validatePhoneLength, validatePhoneRegex} = require("./fieldValidators.utils");
 const ACTIVITY_TRACKER_EVENTS = require("../configs/activity-tracker.config");
 const { DeviceType, PerformedBy } = require("../configs/enums.config");
-const { emailRegex, fullPhoneNumberRegex } = require("../configs/regex.config");
-const { fullPhoneNumberLength, emailLength } = require("../configs/fields-length.config");
 
 /**
  * 🔐 Logs an activity tracker event (fire-and-forget)
@@ -19,41 +17,37 @@ const logActivityTrackerEvent = (req, eventType, logOptions = {}) => {
         return;
       }
 
-      const user = req.user || req.foundUser || null;
-      if (!user || !user.userID) {
-        logWithTime("⚠️ Missing user information. Skipping activity log.");
-        return throwResourceNotFoundError(result,);
+      const admin = req.admin || req.foundAdmin || null;
+      if (!admin || !admin.adminId) {
+        logWithTime("⚠️ Missing admin information. Skipping activity log.");
+        return;
       }
       // Extract and validate adminDetails
-      const emailID =
-        logOptions.adminDetails?.emailID ||
-        req.user?.emailID ||
-        req.foundUser?.emailID;
+      const emailId =
+        logOptions.adminDetails?.emailId ||
+        req.admin?.emailId ||
+        req.foundAdmin?.emailId;
 
       const fullPhoneNumber =
         logOptions.adminDetails?.fullPhoneNumber ||
-        req.user?.fullPhoneNumber ||
-        req.foundUser?.fullPhoneNumber;
+        req.admin?.fullPhoneNumber ||
+        req.foundAdmin?.fullPhoneNumber;
 
-      const isValidEmail =
-        emailRegex.test(emailID) &&
-        emailID.length >= emailLength.min &&
-        emailID.length <= emailLength.max;
+      const isValidEmail = validateEmailLength(emailId) && validateEmailRegex(emailId);
 
-      const isValidPhone =
-        fullPhoneNumberRegex.test(fullPhoneNumber) &&
-        fullPhoneNumber.length >= fullPhoneNumberLength.min &&
-        fullPhoneNumber.length <= fullPhoneNumberLength.max;
+      const isValidPhone = validatePhoneLength(fullPhoneNumber) && validatePhoneRegex(fullPhoneNumber);
 
       if (!isValidEmail || !isValidPhone) {
         logWithTime("⚠️ Invalid adminDetails format. Skipping activity log.");
         return;
       }
 
+      const adminId = admin.adminId;
+
       const baseLog = {
-        userID,
+        adminId,
         eventType,
-        deviceID: req.deviceID,
+        deviceId: req.deviceId,
         performedBy,
         deviceName: req.deviceName || undefined,
         deviceType: Object.values(DeviceType).includes(req.deviceType)
@@ -65,7 +59,7 @@ const logActivityTrackerEvent = (req, eventType, logOptions = {}) => {
           req.query?.description?.trim() ||
           `Performed ${eventType} by ${performedBy}`,
         adminDetails: {
-          emailID,
+          emailId,
           fullPhoneNumber
         }
       };
@@ -73,9 +67,9 @@ const logActivityTrackerEvent = (req, eventType, logOptions = {}) => {
       // Optional adminActions block
       const adminActions = {};
 
-      const targetUserID =
-        logOptions.adminActions?.targetUserID || logOptions.performedOn?.userID;
-      if (targetUserID) adminActions.targetUserID = targetUserID;
+      const targetUserId =
+        logOptions.adminActions?.targetUserId || logOptions.performedOn?.userId;
+      if (targetUserId) adminActions.targetUserId = targetUserId;
 
       const targetDetails =
         logOptions.adminActions?.targetUserDetails || logOptions.performedOn?.details;
@@ -85,16 +79,14 @@ const logActivityTrackerEvent = (req, eventType, logOptions = {}) => {
       const hasValidTargetDetails =
         targetEmail &&
         targetPhone &&
-        emailRegex.test(targetEmail) &&
-        fullPhoneNumberRegex.test(targetPhone) &&
-        targetEmail.length >= emailLength.min &&
-        targetEmail.length <= emailLength.max &&
-        targetPhone.length >= fullPhoneNumberLength.min &&
-        targetPhone.length <= fullPhoneNumberLength.max;
+        validateEmailRegex(targetEmail) &&
+        validatePhoneRegex(targetPhone) &&
+        validatePhoneLength(targetPhone) &&
+        validateEmailLength(targetEmail);
 
       if (hasValidTargetDetails) {
         adminActions.targetUserDetails = {
-          emailID: targetEmail,
+          emailId: targetEmail,
           fullPhoneNumber: targetPhone
         };
       }
@@ -117,7 +109,7 @@ const logActivityTrackerEvent = (req, eventType, logOptions = {}) => {
 
       const result = new ActivityTrackerModel(baseLog);
       await result.save();
-      logWithTime(`📘 ActivityTracker saved: ${eventType} | user: ${userID} | device: ${req.deviceID}`);
+      logWithTime(`📘 ActivityTracker saved: ${eventType} | Admin: ${adminId} | device: ${req.deviceId}`);
     } catch (err) {
       logWithTime(`❌ Error saving ActivityTracker for event: ${eventType}`);
       errorMessage(err);

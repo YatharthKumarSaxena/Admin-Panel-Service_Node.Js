@@ -12,6 +12,7 @@ const {
   DeviceType
 } = require("../configs/enums.config");
 
+const { tokenPayloads } = require("../configs/token.config");
 /**
  * 🏭 Factory to create enum helper with tracing
  * @param {Object} enumObj - The frozen enum object
@@ -46,6 +47,7 @@ const BlockViaHelper = createEnumHelper(BlockVia, "BlockVia");
 const UnblockViaHelper = createEnumHelper(UnblockVia, "UnblockVia");
 const UserTypeHelper = createEnumHelper(UserType, "UserType");
 const DeviceTypeHelper = createEnumHelper(DeviceType, "DeviceType");
+const TokenPayloadHelper = createEnumHelper(tokenPayloads, "TokenPayloads");
 
 module.exports = {
   AdminActionHelper,
@@ -54,5 +56,6 @@ module.exports = {
   BlockViaHelper,
   UnblockViaHelper,
   UserTypeHelper,
-  DeviceTypeHelper
+  DeviceTypeHelper,
+  TokenPayloadHelper
 };

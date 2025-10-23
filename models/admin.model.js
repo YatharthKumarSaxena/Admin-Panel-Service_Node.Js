@@ -36,7 +36,7 @@ const adminSchema = mongoose.Schema({
             message: `${AuthModes.PHONE} is required for phone or ${AuthModes.BOTH} auth modes.`
         }
     },
-    adminID: {
+    adminId: {
         type: String,
         unique: true,
         immutable: true,
@@ -97,5 +97,7 @@ const adminSchema = mongoose.Schema({
 
 // Creating a Collection named Admins that will Include Admin Documents / Records
 // module.exports convert the whole file into a Module
-module.exports = mongoose.model("Admin", adminSchema);
+module.exports = {
+    AdminModel: mongoose.model("Admin", adminSchema)
+}
 // By Default Mongoose Convert Admin into Plural Form i.e Admins
