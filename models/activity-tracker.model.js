@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const ACTIVITY_TRACKER_EVENTS = require("../configs/activity-tracker.config");
+const { ACTIVITY_TRACKER_EVENTS } = require("../configs/activity-tracker.config");
 const { AuthModes, DeviceType, PerformedBy } = require("../configs/enums.config");
 const { emailRegex, fullPhoneNumberRegex } = require("../configs/regex.config");
 const { fullPhoneNumberLength, emailLength } = require("../configs/fields-length.config");
@@ -33,7 +33,7 @@ const activityTrackerSchema = new mongoose.Schema({
 
   eventType: {
     type: String,
-    enum: ACTIVITY_TRACKER_EVENTS,
+    enum: Object.values(ACTIVITY_TRACKER_EVENTS),
     required: true
   },
 

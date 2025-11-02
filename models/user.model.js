@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { fullPhoneNumberLength, emailLength } = require("../configs/fields-length.config");
-const { AuthModes, BlockReasons, UnblockReasons, BlockVia, UnblockVia, UserType, PerformedBy } = require("../configs/enums.config")
+const { AuthModes, BlockReasons, UnblockReasons, BlockVia, UnblockVia } = require("../configs/enums.config")
 const { emailRegex, fullPhoneNumberRegex } = require("../configs/regex.config");
 
 /* User Schema */

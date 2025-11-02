@@ -37,7 +37,7 @@ const UnblockVia = Object.freeze({
   BY_PHONE: "phone"
 });
 
-const UserType = Object.freeze({
+const AdminType = Object.freeze({
   ADMIN: "admin",
   SUPER_ADMIN: "super_admin",
   MID_ADMIN: "mid_admin"
@@ -68,7 +68,7 @@ module.exports = {
   UnblockReasons,
   BlockVia,
   UnblockVia,
-  UserType,
+  AdminType,
   DeviceType,
   PerformedBy,
   AuthModes

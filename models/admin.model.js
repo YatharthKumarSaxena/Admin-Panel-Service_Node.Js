@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { fullPhoneNumberLength, emailLength } = require("../configs/fields-length.config");
-const { AuthModes, UserType, PerformedBy } = require("../configs/enums.config")
+const { AuthModes, AdminType, PerformedBy } = require("../configs/enums.config")
 const { emailRegex, fullPhoneNumberRegex } = require("../configs/regex.config");
 
 /* Admin Schema */
@@ -67,21 +67,21 @@ const adminSchema = mongoose.Schema({
     },
     adminType: {
         type: String,
-        enum: Object.values(UserType),
-        default: UserType.ADMIN
+        enum: Object.values(AdminType),
+        default: AdminType.ADMIN
     },
     supervisorID: {
         type: String,
         default: null,
         validate: {
             validator: function (value) {
-                // If userType is ADMIN or MID_ADMIN, supervisorID must not be null
-                if ([UserType.ADMIN, UserType.MID_ADMIN].includes(this.userType)) {
+                // If adminType is ADMIN or MID_ADMIN, supervisorID must not be null
+                if ([AdminType.ADMIN, AdminType.MID_ADMIN].includes(this.adminType)) {
                     return value !== null;
                 }
                 return true; // SUPER_ADMIN can have null
             },
-            message: `SupervisorID is required for ${UserType.ADMIN} and ${UserType.MID_ADMIN} users.`
+            message: `SupervisorID is required for ${AdminType.ADMIN} and ${AdminType.MID_ADMIN} users.`
         }
     },
     createdBy: {
