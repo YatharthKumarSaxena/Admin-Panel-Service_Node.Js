@@ -3,14 +3,14 @@ const {
   logMiddlewareError,
   errorMessage
 } = require("../../configs/error-handler.configs");
-const { logWithTime } = require("../../utils/time-stamps.utils");
+const { logWithTime } = require("../../utils/time-stamps.util");
 const { tokenPayloads } = require("../../configs/token.config");
 const {
   validateUUID,
   validateCustomID,
   validateMongoID
-} = require("../../utils/fieldValidators.utils");
-const { validateObjectShape } = require("../../utils/objectShapeValidator.utils");
+} = require("../../utils/fieldValidators.util");
+const { validateObjectShape } = require("../../utils/objectShapeValidator.util");
 
 const validateJwtPayloadMiddleware = (req, res, next) => {
   try {

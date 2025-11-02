@@ -1,6 +1,6 @@
 // ✅ Enum Helpers using Factory Design Pattern
-const { isValidEnumValue, getEnumKeyByValue } = require("./validatorsFactory.utils");
-const { logWithTime } = require("./time-stamps.utils");
+const { isValidEnumValue, getEnumKeyByValue } = require("./validatorsFactory.util");
+const { logWithTime } = require("./time-stamps.util");
 const { throwInvalidResourceError } = require("../configs/error-handler.configs")
 const {
   AdminActionReasons,

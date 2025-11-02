@@ -1,5 +1,5 @@
-const { unknownRouteLimiter } = require("../../rate-limiters/deviceBasedRateLimiters");
-const { logWithTime } = require("../../utils/time-stamps.utils");
+const { unknownRouteLimiter } = require("../../rate-limiters/device-based.rate-limiter");
+const { logWithTime } = require("../../utils/time-stamps.util");
 
 const unknownRouteHandler = (req, res) => {
   logWithTime(`❌ Unknown route hit: ${req.method} ${req.originalUrl}`);

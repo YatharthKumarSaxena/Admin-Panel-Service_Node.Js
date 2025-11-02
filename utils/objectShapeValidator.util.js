@@ -1,5 +1,5 @@
 const { throwAccessDeniedError } = require("../configs/error-handler.configs");
-const { logWithTime } = require("../utils/time-stamps.utils");
+const { logWithTime } = require("./time-stamps.util");
 
 const validateObjectShape = (token, requiredFields, label, res) => {
   const keys = Object.keys(token);

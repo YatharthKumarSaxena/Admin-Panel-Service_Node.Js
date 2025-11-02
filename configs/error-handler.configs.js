@@ -7,7 +7,7 @@
 */
 
 // Extracts file that include timeStamp function
-const {logWithTime} = require("../utils/time-stamps.utils");
+const {logWithTime} = require("../utils/time-stamps.util");
 const { BAD_REQUEST, INTERNAL_ERROR, UNAUTHORIZED, FORBIDDEN, CONFLICT } = require("./http-status.config");
 
 exports.errorMessage = (err) => {

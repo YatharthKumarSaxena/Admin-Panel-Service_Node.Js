@@ -1,4 +1,4 @@
-const { checkRole } = require("../../utils/role.utils");
+const { checkRole } = require("../../utils/role.util");
 const {
   throwAccessDeniedError,
   throwInternalServerError,

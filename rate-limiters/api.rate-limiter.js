@@ -1,5 +1,5 @@
 // middlewares/rate-limiters/apiRateLimiters.js
-const { createRateLimiter } = require("./createRateLimiter");
+const { createRateLimiter } = require("./create.rate-limiter");
 const config = require("../configs/rate-limit.config");
 
 module.exports = {

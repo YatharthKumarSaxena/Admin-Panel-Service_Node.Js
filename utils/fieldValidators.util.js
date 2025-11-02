@@ -1,5 +1,5 @@
-const { validateLength, isValidRegex } = require("./validatorsFactory.utils");
-const { logWithTime } = require("./time-stamps.utils");
+const { validateLength, isValidRegex } = require("./validatorsFactory.util");
+const { logWithTime } = require("./time-stamps.util");
 const { UUID_V4_REGEX, emailRegex, fullPhoneNumberRegex, mongoIdRegex, customIdRegex } = require("../configs/regex.config");
 const { emailLength, fullPhoneNumberLength, deviceNameLength } = require("../configs/fields-length.config");
 const { throwInvalidResourceError } = require("../configs/error-handler.configs");

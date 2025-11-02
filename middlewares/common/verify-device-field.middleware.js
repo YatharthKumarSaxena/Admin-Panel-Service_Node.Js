@@ -1,7 +1,7 @@
-const { logWithTime } = require("../../utils/time-stamps.utils");
+const { logWithTime } = require("../../utils/time-stamps.util");
 const { errorMessage, throwInternalServerError, throwResourceNotFoundError, logMiddlewareError } = require("../../configs/error-handler.configs");
-const { validateUUID, validateDeviceNameLength } = require("../../utils/fieldValidators.utils");
-const { DeviceTypeHelper } = require("../../utils/enumValidators.utils");
+const { validateUUID, validateDeviceNameLength } = require("../../utils/fieldValidators.util");
+const { DeviceTypeHelper } = require("../../utils/enumValidators.util");
 
 const verifyDeviceField = async (req,res,next) => {
     try{

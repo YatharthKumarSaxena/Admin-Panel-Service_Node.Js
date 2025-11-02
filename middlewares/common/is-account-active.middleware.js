@@ -1,4 +1,4 @@
-const { logWithTime } = require("../../utils/time-stamps.utils");
+const { logWithTime } = require("../../utils/time-stamps.util");
 const { errorMessage, throwInternalServerError, logMiddlewareError } = require("../../configs/error-handler.configs");
 const { FORBIDDEN } = require("../../configs/http-status.config");
 const { UserType } = require("../../configs/enums.config");

@@ -1,7 +1,7 @@
 const { createClient } = require("redis");
 const jwt = require("jsonwebtoken");
 const { extractAccessToken } = require("../utils/extract-token.utils");
-const { logWithTime } = require("../../utils/time-stamps.utils");
+const { logWithTime } = require("../../utils/time-stamps.util");
 const {
     throwAccessDeniedError,
     throwSessionExpiredError,
@@ -10,7 +10,7 @@ const {
     logMiddlewareError,
     errorMessage
 } = require("../../configs/error-handler.configs");
-const { setAccessTokenHeaders, clearAccessTokenHeaders, extractAccessToken } = require("../../utils/access-token.utils")
+const { setAccessTokenHeaders, clearAccessTokenHeaders, extractAccessToken } = require("../../utils/access-token.util")
 
 /**
  * If any Corruption detected in Redis Stream

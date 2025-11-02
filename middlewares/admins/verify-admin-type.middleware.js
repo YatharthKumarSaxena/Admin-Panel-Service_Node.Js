@@ -1,5 +1,5 @@
 const { AdminType } = require("../../configs/enums.config");
-const { createRoleMiddleware } = require("./verifyAdminType.factory.middleware");
+const { createRoleMiddleware } = require("./verify-admin-type.middlewareFactory");
 
 const RoleMiddlewares = {
   onlyAdmins: createRoleMiddleware([AdminType.ADMIN], "onlyAdminsMiddleware"),
