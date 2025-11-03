@@ -12,7 +12,7 @@ const activityTrackerSchema = new mongoose.Schema({
   },
 
   adminDetails: {
-    emailID: {
+    emailId: {
       type: String,
       lowercase: true,
       trim: true,
@@ -85,7 +85,7 @@ const activityTrackerSchema = new mongoose.Schema({
         default: null
       },
       targetUserDetails: {
-        emailID: {
+        emailId: {
           type: String,
           lowercase: true,
           trim: true,
@@ -117,11 +117,11 @@ const activityTrackerSchema = new mongoose.Schema({
       validate: {
         validator: function (v) {
           const d = v?.targetUserDetails;
-          const hasEmail = !!d?.emailID;
+          const hasEmail = !!d?.emailId;
           const hasPhone = !!d?.fullPhoneNumber;
           return hasEmail === hasPhone; // both true or both false
         },
-        message: "Both emailID and fullPhoneNumber must be provided together or omitted together."
+        message: "Both emailId and fullPhoneNumber must be provided together or omitted together."
       }
     }),
     default: null
@@ -134,7 +134,7 @@ const activityTrackerSchema = new mongoose.Schema({
 // 🔐 Conditional validator for adminDetails based on DEFAULT_AUTH_MODE
 activityTrackerSchema.path("adminDetails").validate(function (v) {
   const mode = process.env.DEFAULT_AUTH_MODE;
-  const hasEmail = !!v?.emailID;
+  const hasEmail = !!v?.emailId;
   const hasPhone = !!v?.fullPhoneNumber;
 
   if (mode === AuthModes.EMAIL) return hasEmail;

@@ -42,7 +42,7 @@ const adminSchema = mongoose.Schema({
         immutable: true,
         index: true // Perfect for performance in token-based auth.
     },
-    emailID: {
+    emailId: {
         type: String,
         unique: true,
         lowercase: true,
@@ -70,18 +70,18 @@ const adminSchema = mongoose.Schema({
         enum: Object.values(AdminType),
         default: AdminType.ADMIN
     },
-    supervisorID: {
+    supervisorId: {
         type: String,
         default: null,
         validate: {
             validator: function (value) {
-                // If adminType is ADMIN or MID_ADMIN, supervisorID must not be null
+                // If adminType is ADMIN or MID_ADMIN, supervisorId must not be null
                 if ([AdminType.ADMIN, AdminType.MID_ADMIN].includes(this.adminType)) {
                     return value !== null;
                 }
                 return true; // SUPER_ADMIN can have null
             },
-            message: `SupervisorID is required for ${AdminType.ADMIN} and ${AdminType.MID_ADMIN} users.`
+            message: `supervisorId is required for ${AdminType.ADMIN} and ${AdminType.MID_ADMIN} users.`
         }
     },
     createdBy: {

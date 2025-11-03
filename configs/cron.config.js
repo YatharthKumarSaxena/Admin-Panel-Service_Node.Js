@@ -3,8 +3,22 @@
 module.exports = {
   activityTrackerCleanup: {
     enable: true,
-    cronSchedule: process.env.ACTIVITY_TRACKER_CLEANUP_CRON || "0 5 * * 0",           // ⏰ Default: Sunday 5 AM
+    cronSchedule: process.env.ACTIVITY_TRACKER_CLEANUP_CRON || "0 5 * * 0", // ⏰ Sunday 5 AM
     timezone: process.env.ACTIVITY_TRACKER_CLEANUP_TIMEZONE || "Asia/Kolkata",
     deactivatedRetentionDays: Number(process.env.ACTIVITY_TRACKER_CLEANUP_RETENTION_DAYS) || 90
+  },
+
+  userCleanup: {
+    enable: true,
+    cronSchedule: process.env.USER_CLEANUP_CRON || "0 3 * * 0", // ⏰ Sunday 3 AM
+    timezone: process.env.USER_CLEANUP_TIMEZONE || "Asia/Kolkata",
+    deactivatedRetentionDays: Number(process.env.USER_CLEANUP_RETENTION_DAYS) || 60
+  },
+
+  adminCleanup: {
+    enable: true,
+    cronSchedule: process.env.ADMIN_CLEANUP_CRON || "0 4 * * 0", // ⏰ Sunday 4 AM
+    timezone: process.env.ADMIN_CLEANUP_TIMEZONE || "Asia/Kolkata",
+    deactivatedRetentionDays: Number(process.env.ADMIN_CLEANUP_RETENTION_DAYS) || 120
   }
 };

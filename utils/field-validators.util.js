@@ -1,4 +1,4 @@
-const { validateLength, isValidRegex } = require("./validatorsFactory.util");
+const { validateLength, isValidRegex } = require("./validators-factory.util");
 const { logWithTime } = require("./time-stamps.util");
 const { UUID_V4_REGEX, emailRegex, fullPhoneNumberRegex, mongoIdRegex, customIdRegex } = require("../configs/regex.config");
 const { emailLength, fullPhoneNumberLength, deviceNameLength } = require("../configs/fields-length.config");
