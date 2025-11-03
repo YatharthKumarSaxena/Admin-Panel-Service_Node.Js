@@ -62,6 +62,17 @@ const AuthModes = Object.freeze({
   BOTH: "both"
 });
 
+const ServiceName = Object.freeze({
+  AUTH_SERVICE: "AuthService",
+  ADMIN_PANEL_SERVICE: "AdminPanelService",
+});
+
+const Status = Object.freeze({
+  SUCCESS: "success",
+  FAILURE: "failure",
+  PENDING: "pending"
+})
+
 module.exports = {
   AdminActionReasons,   // PascalCase values → audit logs
   BlockReasons,         // snake_case values → DB/API

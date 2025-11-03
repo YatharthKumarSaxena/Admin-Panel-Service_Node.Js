@@ -1,12 +1,12 @@
 const cron = require("node-cron");
 const { ActivityTrackerModel } = require("../models/activity-tracker.model");
-const { logWithTime } = require("../utils/time-stamps.utils");
+const { logWithTime } = require("../utils/time-stamps.util");
 const { activityTrackerCleanup } = require("../configs/cron.config");
-const { errorMessage} = require("../configs/error-handler.configs");
+const { errorMessage } = require("../configs/error-handler.configs");
 
 const cleanActivityLogs = async () => {
   try {
-    if(!activityTrackerCleanup.enable)return;
+    if (!activityTrackerCleanup.enable) return;
     if (!activityTrackerCleanup.deactivatedRetentionDays || activityTrackerCleanup.deactivatedRetentionDays < 1) {
       logWithTime("⚠️ Invalid retention days configuration. Skipping activity log cleanup.");
       return;
