@@ -39,8 +39,7 @@ const verifyDeviceField = async (req,res,next) => {
     } catch (err) {
         const deviceId = req.headers["x-device-uuid"] || "Unauthorized Device ID";
         logWithTime(`⚠️ Error occurred while validating the Device field having device id: ${deviceId}`);
-        errorMessage(err);
-        return throwInternalServerError(res);
+        return throwInternalServerError(res, err);
     }
 }
 

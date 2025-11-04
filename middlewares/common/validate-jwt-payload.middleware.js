@@ -1,7 +1,7 @@
 const {
   throwAccessDeniedError,
   logMiddlewareError,
-  errorMessage
+  throwInternalServerError
 } = require("../../configs/error-handler.configs");
 const { logWithTime } = require("../../utils/time-stamps.util");
 const { tokenPayloads } = require("../../configs/token.config");
@@ -69,8 +69,7 @@ const validateJwtPayloadMiddleware = (req, res, next) => {
     return next();
   } catch (err) {
     logMiddlewareError("validateJwtPayloadMiddleware", "Internal error during JWT payload validation", req);
-    errorMessage(err);
-    return throwAccessDeniedError(res, "Invalid or expired token");
+    return throwInternalServerError(res, err);
   }
 };
 

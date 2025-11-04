@@ -59,8 +59,7 @@ const verifyJWTSignature = async (req, res, next) => {
     return next();
   } catch (err) {
     logWithTime("❌ Internal error during token signature verification");
-    console.error(err);
-    return throwInternalServerError(res);
+    return throwInternalServerError(res, err);
   }
 };
 

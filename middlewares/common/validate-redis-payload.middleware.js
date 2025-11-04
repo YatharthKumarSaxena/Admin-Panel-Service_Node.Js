@@ -7,8 +7,7 @@ const {
     throwSessionExpiredError,
     throwInternalServerError,
     throwInvalidResourceError,
-    logMiddlewareError,
-    errorMessage
+    logMiddlewareError
 } = require("../../configs/error-handler.configs");
 const { setAccessTokenHeaders, clearAccessTokenHeaders, extractAccessToken } = require("../../utils/access-token.util")
 
@@ -130,8 +129,7 @@ const validateRedisPayloadMiddleware = async (req, res, next) => {
         return next();
     } catch (err) {
         logMiddlewareError("validateRedisPayloadMiddleware", "❌ Internal error during Redis payload validation", req);
-        errorMessage(err);
-        return throwInternalServerError(res);
+        return throwInternalServerError(res, err);
     }
 };
 

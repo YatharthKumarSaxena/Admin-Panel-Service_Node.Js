@@ -1,4 +1,4 @@
-const { errorMessage, throwInternalServerError, throwAccessDeniedError, logMiddlewareError } = require("../../configs/error-handler.configs");
+const { throwInternalServerError, throwAccessDeniedError, logMiddlewareError } = require("../../configs/error-handler.configs");
 
 // Checking Provided Request is given by admin or not
 const isAdmin = (req,res,next) => {
@@ -11,8 +11,7 @@ const isAdmin = (req,res,next) => {
         return next();
     }catch(err){
         logMiddlewareError("isAdmin", "❌ An Internal Error Occurred while checking admin is Admin or not", req);
-        errorMessage(err);
-        return throwInternalServerError(res);
+        return throwInternalServerError(res, err);
     }
 }
 
