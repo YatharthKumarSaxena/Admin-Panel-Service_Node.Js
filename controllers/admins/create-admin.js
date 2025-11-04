@@ -1,7 +1,7 @@
 const { AdminModel } = require("../../models/admin.model");
 const { logWithTime } = require("../../utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("../../configs/activity-tracker.config");
-const { errorMessage, throwInternalServerError, getLogIdentifiers } = require("../../configs/error-handler.configs");
+const { throwInternalServerError, getLogIdentifiers } = require("../../configs/error-handler.configs");
 const { CREATED } = require("../../configs/http-status.config");
 const { logActivityTrackerEvent } = require("../../utils/activity-tracker.util");
 const { AdminType } = require("../../configs/enums.config");
@@ -57,8 +57,7 @@ const createAdmin = async (req, res) => {
     });
   } catch (err) {
     logWithTime(`❌ Internal Error occurred in creating new admin ${getLogIdentifiers(req)}`);
-    errorMessage(err);
-    return throwInternalServerError(res);
+    return throwInternalServerError(res, err);
   }
 };
 

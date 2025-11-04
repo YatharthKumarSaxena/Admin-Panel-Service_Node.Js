@@ -5,7 +5,7 @@ const { logWithTime } = require("../../utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("../../configs/activity-tracker.config");
 const { CREATED } = require("../../configs/http-status.config");
 const { logActivityTrackerEvent } = require("../../utils/activity-tracker.util");
-const { errorMessage, throwInternalServerError, getLogIdentifiers } = require("../../configs/error-handler.configs");
+const { throwInternalServerError, getLogIdentifiers } = require("../../configs/error-handler.configs");
 const { AdminType } = require("../../configs/enums.config");
 const { makeAdminId } = require("../../services/user-id.service");
 const XLSX = require("xlsx");
@@ -143,8 +143,7 @@ const bulkAdminCreate = async (req, res) => {
     });
   } catch (err) {
     logWithTime(`❌ Internal Error occurred during bulk admin creation ${getLogIdentifiers(req)}`);
-    errorMessage(err);
-    return throwInternalServerError(res);
+    return throwInternalServerError(res, err);
   }
 };
 
