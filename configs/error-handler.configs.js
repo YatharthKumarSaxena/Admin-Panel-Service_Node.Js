@@ -10,7 +10,7 @@
 const {logWithTime} = require("../utils/time-stamps.util");
 const { BAD_REQUEST, INTERNAL_ERROR, UNAUTHORIZED, FORBIDDEN, CONFLICT } = require("./http-status.config");
 
-exports.errorMessage = (err) => {
+const errorMessage = (err) => {
     logWithTime("🛑 Error occurred:");
     logWithTime("File Name and Line Number where this error occurred is displayed below:- ");
     console.log(err.stack)
@@ -23,7 +23,7 @@ exports.errorMessage = (err) => {
   Handles cases where required fields are missing in the request.
 */
 
-exports.throwResourceNotFoundError = (res,resource) =>{
+const throwResourceNotFoundError = (res,resource) =>{
     logWithTime("⚠️ Missing required fields in the request:");
     console.log(resource);
     return res.status(BAD_REQUEST).json({
@@ -39,7 +39,8 @@ exports.throwResourceNotFoundError = (res,resource) =>{
   Handles all internal server failure responses.
 */
 
-exports.throwInternalServerError = (res) => {
+const throwInternalServerError = (res,error) => {
+    errorMessage(error);
     logWithTime("💥 Internal Server Error occurred.");
     return res.status(INTERNAL_ERROR).json({
         success: false,
@@ -53,7 +54,7 @@ exports.throwInternalServerError = (res) => {
   Handles all credentials failure responses.
 */
 
-exports.throwInvalidResourceError = (res,resource,reason) => {
+const throwInvalidResourceError = (res,resource,reason) => {
     logWithTime("⚠️ Invalid "+resource);
     logWithTime("❌ Invalid Credentials! Please try again.");
     return res.status(UNAUTHORIZED).json({
@@ -71,7 +72,7 @@ exports.throwInvalidResourceError = (res,resource,reason) => {
   Handles Access Denied or Blocked Account responses.
 */
 
-exports.throwAccessDeniedError = (res, reason = "Access Denied") => {
+const throwAccessDeniedError = (res, reason = "Access Denied") => {
     logWithTime("⛔️ Access Denied: " + reason);
     return res.status(FORBIDDEN).json({
         success: false,
@@ -81,14 +82,14 @@ exports.throwAccessDeniedError = (res, reason = "Access Denied") => {
     });
 }
 
-exports.logMiddlewareError = (middlewareName, reason, req) => {
+const logMiddlewareError = (middlewareName, reason, req) => {
   const adminId = req?.admin?.adminId || req?.admin?.userId || "UNKNOWN_admin";
   const deviceId = req?.deviceId || "UNKNOWN_device";
   logWithTime(`❌ [${middlewareName}] Error: ${reason} | admin: (${adminId}) | device: (${deviceId})`);
 };
 
 
-exports.throwConflictError = (res, message, suggestion) => {
+const throwConflictError = (res, message, suggestion) => {
     logWithTime("⚔️ Conflict Detected: " + message);
     return res.status(CONFLICT).json({
         success: false,
@@ -97,12 +98,12 @@ exports.throwConflictError = (res, message, suggestion) => {
     });
 };
 
-exports.getLogIdentifiers = (req) => {
+const getLogIdentifiers = (req) => {
     const adminId = req?.foundAdmin?.adminId || req?.admin?.adminId || req?.admin?.userId || "UNKNOWN_admin";
     return `with admin ID: (${adminId}). Request is made from device ID: (${req.deviceId})`;
 };
 
-exports.throwDBResourceNotFoundError = (res, resource) => {
+const throwDBResourceNotFoundError = (res, resource) => {
     logWithTime("⚠️ Resource Not Found in Database: " + resource);
     return res.status(BAD_REQUEST).json({
         success: false,
@@ -113,7 +114,7 @@ exports.throwDBResourceNotFoundError = (res, resource) => {
     });
 }
 
-exports.throwSessionExpiredError = (res, reason = "Session expired") => {
+const throwSessionExpiredError = (res, reason = "Session expired") => {
     logWithTime("⏳ Session Expired: " + reason);
     return res.status(FORBIDDEN).json({
         success: false,
@@ -122,3 +123,16 @@ exports.throwSessionExpiredError = (res, reason = "Session expired") => {
         message: "Your session has expired. Please login again to continue."
     });
 };
+
+module.exports = {
+    errorMessage,
+    throwResourceNotFoundError,
+    throwInternalServerError,
+    throwInvalidResourceError,
+    throwAccessDeniedError,
+    logMiddlewareError,
+    throwConflictError,
+    getLogIdentifiers,
+    throwDBResourceNotFoundError,
+    throwSessionExpiredError
+}
