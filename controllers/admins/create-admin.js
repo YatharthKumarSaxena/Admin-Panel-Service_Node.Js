@@ -4,8 +4,8 @@ const { ACTIVITY_TRACKER_EVENTS } = require("../../configs/activity-tracker.conf
 const { errorMessage, throwInternalServerError, getLogIdentifiers } = require("../../configs/error-handler.configs");
 const { CREATED } = require("../../configs/http-status.config");
 const { logActivityTrackerEvent } = require("../../utils/activity-tracker.util");
-const { nanoid } = require("nanoid");
 const { AdminType } = require("../../configs/enums.config");
+const { makeAdminId } = require("../../services/user-id.service");
 
 const createAdmin = async (req, res) => {
   try {
@@ -13,7 +13,7 @@ const createAdmin = async (req, res) => {
     const { fullPhoneNumber, emailId, adminType, supervisorId } = req.body;
 
     // 🔧 Generate adminId
-    const adminId = `adm_${nanoid(10)}`;
+    const adminId = await makeAdminId(res);
 
     // 🧩 Create admin document
     const newAdmin = new AdminModel({

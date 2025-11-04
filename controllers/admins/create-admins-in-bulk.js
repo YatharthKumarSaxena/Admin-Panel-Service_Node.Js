@@ -7,7 +7,7 @@ const { CREATED } = require("../../configs/http-status.config");
 const { logActivityTrackerEvent } = require("../../utils/activity-tracker.util");
 const { errorMessage, throwInternalServerError, getLogIdentifiers } = require("../../configs/error-handler.configs");
 const { AdminType } = require("../../configs/enums.config");
-const { nanoid } = require("nanoid");
+const { makeAdminId } = require("../../services/user-id.service");
 const XLSX = require("xlsx");
 const path = require("path");
 const fs = require("fs");
@@ -69,8 +69,9 @@ const bulkAdminCreate = async (req, res) => {
         continue;
       }
 
-      // ✅ Create new admin
-      const adminId = `adm_${nanoid(10)}`;
+      // 🔧 Generate adminId
+      const adminId = await makeAdminId(res);
+
       const newAdmin = new AdminModel({
         fullPhoneNumber,
         emailId,
