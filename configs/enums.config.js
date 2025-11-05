@@ -71,7 +71,7 @@ const Status = Object.freeze({
   SUCCESS: "success",
   FAILURE: "failure",
   PENDING: "pending"
-})
+});
 
 module.exports = {
   AdminActionReasons,   // PascalCase values → audit logs
@@ -82,5 +82,7 @@ module.exports = {
   AdminType,
   DeviceType,
   PerformedBy,
-  AuthModes
+  AuthModes,
+  ServiceName,
+  Status
 };

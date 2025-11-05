@@ -13,6 +13,7 @@ const getAuthFields = () => {
     // Safe fallback (if env misconfigured)
     identifierFields = ["emailId", "fullPhoneNumber"];
   }
+  return identifierFields;
 };
 
 const adminCreationRequiredFields = [
@@ -20,6 +21,12 @@ const adminCreationRequiredFields = [
   "adminType"
 ];
 
+const adminCreationInBulkRequiredFields = [
+  ...getAuthFields(),
+  "adminType"
+];
+
 module.exports = {
- adminCreationRequiredFields
+ adminCreationRequiredFields,
+ adminCreationInBulkRequiredFields
 };
