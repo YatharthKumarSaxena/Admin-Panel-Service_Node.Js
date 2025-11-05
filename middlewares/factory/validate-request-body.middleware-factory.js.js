@@ -1,16 +1,16 @@
 const { validateRequestBody } = require("../../utils/validate-request-body.util");
 const { throwInternalServerError, logMiddlewareError } = require("../../configs/error-handler.configs");
 
-const validateRequestBodyMiddleware = (requiredFields) => {
+const validateRequestBodyMiddleware = (requiredFields, middlewareName) => {
     return (req, res, next) => {
         try {
             if (!validateRequestBody(req, requiredFields, res)) {
-                logMiddlewareError("validateRequestBodyMiddleware", "Request body validation failed", req);
+                logMiddlewareError(middlewareName, "Request body validation failed", req);
                 return;
             }
             return next();
         } catch (error) {
-            logMiddlewareError("validateRequestBodyMiddleware", "Unexpected error occurred", req);
+            logMiddlewareError(middlewareName, "Unexpected error occurred", req);
             return throwInternalServerError(res, error);
         }
 
