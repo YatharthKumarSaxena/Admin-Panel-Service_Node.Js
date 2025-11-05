@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { fullPhoneNumberLength, emailLength } = require("../configs/fields-length.config");
 const { AuthModes, AdminType, PerformedBy } = require("../configs/enums.config")
-const { emailRegex, fullPhoneNumberRegex } = require("../configs/regex.config");
+const { emailRegex, fullPhoneNumberRegex, customIdRegex } = require("../configs/regex.config");
 
 /* Admin Schema */
 
@@ -40,6 +40,7 @@ const adminSchema = mongoose.Schema({
         type: String,
         unique: true,
         immutable: true,
+        match: customIdRegex,
         index: true // Perfect for performance in token-based auth.
     },
     emailId: {

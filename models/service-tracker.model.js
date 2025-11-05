@@ -1,24 +1,22 @@
-
+const mongoose = require("mongoose");
+const { Status, ServiceName } = require("../configs/enums.config");
+const { SERVICE_TRACKER_EVENTS } = require("../configs/tracker.config");
 
 const serviceTrackerSchema = new mongoose.Schema({
   serviceName: {
     type: String,
     required: true,
-    enum: ["AuthService", "MailService", "UserService", "CronJob", "CleanupService"]
+    enum: Object.values(ServiceName)
   },
-  actionType: {
+  eventType: {
     type: String,
     required: true,
-    enum: ["DELETE_INACTIVE_USERS", "SEND_REMINDER_MAILS", "CLEANUP_LOGS", "SYNC_DEVICES"]
+    enum: Object.values(SERVICE_TRACKER_EVENTS)
   },
   status: {
     type: String,
-    enum: ["SUCCESS", "FAILURE", "PARTIAL"],
-    default: "SUCCESS"
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now
+    enum: Status,
+    default: Status.SUCCESS
   },
   description: {
     type: String,
@@ -28,10 +26,30 @@ const serviceTrackerSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     default: null
   },
-  affectedUserIds: {
-    type: [String],
-    default: []
-  }
+  affectedUserId: {
+    type: String,
+    immutable: true,
+    match: customIdRegex,
+    default: null
+  },
+  oldData: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
+  },
+  newData: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
+  },
+traceId: {
+  type: String,
+  index: true,
+  default: null
+},
+originService: {
+  type: String,
+  enum: Object.values(ServiceName),
+  required: true
+}
 }, {
   timestamps: true,
   versionKey: false
