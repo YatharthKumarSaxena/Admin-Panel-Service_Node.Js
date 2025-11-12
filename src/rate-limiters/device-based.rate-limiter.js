@@ -1,4 +1,4 @@
-const { createRedisDeviceRateLimiter } = require("../factories/createRedisDeviceRateLimiter");
+const { createRedisDeviceRateLimiter } = require("./create-redis-device.rate-limiter");
 const { malformedRequest, unknownRoute } = require("../configs/rate-limit.config");
 
 const malformedAndWrongRequestRateLimiter = createRedisDeviceRateLimiter({

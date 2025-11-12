@@ -1,7 +1,7 @@
 // middlewares/factories/createRedisDeviceRateLimiter.js
 const rateLimit = require("express-rate-limit");
 const RedisStore = require("rate-limit-redis");
-const { redisClient } = require("../utils/redisClient.util");
+const { redisClient } = require("../utils/redis-client.util");
 const { logWithTime } = require("../utils/time-stamps.util");
 const { errorMessage } = require("../configs/error-handler.configs");
 

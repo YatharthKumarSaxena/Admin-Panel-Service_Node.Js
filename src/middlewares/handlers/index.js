@@ -1,7 +1,11 @@
-const {  malformedJsonHandler } = require("./malformedJsonHandler");
-const { unknownRouteHandler } = require("./unknownRouteHandler");
+const { malformedJsonHandler } = require("./malformed-json-handler.middleware");
+const { unknownRouteHandler } = require("./unknown-route-handler.middleware");
 
-module.exports = {
+const handlers = {
   malformedJsonHandler,
   unknownRouteHandler
+};
+
+module.exports = {
+  handlers
 };

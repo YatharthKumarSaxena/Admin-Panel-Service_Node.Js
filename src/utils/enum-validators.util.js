@@ -8,8 +8,8 @@ const {
   UnblockReasons,
   BlockVia,
   UnblockVia,
-  UserType,
-  DeviceType
+  DeviceType,
+  PerformedBy
 } = require("../configs/enums.config");
 
 const { tokenPayloads } = require("../configs/token.config");
@@ -45,9 +45,9 @@ const BlockReasonHelper = createEnumHelper(BlockReasons, "BlockReasons");
 const UnblockReasonHelper = createEnumHelper(UnblockReasons, "UnblockReasons");
 const BlockViaHelper = createEnumHelper(BlockVia, "BlockVia");
 const UnblockViaHelper = createEnumHelper(UnblockVia, "UnblockVia");
-const UserTypeHelper = createEnumHelper(UserType, "UserType");
 const DeviceTypeHelper = createEnumHelper(DeviceType, "DeviceType");
 const TokenPayloadHelper = createEnumHelper(tokenPayloads, "TokenPayloads");
+const PerformedByHelper = createEnumHelper(PerformedBy,"PerformedBy")
 
 module.exports = {
   AdminActionHelper,
@@ -55,7 +55,7 @@ module.exports = {
   UnblockReasonHelper,
   BlockViaHelper,
   UnblockViaHelper,
-  UserTypeHelper,
+  PerformedByHelper,
   DeviceTypeHelper,
   TokenPayloadHelper
 };

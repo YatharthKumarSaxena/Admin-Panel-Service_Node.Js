@@ -9,4 +9,4 @@ const RoleMiddlewares = {
   midAdminsAndSuperAdmins: createRoleMiddleware([AdminType.MID_ADMIN, AdminType.SUPER_ADMIN], "midAdminsAndSuperAdminsMiddleware")
 };
 
-module.exports = { createRoleMiddleware, RoleMiddlewares };
+module.exports = { RoleMiddlewares };

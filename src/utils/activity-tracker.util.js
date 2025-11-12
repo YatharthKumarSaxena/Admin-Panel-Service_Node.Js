@@ -48,16 +48,14 @@ const logActivityTrackerEvent = (req, eventType, logOptions = {}) => {
         adminId,
         eventType,
         deviceId: req.deviceId,
-        performedBy,
+        performedBy: req.admin.performedBy,
         deviceName: req.deviceName || undefined,
-        deviceType: Object.values(DeviceType).includes(req.deviceType)
-          ? req.deviceType
-          : undefined,
+        deviceType: req.deviceType,
         description:
           logOptions.description ||
           req.body?.description?.trim() ||
           req.query?.description?.trim() ||
-          `Performed ${eventType} by ${performedBy}`,
+          `Performed ${eventType} by ${req.admin.performedBy}`,
         adminDetails: {
           emailId,
           fullPhoneNumber

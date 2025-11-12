@@ -1,15 +1,19 @@
-const { isAdminAccountActive  } = require("./isAccountActive");
-const { validateJwtPayloadMiddleware } = require("./validateJwtPayloadMiddleware");
-const { verifyJWTSignature } = require("./verifyJwtSignatureMiddleware");
-const { isAdmin } = require("./verifyAdminRole");
-const { validateRedisPayloadMiddleware } = require("./validateRedisPayloadMiddleware");
-const { verifyDeviceField } = require("./verifyDeviceField");
+const { isAdminAccountActive  } = require("./is-account-active.middleware");
+const { validateJwtPayloadMiddleware } = require("./validate-jwt-payload.middleware");
+const { verifyJWTSignature } = require("./verify-jwt-signature.middleware");
+const { isAdmin } = require("./verify-admin-role.middleware");
+const { validateRedisPayloadMiddleware } = require("./validate-redis-payload.middleware");
+const { verifyDeviceField } = require("./verify-device-field.middleware");
 
-module.exports = {
+const commonMiddlewares = {
     isAdminAccountActive,
     validateJwtPayloadMiddleware,
     verifyJWTSignature,
     isAdmin,
     validateRedisPayloadMiddleware,
     verifyDeviceField
+};
+
+module.exports = {
+    commonMiddlewares
 };

@@ -1,6 +1,6 @@
-const { validateXLSXFile } = require("../../utils/validate-xlsx.util");
+const { validateXLSXMiddleware } = require("../factory/validate-xlsx.middleware-factory");
 const { adminCreationInBulkRequiredFields } = require("../../configs/required-fields.config");
 
 module.exports = {
-    validateCreateAdminInBulkRequestBody: validateXLSXFile(adminCreationInBulkRequiredFields, "validateCreateAdminInBulkRequestBody")
+    validateCreateAdminInBulkRequestBody: validateXLSXMiddleware(adminCreationInBulkRequiredFields, "validateCreateAdminInBulkRequestBody")
 }

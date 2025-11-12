@@ -12,6 +12,9 @@ const createAdmin = async (req, res) => {
     const creator = req.admin; // Injected by middleware
     const { fullPhoneNumber, emailId, adminType, supervisorId } = req.body;
 
+    // Internal API call to Create Admin in Authentication Service can be placed here
+    // If Yes we can proceed to create Admin in our DB
+
     // 🔧 Generate adminId
     const adminId = await makeAdminId(res);
 
