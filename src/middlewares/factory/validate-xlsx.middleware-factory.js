@@ -1,5 +1,5 @@
 const { validateXLSXFile } = require("../../utils/validate-xlsx.util");
-const { throwInternalServerError, logMiddlewareError } = require("../../configs/error-handler.configs");
+const { throwInternalServerError, logMiddlewareError } = require("../../utils/error-handler.utils");
 
 /*
   ✅ Factory pattern middleware:

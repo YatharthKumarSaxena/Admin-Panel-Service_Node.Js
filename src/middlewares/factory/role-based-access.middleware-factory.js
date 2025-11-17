@@ -4,7 +4,7 @@ const {
   throwInternalServerError,
   logMiddlewareError,
   errorMessage
-} = require("../../configs/error-handler.configs");
+} = require("../../utils/error-handler.utils");
 
 /**
  * Creates a role-checking middleware with structured logging
