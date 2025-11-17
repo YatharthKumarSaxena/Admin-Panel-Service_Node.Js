@@ -7,7 +7,7 @@
 
 const xlsx = require("xlsx");
 const { logWithTime } = require("./time-stamps.util");
-const { throwResourceNotFoundError } = require("../configs/error-handler.configs");
+const { throwResourceNotFoundError } = require("./error-handler.utils");
 
 /**
  * Validates uploaded XLSX file for required columns.

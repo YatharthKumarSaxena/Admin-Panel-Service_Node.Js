@@ -1,4 +1,4 @@
-const { throwResourceNotFoundError } = require("../configs/error-handler.configs");
+const { throwResourceNotFoundError } = require("./error-handler.utils");
 const { logWithTime } = require("./time-stamps.util");
 
 const validateRequestBody = (req, requiredFields, res) => {
