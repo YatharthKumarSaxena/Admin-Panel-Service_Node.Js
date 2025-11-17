@@ -3,7 +3,7 @@ const rateLimit = require("express-rate-limit");
 const RedisStore = require("rate-limit-redis");
 const { redisClient } = require("../utils/redis-client.util");
 const { logWithTime } = require("../utils/time-stamps.util");
-const { errorMessage } = require("../configs/error-handler.configs");
+const { errorMessage } = require("../utils/error-handler.utils");
 
 /**
  * Generalized Redis-backed device-based rate limiter
