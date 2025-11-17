@@ -1,5 +1,5 @@
 const { logWithTime } = require("../../utils/time-stamps.util");
-const { errorMessage, throwInternalServerError, throwResourceNotFoundError, logMiddlewareError } = require("../../configs/error-handler.configs");
+const { errorMessage, throwInternalServerError, throwResourceNotFoundError, logMiddlewareError } = require("../../utils/error-handler.utils");
 const { validateUUID, validateDeviceNameLength } = require("../../utils/fieldValidators.util");
 const { DeviceTypeHelper } = require("../../utils/enumValidators.util");
 

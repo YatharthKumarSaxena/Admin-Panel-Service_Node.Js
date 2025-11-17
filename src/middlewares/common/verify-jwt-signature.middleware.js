@@ -3,7 +3,7 @@ const {
   throwInternalServerError,
   throwSessionExpiredError,
   throwDBResourceNotFoundError
-} = require("../../configs/error-handler.configs");
+} = require("../../utils/error-handler.utils");
 const { logWithTime } = require("../../utils/time-stamps.util");
 const { AdminModel, UserModel } = require("../../models/index");
 const { setAccessTokenHeaders, clearAccessTokenHeaders } = require("../../utils/access-token.util");
