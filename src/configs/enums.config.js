@@ -62,6 +62,11 @@ const AuthModes = Object.freeze({
   BOTH: "both"
 });
 
+const Roles = Object.freeze({
+  ...AdminType,
+  USER: "user"
+});
+
 const ServiceName = Object.freeze({
   AUTH_SERVICE: "AuthService",
   ADMIN_PANEL_SERVICE: "AdminPanelService",
@@ -83,6 +88,7 @@ module.exports = {
   DeviceType,
   PerformedBy,
   AuthModes,
+  Roles,
   ServiceName,
   Status
 };
