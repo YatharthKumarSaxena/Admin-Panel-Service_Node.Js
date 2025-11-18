@@ -44,9 +44,9 @@ const AdminType = Object.freeze({
 });
 
 const DeviceType = Object.freeze({
-    MOBILE: "mobile", 
-    TABLET: "tablet", 
-    LAPTOP: "laptop"
+  MOBILE: "mobile",
+  TABLET: "tablet",
+  LAPTOP: "laptop"
 });
 
 const PerformedBy = Object.freeze({
@@ -78,6 +78,21 @@ const Status = Object.freeze({
   PENDING: "pending"
 });
 
+const IdentifierKeys = Object.freeze({
+  email: {
+    User: ["userId", "emailId"],
+    Admin: ["adminId", "emailId"]
+  },
+  phone: {
+    User: ["userId", "fullPhoneNumber"],
+    Admin: ["adminId", "fullPhoneNumber"]
+  },
+  both: {
+    User: ["userId", "emailId", "fullPhoneNumber"],
+    Admin: ["adminId", "emailId", "fullPhoneNumber"]
+  }
+});
+
 module.exports = {
   AdminActionReasons,   // PascalCase values → audit logs
   BlockReasons,         // snake_case values → DB/API
@@ -90,5 +105,6 @@ module.exports = {
   AuthModes,
   Roles,
   ServiceName,
-  Status
+  Status,
+  IdentifierKeys
 };
