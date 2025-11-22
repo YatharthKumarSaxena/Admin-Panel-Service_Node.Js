@@ -82,6 +82,22 @@ const throwAccessDeniedError = (res, reason = "Access Denied") => {
     });
 }
 
+/*
+  ✅ SRP + DRY:
+  Handles generic bad request responses (invalid/malformed request payloads).
+*/
+
+const throwBadRequestError = (res, reason = "Bad Request", details = null) => {
+    logWithTime("⚠️ Bad Request: " + reason);
+    return res.status(BAD_REQUEST).json({
+        success: false,
+        type: "BadRequest",
+        warning: reason,
+        details,
+        message: "The request could not be processed due to invalid or missing data."
+    });
+};
+
 const logMiddlewareError = (middlewareName, reason, req) => {
   const adminId = req?.admin?.adminId || req?.admin?.userId || "UNKNOWN_admin";
   const deviceId = req?.deviceId || "UNKNOWN_device";
@@ -134,5 +150,6 @@ module.exports = {
     throwConflictError,
     getLogIdentifiers,
     throwDBResourceNotFoundError,
-    throwSessionExpiredError
+    throwSessionExpiredError,
+    throwBadRequestError
 }

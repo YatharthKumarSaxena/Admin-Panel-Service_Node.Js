@@ -1,7 +1,7 @@
 // utils/identifier-validator.factory.js
-const { BAD_REQUEST } = require("../configs/http-status.config");
 const { logWithTime } = require("./time-stamps.util");
-const { identifierKeys } = require("../configs/enums.config");
+const { IdentifierKeys } = require("../configs/enums.config");
+const { throwBadRequestError } = require("./error-handler.utils")
 
 /**
  * Factory to validate single identifier for User/Admin
@@ -10,10 +10,11 @@ const { identifierKeys } = require("../configs/enums.config");
  * @param {String} role - "User" or "Admin"
  * @param {String} source - "body" or "query"
  */
-const validateSingleIdentifierFactory = (req, res, role = "User", source = "body") => {
+
+const validateSingleIdentifierFactory = (req, res, role = "Admin", source = "body") => {
   // authMode can be EMAIL / PHONE / BOTH → default BOTH
-  const mode = req.authMode || "both";
-  const identifiers = identifierKeys[mode][role]; // dynamic keys from config
+  const mode = process.env.AUTH_MODE;
+  const identifiers = IdentifierKeys[mode][role]; // dynamic keys from config
 
   const data = source === "query" ? { ...req.query } : { ...req.body };
 
@@ -22,11 +23,8 @@ const validateSingleIdentifierFactory = (req, res, role = "User", source = "body
   );
 
   if (validIdentifiers.length !== 1) {
-    logWithTime(`🧷 Invalid input: More than one or no identifier provided for ${role} from device id: (${req.deviceID}).`);
-    res.status(BAD_REQUEST).send({
-      success: false,
-      message: `❌ Provide exactly one identifier: ${identifiers.join(", ")}`
-    });
+    logWithTime(`🧷 Invalid input: More than one or no identifier provided for ${role} from device id: (${req.deviceId}).`);
+    throwBadRequestError(res, `Please provide exactly one valid identifier for ${role}.`);
     return false;
   }
 
@@ -38,7 +36,7 @@ const validateSingleIdentifierFactory = (req, res, role = "User", source = "body
     }
   });
 
-  logWithTime(`🧩 Valid identifier input detected for ${role} from device id: (${req.deviceID}).`);
+  logWithTime(`🧩 Valid identifier input detected for ${role} from device id: (${req.deviceId}).`);
   return true;
 };
 

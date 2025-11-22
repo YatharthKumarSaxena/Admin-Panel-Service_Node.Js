@@ -2,6 +2,12 @@ const { Roles } = require("../../configs/enums.config");
 const { logWithTime } = require("../../utils/time-stamps.util");
 const { throwAccessDeniedError, throwInternalServerError } = require("../../utils/error-handler.utils");
 
+const roleHierarchy = {
+    [Roles.SUPER_ADMIN]: [Roles.MID_ADMIN, Roles.ADMIN, Roles.USER],
+    [Roles.MID_ADMIN]: [Roles.ADMIN, Roles.USER],
+    [Roles.ADMIN]: [Roles.USER]
+};
+
 const hierarchyGuard = (req, res, next) => {
     try {
         const actor = req.admin; // current logged-in admin
@@ -10,31 +16,13 @@ const hierarchyGuard = (req, res, next) => {
             req?.foundUser?.userType ||
             req?.body?.targetAdminType;
 
-        // 👆 target role (Roles.SUPER_ADMIN / MID_ADMIN / ADMIN / USER)
-
         if (!actor || !targetAdminType) {
             return throwAccessDeniedError(res, "Actor or target type missing");
         }
 
         const actorType = actor.adminType;
-        let allowed = false;
-
-        switch (actorType) {
-            case Roles.SUPER_ADMIN:
-                allowed = targetAdminType !== Roles.SUPER_ADMIN;
-                break;
-
-            case Roles.MID_ADMIN:
-                allowed = (targetAdminType === Roles.ADMIN || targetAdminType === Roles.USER);
-                break;
-
-            case Roles.ADMIN:
-                allowed = (targetAdminType === Roles.USER);
-                break;
-
-            default:
-                allowed = false;
-        }
+        const allowedRoles = roleHierarchy[actorType] || [];
+        const allowed = allowedRoles.includes(targetAdminType);
 
         if (!allowed) {
             logWithTime(`🚫 Unauthorized hierarchy operation: ${actorType} -> ${targetAdminType}`);
