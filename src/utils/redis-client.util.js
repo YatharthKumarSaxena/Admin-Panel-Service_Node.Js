@@ -1,13 +1,30 @@
-// utils/redisClient.js
-import Redis from "ioredis";
+// utils/redis-client.util.js
+const Redis = require("ioredis");
+const { errorMessage } = require("@utils/error-handler.util");
+const { logWithTime } = require("@utils/time-stamps.util");
+const { redis } = require("@configs/redis.config");
 
 const redisClient = new Redis({
-  host: process.env.REDIS_HOST || "127.0.0.1",
-  port: parseInt(process.env.REDIS_PORT) || 6379,
-  password: process.env.REDIS_PASSWORD || undefined,
-  db: 0
+  host: redis.host,
+  port: redis.port,
+  password: redis.password,
+  db: redis.db,
+  retryStrategy(times) {
+    if (times > redis.maxRetryAttempts) {
+      logWithTime("❌ Redis connection failed after max retries. Exiting...");
+      process.exit(1);
+    }
+    return Math.min(times * redis.retryInitialDelayMs, redis.retryMaxDelayMs);
+  }
 });
 
-module.exports = {
-    redisClient
-}
+redisClient.on("connect", () => {
+  logWithTime("✅ Redis connected successfully");
+});
+
+redisClient.on("error", (error) => {
+  logWithTime("❌ Redis connection error");
+  errorMessage(error);
+});
+
+module.exports = { redisClient };
