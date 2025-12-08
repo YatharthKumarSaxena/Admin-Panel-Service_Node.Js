@@ -1,5 +1,5 @@
 const { logWithTime } = require("../../utils/time-stamps.util");
-const { throwInternalServerError, logMiddlewareError } = require("../../utils/error-handler.utils");
+const { throwInternalServerError, logMiddlewareError } = require("../../utils/error-handler.util");
 const { FORBIDDEN } = require("../../configs/http-status.config");
 const { UserType } = require("../../configs/enums.config");
 

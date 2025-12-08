@@ -1,4 +1,4 @@
-const { throwInternalServerError } = require("../../utils/error-handler.utils");
+const { throwInternalServerError } = require("../../utils/error-handler.util");
 const {logWithTime} = require("../utils/time-stamps.utils");
 
 /**

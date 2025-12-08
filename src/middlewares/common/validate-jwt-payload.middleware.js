@@ -2,7 +2,7 @@ const {
   throwAccessDeniedError,
   logMiddlewareError,
   throwInternalServerError
-} = require("../../utils/error-handler.utils");
+} = require("../../utils/error-handler.util");
 const { logWithTime } = require("../../utils/time-stamps.util");
 const { tokenPayloads } = require("../../configs/token.config");
 const {

@@ -1,6 +1,6 @@
 const { Roles } = require("../../configs/enums.config");
 const { logWithTime } = require("../../utils/time-stamps.util");
-const { throwAccessDeniedError, throwInternalServerError } = require("../../utils/error-handler.utils");
+const { throwAccessDeniedError, throwInternalServerError } = require("../../utils/error-handler.util");
 
 const roleHierarchy = {
     [Roles.SUPER_ADMIN]: [Roles.MID_ADMIN, Roles.ADMIN, Roles.USER],

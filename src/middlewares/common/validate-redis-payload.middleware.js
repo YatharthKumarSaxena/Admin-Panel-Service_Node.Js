@@ -8,7 +8,7 @@ const {
     throwInternalServerError,
     throwInvalidResourceError,
     logMiddlewareError
-} = require("../../utils/error-handler.utils");
+} = require("../../utils/error-handler.util");
 const { setAccessTokenHeaders, clearAccessTokenHeaders, extractAccessToken } = require("../../utils/access-token.util")
 
 /**

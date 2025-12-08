@@ -1,5 +1,5 @@
 const { validateRequestBody } = require("../../utils/validate-request-body.util");
-const { throwInternalServerError, logMiddlewareError } = require("../../utils/error-handler.utils");
+const { throwInternalServerError, logMiddlewareError } = require("../../utils/error-handler.util");
 
 const validateRequestBodyMiddleware = (requiredFields, middlewareName) => {
     return (req, res, next) => {

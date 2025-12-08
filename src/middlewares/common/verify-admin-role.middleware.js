@@ -1,4 +1,4 @@
-const { throwInternalServerError, throwAccessDeniedError, logMiddlewareError } = require("../../utils/error-handler.utils");
+const { throwInternalServerError, throwAccessDeniedError, logMiddlewareError } = require("../../utils/error-handler.util");
 
 // Checking Provided Request is given by admin or not
 const isAdmin = (req,res,next) => {
