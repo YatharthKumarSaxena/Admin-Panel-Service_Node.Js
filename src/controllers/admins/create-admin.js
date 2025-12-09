@@ -6,6 +6,7 @@ const { CREATED } = require("../../configs/http-status.config");
 const { logActivityTrackerEvent } = require("../../utils/activity-tracker.util");
 const { AdminType } = require("../../configs/enums.config");
 const { makeAdminId } = require("../../services/user-id.service");
+const { AuthMode } = require("@configs/auth-mode.config");
 
 const createAdmin = async (req, res) => {
   try {

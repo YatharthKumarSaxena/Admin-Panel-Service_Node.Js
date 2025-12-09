@@ -5,55 +5,46 @@ const { redisClient } = require("@utils/redis-client.util");
 const { errorMessage, throwInternalServerError } = require("@utils/error-handler.util");
 const { logWithTime } = require("@utils/time-stamps.util");
 
-let globalLimiter;
-
-try {
-    globalLimiter = rateLimit({
-        store: new RedisStore({
-            sendCommand: (...args) => redisClient.call(...args)
-        }),
-        windowMs: parseInt(process.env.RATE_LIMIT_WINDOW) * 60 * 1000 || 600000,
-        max: parseInt(process.env.RATE_LIMIT_MAX) || 100,
-        message: {
-            code: "RATE_LIMIT_EXCEEDED",
-            message: "Too many requests. Please try again after some time.",
-        },
-        standardHeaders: true,
-        legacyHeaders: false,
-        handler: (req, res, next, options) => {
-            const ip = req.ip || req.headers["x-forwarded-for"] || "UNKNOWN_IP";
-            const path = req.originalUrl || req.url;
-            const adminId = req?.admin?.adminId || "UNKNOWN_Admin";
-            const deviceId = req.deviceId;
-            const resetTime = req.rateLimit?.resetTime;
-            const retryAfterSeconds = resetTime
-                ? Math.ceil((resetTime.getTime() - Date.now()) / 1000)
-                : null;
-            logWithTime("🚫 Rate Limit Triggered:");
-            logWithTime(`IP: ${ip} | Path: ${path} | Admin: ${adminId} | Device: ${deviceId}`);
-            errorMessage(new Error("Rate limit exceeded"));
-            const responsePayload = {
+function createGlobalLimiter() {
+    try {
+        return rateLimit({
+            store: new RedisStore({
+                sendCommand: (...args) => redisClient.call(...args)
+            }),
+            windowMs: parseInt(process.env.RATE_LIMIT_WINDOW) * 60 * 1000 || 600000,
+            max: parseInt(process.env.RATE_LIMIT_MAX) || 100,
+            message: {
                 code: "RATE_LIMIT_EXCEEDED",
                 message: "Too many requests. Please try again after some time.",
-                ...(retryAfterSeconds && { retryAfterSeconds })
-            };
-            return res.status(options.statusCode).json(responsePayload);
-        }
-    });
+            },
+            standardHeaders: true,
+            legacyHeaders: false,
+            handler: (req, res, next, options) => {
+                const ip = req.ip;
+                const path = req.originalUrl;
+                const resetTime = req.rateLimit?.resetTime;
+                const retryAfterSeconds = resetTime
+                    ? Math.ceil((resetTime.getTime() - Date.now()) / 1000)
+                    : null;
 
-    // Optional: Redis connection error logging
-    redisClient.on("error", (err) => {
+                logWithTime("🚫 Rate Limit Triggered");
+                errorMessage(new Error("Rate limit exceeded"));
+
+                return res.status(options.statusCode).json({
+                    code: "RATE_LIMIT_EXCEEDED",
+                    message: "Too many requests. Please try again later.",
+                    ...(retryAfterSeconds && { retryAfterSeconds }),
+                })
+            }
+        });
+    } catch (err) {
         errorMessage(err);
-    });
-
-} catch (err) {
-    errorMessage(err);
-    // Optional fallback middleware if Redis fails
-    globalLimiter = (req, res, next) => {
-        throwInternalServerError(res);
-    };
+        return (req, res, next) => {
+            throwInternalServerError(res);
+        };
+    }
 }
 
-module.exports = {
-    globalLimiter
-};
+const globalLimiter = createGlobalLimiter();
+
+module.exports = { globalLimiter };

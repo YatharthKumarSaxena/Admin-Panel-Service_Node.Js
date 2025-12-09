@@ -96,6 +96,9 @@ const adminSchema = mongoose.Schema({
     }
 }, { timestamps: true, versionKey: false });
 
+adminSchema.index({ emailId: 1 }, { unique: true, sparse: true });
+adminSchema.index({ fullPhoneNumber: 1 }, { unique: true, sparse: true });
+
 // Creating a Collection named Admins that will Include Admin Documents / Records
 // module.exports convert the whole file into a Module
 module.exports = {

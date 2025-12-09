@@ -39,6 +39,7 @@ module.exports = {
         ADMINS: {
             GET_ADMIN_AUTH_LOGS: `/auth-logs`,        // POST /admin-panel-service/api/v1/admin/auth-logs
             GET_TOTAL_REGISTERED_USERS: `/total-users`,      // GET /admin-panel-service/api/v1/admin/total-users
+            CREATE_ADMIN: `/create`           // POST /admin-panel-service/api/v1/admin/create
         },
         INTERNAL: {
             SYNC_USER_DATA: `/sync-user-data`               // POST /admin-panel-service/api/v1/internal/sync-user-data
