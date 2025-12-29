@@ -4,26 +4,17 @@ const { AuthModes, AdminType, PerformedBy } = require("@configs/enums.config");
 const { emailRegex, fullPhoneNumberRegex, customIdRegex } = require("@configs/regex.config");
 
 /* Admin Schema */
-
-const adminSchema = mongoose.Schema({
+const adminSchema = new mongoose.Schema({
     fullPhoneNumber: {
         type: String,
-        unique: true,
         trim: true,
-        index: true,
         match: fullPhoneNumberRegex,
         minlength: fullPhoneNumberLength.min,
         maxlength: fullPhoneNumberLength.max,
-        validate: {
-            validator: function (value) {
-                const mode = process.env.DEFAULT_AUTH_MODE;
-                if ([AuthModes.PHONE, AuthModes.BOTH].includes(mode)) {
-                    return !!value;
-                }
-                return true;
-            },
-            message: `${AuthModes.PHONE} is required for phone or ${AuthModes.BOTH} auth modes.`
-        }
+        default: null,
+        index: true,
+        unique: true, 
+        sparse: true
     },
     adminId: {
         type: String,
@@ -34,22 +25,15 @@ const adminSchema = mongoose.Schema({
     },
     email: {
         type: String,
-        unique: true,
         lowercase: true,
         trim: true,
         minlength: emailLength.min,
         maxlength: emailLength.max,
         match: emailRegex,
-        validate: {
-            validator: function (value) {
-                const mode = process.env.DEFAULT_AUTH_MODE;
-                if ([AuthModes.EMAIL, AuthModes.BOTH].includes(mode)) {
-                    return !!value;
-                }
-                return true;
-            },
-            message: `${AuthModes.EMAIL} is required for email or ${AuthModes.BOTH} auth modes.`
-        }
+        default: null,
+        index: true,
+        unique: true,
+        sparse: true
     },
     isActive: {
         type: Boolean,
@@ -62,16 +46,8 @@ const adminSchema = mongoose.Schema({
     },
     supervisorId: {
         type: String,
-        default: null,
-        validate: {
-            validator: function (value) {
-                if ([AdminType.ADMIN, AdminType.MID_ADMIN].includes(this.adminType)) {
-                    return value !== null;
-                }
-                return true;
-            },
-            message: `supervisorId is required for ${AdminType.ADMIN} and ${AdminType.MID_ADMIN} users.`
-        }
+        default: null
+        // Validation moved to hook for better control
     },
     createdBy: {
         type: String,
@@ -84,22 +60,40 @@ const adminSchema = mongoose.Schema({
     }
 }, { timestamps: true, versionKey: false });
 
-/* Indexes */
-adminSchema.index({ email: 1 }, { unique: true, sparse: true });
-adminSchema.index({ fullPhoneNumber: 1 }, { unique: true, sparse: true });
-
-/* Mutual Exclusivity Validator for EITHER Mode */
+/* 🔐 Centralized Validation Hook */
 adminSchema.pre("validate", function (next) {
     const mode = process.env.DEFAULT_AUTH_MODE;
+    
+    // 1. Auth Mode Validation
+    const hasEmail = this.email && this.email.length > 0;
+    const hasPhone = this.fullPhoneNumber && this.fullPhoneNumber.length > 0;
 
+    if (mode === AuthModes.EMAIL && !hasEmail) {
+        return next(new Error("Email is required in EMAIL mode."));
+    }
+    if (mode === AuthModes.PHONE && !hasPhone) {
+        return next(new Error("Phone number is required in PHONE mode."));
+    }
+    if (mode === AuthModes.BOTH && (!hasEmail || !hasPhone)) {
+        return next(new Error("Both email and phone are required in BOTH mode."));
+    }
     if (mode === AuthModes.EITHER) {
-        if (!this.email && !this.fullPhoneNumber) {
-            return next(new Error("Either email or fullPhoneNumber is required in EITHER mode."));
+        if (!hasEmail && !hasPhone) {
+            return next(new Error("Either email or phone is required in EITHER mode."));
         }
-        if (this.email && this.fullPhoneNumber) {
-            return next(new Error("Provide only one identifier (email OR fullPhoneNumber) in EITHER mode."));
+        if (hasEmail && hasPhone) {
+            return next(new Error("Provide only one identifier (email OR phone) in EITHER mode."));
         }
     }
+
+    // 2. Supervisor Validation (Dependent on AdminType)
+    // Agar Admin ya Mid-Admin hai, to Supervisor ID honi chahiye
+    if ([AdminType.ADMIN, AdminType.MID_ADMIN].includes(this.adminType)) {
+        if (!this.supervisorId) {
+            return next(new Error(`supervisorId is required for ${this.adminType} users.`));
+        }
+    }
+
     next();
 });
 

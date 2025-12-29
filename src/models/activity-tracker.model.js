@@ -28,7 +28,8 @@ const activityTrackerSchema = new mongoose.Schema({
       minlength: fullPhoneNumberLength.min,
       maxlength: fullPhoneNumberLength.max,
       match: fullPhoneNumberRegex
-    }
+    },
+    _id: false
   },
 
   eventType: {
@@ -43,7 +44,8 @@ const activityTrackerSchema = new mongoose.Schema({
   },
 
   deviceName: {
-    type: String
+    type: String,
+    default: null
   },
 
   deviceType: {
@@ -96,7 +98,9 @@ const activityTrackerSchema = new mongoose.Schema({
           maxlength: fullPhoneNumberLength.max,
           match: fullPhoneNumberRegex,
           default: null
-        }
+        },
+        default: null,
+        _id: false
       },
       reason: {
         type: String,
@@ -104,21 +108,16 @@ const activityTrackerSchema = new mongoose.Schema({
       },
       filter: {
         type: [String],
-        enum: ACTIVITY_TRACKER_EVENTS,
+        validate: {
+          validator: function (arr) {
+            return arr.every(item => ACTIVITY_TRACKER_EVENTS.includes(item));
+          },
+          message: 'Filter must contain valid ACTIVITY_TRACKER_EVENTS'
+        },
         default: undefined
       }
-    }, {
-      _id: false,
-      validate: {
-        validator: function (v) {
-          const d = v?.targetUserDetails;
-          const hasEmail = !!d?.email;
-          const hasPhone = !!d?.fullPhoneNumber;
-          return hasEmail === hasPhone; // both true or both false
-        },
-        message: "Both email and fullPhoneNumber must be provided together or omitted together."
-      }
-    }),
+    },
+      { _id: false }),
     default: null
   }
 }, {
@@ -135,9 +134,23 @@ activityTrackerSchema.path("adminDetails").validate(function (v) {
   if (mode === AuthModes.EMAIL) return hasEmail;
   if (mode === AuthModes.PHONE) return hasPhone;
   if (mode === AuthModes.BOTH) return hasEmail && hasPhone;
+  if (mode === AuthModes.EITHER) return (hasEmail ^ hasPhone);
 
   return true;
 }, "adminDetails must include required fields based on DEFAULT_AUTH_MODE");
+
+activityTrackerSchema.path("adminActions.targetUserDetails").validate(function (v) {
+  const mode = process.env.DEFAULT_AUTH_MODE;
+  const hasEmail = !!v?.email;
+  const hasPhone = !!v?.fullPhoneNumber;
+
+  if (mode === AuthModes.EMAIL) return hasEmail;
+  if (mode === AuthModes.PHONE) return hasPhone;
+  if (mode === AuthModes.BOTH) return hasEmail && hasPhone;
+  if (mode === AuthModes.EITHER) return (hasEmail && !hasPhone) || (!hasEmail && hasPhone); // XOR → exactly one
+
+  return true;
+}, "targetUserDetails must include required fields based on DEFAULT_AUTH_MODE");
 
 module.exports = {
   ActivityTrackerModel: mongoose.model("ActivityTracker", activityTrackerSchema)
