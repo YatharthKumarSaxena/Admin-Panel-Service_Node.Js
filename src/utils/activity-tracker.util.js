@@ -23,17 +23,17 @@ const logActivityTrackerEvent = (req, eventType, logOptions = {}) => {
         return;
       }
       // Extract and validate adminDetails
-      const emailId =
-        logOptions.adminDetails?.emailId ||
-        req.admin?.emailId ||
-        req.foundAdmin?.emailId;
+      const email =
+        logOptions.adminDetails?.email ||
+        req.admin?.email ||
+        req.foundAdmin?.email;
 
       const fullPhoneNumber =
         logOptions.adminDetails?.fullPhoneNumber ||
         req.admin?.fullPhoneNumber ||
         req.foundAdmin?.fullPhoneNumber;
 
-      const isValidEmail = validateEmailLength(emailId) && validateEmailRegex(emailId);
+      const isValidEmail = validateEmailLength(email) && validateEmailRegex(email);
 
       const isValidPhone = validatePhoneLength(fullPhoneNumber) && validatePhoneRegex(fullPhoneNumber);
 
@@ -57,7 +57,7 @@ const logActivityTrackerEvent = (req, eventType, logOptions = {}) => {
           req.query?.description?.trim() ||
           `Performed ${eventType} by ${req.admin.performedBy}`,
         adminDetails: {
-          emailId,
+          email,
           fullPhoneNumber
         }
       };
@@ -71,7 +71,7 @@ const logActivityTrackerEvent = (req, eventType, logOptions = {}) => {
 
       const targetDetails =
         logOptions.adminActions?.targetUserDetails || logOptions.performedOn?.details;
-      const targetEmail = targetDetails?.emailID;
+      const targetEmail = targetDetails?.email;
       const targetPhone = targetDetails?.fullPhoneNumber;
 
       const hasValidTargetDetails =
@@ -84,7 +84,7 @@ const logActivityTrackerEvent = (req, eventType, logOptions = {}) => {
 
       if (hasValidTargetDetails) {
         adminActions.targetUserDetails = {
-          emailId: targetEmail,
+          email: targetEmail,
           fullPhoneNumber: targetPhone
         };
       }
