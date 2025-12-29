@@ -1,7 +1,7 @@
 // ✅ Enum Helpers using Factory Design Pattern
 const { isValidEnumValue, getEnumKeyByValue } = require("./validators-factory.util");
 const { logWithTime } = require("./time-stamps.util");
-const { throwInvalidResourceError } = require("../configs/error-handler.configs")
+const { throwInvalidResourceError } = require("@utils/error-handler.util")
 const {
   AdminActionReasons,
   BlockReasons,
@@ -10,14 +10,16 @@ const {
   UnblockVia,
   DeviceType,
   PerformedBy
-} = require("../configs/enums.config");
+} = require("@configs/enums.config");
 
-const { tokenPayloads } = require("../configs/token.config");
+const { tokenPayloads } = require("@configs/token.config");
+
 /**
  * 🏭 Factory to create enum helper with tracing
  * @param {Object} enumObj - The frozen enum object
  * @param {String} name - Enum name for logging context
  */
+
 const createEnumHelper = (enumObj, name) => ({
   validate: (value,res) => {
     const result = isValidEnumValue(enumObj, value);

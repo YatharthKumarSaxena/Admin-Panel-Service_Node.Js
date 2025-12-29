@@ -1,7 +1,7 @@
-const { CounterModel } = require("../models/counter.model");
-const { adminDataCapacity, adminIDPrefix, IP_Address_Code } = require("../configs/system.config");
-const { errorMessage,throwInternalServerError } = require("../configs/error-handler.configs");
-const { logWithTime } = require("../utils/time-stamps.util");
+const { CounterModel } = require("@models/counter.model");
+const { adminDataCapacity, adminIDPrefix, IP_Address_Code } = require("@configs/system.config");
+const { errorMessage,throwInternalServerError } = require("@utils/error-handler.util");
+const { logWithTime } = require("@utils/time-stamps.util");
 
 /*
   ✅ Single Responsibility Principle (SRP): 

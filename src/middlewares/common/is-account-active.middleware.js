@@ -1,7 +1,7 @@
-const { logWithTime } = require("../../utils/time-stamps.util");
-const { throwInternalServerError, logMiddlewareError } = require("../../utils/error-handler.util");
-const { FORBIDDEN } = require("../../configs/http-status.config");
-const { UserType } = require("../../configs/enums.config");
+const { logWithTime } = require("@utils/time-stamps.util");
+const { throwInternalServerError, logMiddlewareError } = require("@utils/error-handler.util");
+const { FORBIDDEN } = require("@configs/http-status.config");
+const { UserType } = require("@configs/enums.config");
 
 // ✅ Checking if admin Account is Active
 const isAdminAccountActive = async (req, res, next) => {

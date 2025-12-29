@@ -1,15 +1,17 @@
 // middlewares/factories/createRateLimiter.js
 const rateLimit = require("express-rate-limit");
 const { RedisStore } = require("rate-limit-redis");
-const { redisClient } = require("../utils/redis-client.util");
-const { logWithTime } = require("../utils/time-stamps.util");
+const { redisClient } = require("@utils/redis-client.util");
+const { logWithTime } = require("@utils/time-stamps.util");
 const { errorMessage } = require("@utils/error-handler.util");
+
 /**
  * Redis-backed Admin & Device-based rate limiter
  * @param {Object} options
  * @param {number} options.maxRequests - Maximum requests allowed
  * @param {number} options.windowMs - Time window in milliseconds
  */
+
 const createRateLimiter = ({ maxRequests, windowMs }) => {
   return rateLimit({
     store: new RedisStore({

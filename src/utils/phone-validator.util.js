@@ -29,5 +29,7 @@ const validatePhone = (res, phoneNumber) => {
 };
 
 module.exports = {
+  validatePhoneLength,
+  validatePhoneRegex,
   validatePhone
 };

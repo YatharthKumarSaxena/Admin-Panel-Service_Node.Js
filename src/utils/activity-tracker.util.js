@@ -1,9 +1,9 @@
-const ActivityTrackerModel = require("../models/activity-tracker.model");
+const { ActivityTrackerModel } = require("@models/activity-tracker.model");
 const { logWithTime } = require("./time-stamps.util");
-const { errorMessage } = require("../configs/error-handler.configs");
-const { validateEmailLength, validateEmailRegex, validatePhoneLength, validatePhoneRegex} = require("./field-validators.util");
-const ACTIVITY_TRACKER_EVENTS = require("../configs/activity-tracker.config");
-const { DeviceType, PerformedBy } = require("../configs/enums.config");
+const { errorMessage } = require("@utils/error-handler.util");
+const { validatePhoneLength, validatePhoneRegex } = require("./phone-validator.util");
+const { validateEmailLength, validateEmailRegex } = require("./email-validator.util");
+const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 
 /**
  * 🔐 Logs an activity tracker event (fire-and-forget)

@@ -1,7 +1,7 @@
 // utils/existence-factory.util.js
-const { logWithTime } = require("../utils/time-stamps.utils");
-const { BAD_REQUEST } = require("../configs/http-status.config");
-const { errorMessage, throwInternalServerError } = require("../configs/error-handler.configs");
+const { logWithTime } = require("@utils/time-stamps.util");
+const { BAD_REQUEST } = require("@configs/http-status.config");
+const { errorMessage, throwInternalServerError } = require("@utils/error-handler.util");
 
 /**
  * Generic existence checker factory
@@ -9,6 +9,7 @@ const { errorMessage, throwInternalServerError } = require("../configs/error-han
  * @param {Object} identifiers - { emailKey, phoneKey }
  * @param {String} entityName - "User" or "Admin"
  */
+
 const checkEntityExists = async (Model, identifiers, email, fullPhoneNumber, res, entityName) => {
   try {
     let reason = "";

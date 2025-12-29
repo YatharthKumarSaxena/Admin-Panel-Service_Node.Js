@@ -1,6 +1,6 @@
 // utils/identifier-validator.factory.js
 const { logWithTime } = require("./time-stamps.util");
-const { IdentifierKeys } = require("../configs/enums.config");
+const { IdentifierKeys } = require("@configs/enums.config");
 const { throwBadRequestError } = require("./error-handler.util");
 
 /**

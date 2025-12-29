@@ -1,7 +1,7 @@
 const { isValidRegex } = require("./validators-factory.util");
 const { logWithTime } = require("./time-stamps.util");
-const { mongoIdRegex } = require("../configs/regex.config");
-const { throwInvalidResourceError } = require("../utils/error-handler.util");
+const { mongoIdRegex } = require("@configs/regex.config");
+const { throwInvalidResourceError } = require("@utils/error-handler.util");
 
 const validateMongoID = (res, mongoID) => {
   if (!isValidRegex(mongoID, mongoIdRegex)) {

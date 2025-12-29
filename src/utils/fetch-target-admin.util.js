@@ -6,7 +6,7 @@ const {
   errorMessage, 
   logMiddlewareError, 
   getLogIdentifiers 
-} = require("../configs/error-handler.configs");
+} = require("@utils/error-handler.util");
 
 const { logWithTime } = require("./time-stamps.util");
 

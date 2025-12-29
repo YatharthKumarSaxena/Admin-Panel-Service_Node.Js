@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const { Status, ServiceName } = require("../configs/enums.config");
-const { SERVICE_TRACKER_EVENTS } = require("../configs/tracker.config");
+const { Status, ServiceName } = require("@configs/enums.config");
+const { SERVICE_TRACKER_EVENTS } = require("@configs/tracker.config");
 
 const serviceTrackerSchema = new mongoose.Schema({
   serviceName: {

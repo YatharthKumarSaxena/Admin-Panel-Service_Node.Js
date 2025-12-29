@@ -1,13 +1,13 @@
 // controllers/admin/bulk-admin-create.controller.js
 
-const { AdminModel } = require("../../models/admin.model");
-const { logWithTime } = require("../../utils/time-stamps.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("../../configs/activity-tracker.config");
-const { CREATED } = require("../../configs/http-status.config");
-const { logActivityTrackerEvent } = require("../../utils/activity-tracker.util");
-const { throwInternalServerError, getLogIdentifiers } = require("../../configs/error-handler.configs");
-const { AdminType } = require("../../configs/enums.config");
-const { makeAdminId } = require("../../services/user-id.service");
+const { AdminModel } = require("@models/admin.model");
+const { logWithTime } = require("@utils/time-stamps.util");
+const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
+const { CREATED } = require("@configs/http-status.config");
+const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
+const { AdminType } = require("@configs/enums.config");
+const { makeAdminId } = require("@services/user-id.service");
 const XLSX = require("xlsx");
 const path = require("path");
 const fs = require("fs");

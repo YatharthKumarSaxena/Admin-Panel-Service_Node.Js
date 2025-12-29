@@ -1,5 +1,5 @@
-const { throwInternalServerError } = require("../../utils/error-handler.util");
-const {logWithTime} = require("../utils/time-stamps.utils");
+const { throwInternalServerError } = require("@utils/error-handler.util");
+const { logWithTime } = require("@utils/time-stamps.util");
 
 /**
  * 🔥 Catches all uncaught errors thrown anywhere in the route chain.

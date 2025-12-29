@@ -1,10 +1,10 @@
-const { checkRole } = require("../../utils/role.util");
+const { checkRole } = require("@utils/role.util");
 const {
   throwAccessDeniedError,
   throwInternalServerError,
   logMiddlewareError,
   errorMessage
-} = require("../../utils/error-handler.util");
+} = require("@utils/error-handler.util");
 
 /**
  * Creates a role-checking middleware with structured logging

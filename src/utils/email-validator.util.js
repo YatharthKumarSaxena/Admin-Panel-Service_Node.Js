@@ -29,5 +29,7 @@ const validateEmail = (res, email) => {
 };
 
 module.exports = {
+  validateEmailLength,
+  validateEmailRegex,
   validateEmail
 };

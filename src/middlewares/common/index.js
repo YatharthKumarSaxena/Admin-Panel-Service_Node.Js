@@ -4,6 +4,7 @@ const { verifyJWTSignature } = require("./verify-jwt-signature.middleware");
 const { isAdmin } = require("./verify-admin-role.middleware");
 const { validateRedisPayloadMiddleware } = require("./validate-redis-payload.middleware");
 const { verifyDeviceField } = require("./verify-device-field.middleware");
+const { authModeValidator } = require("./auth.middleware");
 
 const commonMiddlewares = {
     isAdminAccountActive,
@@ -11,7 +12,8 @@ const commonMiddlewares = {
     verifyJWTSignature,
     isAdmin,
     validateRedisPayloadMiddleware,
-    verifyDeviceField
+    verifyDeviceField,
+    authModeValidator
 };
 
 module.exports = {

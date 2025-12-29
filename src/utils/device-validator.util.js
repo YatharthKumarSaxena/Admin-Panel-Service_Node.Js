@@ -1,7 +1,7 @@
 const { validateLength } = require("./validators-factory.util");
 const { logWithTime } = require("./time-stamps.util");
-const { deviceNameLength } = require("../configs/fields-length.config");
-const { throwInvalidResourceError } = require("../utils/error-handler.util");
+const { deviceNameLength } = require("@configs/fields-length.config");
+const { throwInvalidResourceError } = require("@utils/error-handler.util");
 
 const validateDeviceNameLength = (res, deviceName) => {
   if (!validateLength(deviceName, deviceNameLength.min, deviceNameLength.max)) {

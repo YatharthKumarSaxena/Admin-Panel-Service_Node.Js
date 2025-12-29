@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
-const { fullPhoneNumberLength, emailLength } = require("../configs/fields-length.config");
-const { AuthModes, AdminType, PerformedBy } = require("../configs/enums.config");
-const { emailRegex, fullPhoneNumberRegex, customIdRegex } = require("../configs/regex.config");
+const { fullPhoneNumberLength, emailLength } = require("@configs/fields-length.config");
+const { AuthModes, AdminType, PerformedBy } = require("@configs/enums.config");
+const { emailRegex, fullPhoneNumberRegex, customIdRegex } = require("@configs/regex.config");
 
 /* Admin Schema */
 

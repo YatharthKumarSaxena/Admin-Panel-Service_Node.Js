@@ -1,4 +1,4 @@
-const { AdminType } = require("../../configs/enums.config");
+const { AdminType } = require("@configs/enums.config");
 const { createRoleMiddleware } = require("../factory/role-based-access.middleware-factory");
 
 const RoleMiddlewares = {

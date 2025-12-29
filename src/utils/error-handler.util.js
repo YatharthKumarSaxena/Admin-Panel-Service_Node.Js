@@ -8,7 +8,7 @@
 
 // Extracts file that include timeStamp function
 const {logWithTime} = require("./time-stamps.util");
-const { BAD_REQUEST, INTERNAL_ERROR, UNAUTHORIZED, FORBIDDEN, CONFLICT } = require("../configs/http-status.config");
+const { BAD_REQUEST, INTERNAL_ERROR, UNAUTHORIZED, FORBIDDEN, CONFLICT } = require("@configs/http-status.config");
 
 const errorMessage = (err) => {
     logWithTime("🛑 Error occurred:");

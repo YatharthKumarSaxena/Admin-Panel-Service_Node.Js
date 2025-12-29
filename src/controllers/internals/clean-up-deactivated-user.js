@@ -1,8 +1,8 @@
 const cron = require("node-cron");
-const { UserModel } = require("../models/user.model");
-const { logWithTime } = require("../utils/time-stamps.util");
-const { userCleanup } = require("../configs/cron.config");
-const { errorMessage } = require("../configs/error-handler.configs");
+const { UserModel } = require("@models/user.model");
+const { logWithTime } = require("@utils/time-stamps.util");
+const { userCleanup } = require("@configs/cron.config");
+const { errorMessage } = require("@utils/error-handler.util");
 
 const cleanDeactivatedUsers = async () => {
 	try {
