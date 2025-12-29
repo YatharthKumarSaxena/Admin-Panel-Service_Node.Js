@@ -12,6 +12,9 @@ const {
 // Create Admin
 const { createAdmin } = require("@controllers/admins/create-admin");
 const { commonMiddlewares } = require("@middlewares/common/index"); 
+const {
+  adminMiddlewares
+} = require("@middlewares/admins/index");
 
 const baseMiddlerwares = [
   commonMiddlewares.verifyDeviceField,
@@ -20,12 +23,14 @@ const baseMiddlerwares = [
   commonMiddlewares.verifyJWTSignature,
   commonMiddlewares.isAdmin,
   commonMiddlewares.isAdminAccountActive,
-  commonMiddlewares.authModeValidator
 ];
 
 adminRouter.post(`${CREATE_ADMIN}`,
   [
-
+    ...baseMiddlerwares,
+    adminMiddlewares.midAdminsAndSuperAdmins,
+    commonMiddlewares.authModeValidator,
+    adminMiddlewares.validateCreateAdminRequestBody
   ] , 
   createAdmin);
 
