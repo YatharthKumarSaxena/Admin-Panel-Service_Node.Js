@@ -1,22 +1,50 @@
 const { AdminModel } = require("@models/admin.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
+const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwAccessDeniedError, throwConflictError } = require("@utils/error-handler.util");
 const { CREATED } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { AdminType } = require("@configs/enums.config");
 const { makeAdminId } = require("@services/user-id.service");
+const { fetchAdmin } = require("@utils/fetch-admin.util");
 
 const createAdmin = async (req, res) => {
   try {
     const creator = req.admin; // Injected by middleware
     const { fullPhoneNumber, email, adminType, supervisorId } = req.body;
 
+    if (adminType === AdminType.SUPER_ADMIN) {
+      logWithTime(`❌ Unauthorized attempt to create SUPER_ADMIN by ${creator.adminId} ${getLogIdentifiers(req)}`);
+      return throwAccessDeniedError(res, "Creating SUPER_ADMIN via this endpoint is not allowed");
+    }
+
+    if (creator.adminType === AdminType.MID_ADMIN && adminType === AdminType.MID_ADMIN) {
+      logWithTime(`❌ MID_ADMIN ${creator.adminId} attempted to create another MID_ADMIN ${getLogIdentifiers(req)}`);
+      return throwAccessDeniedError(res, "MID_ADMINs are not allowed to create other MID_ADMINs");
+    }
+
+    const adminExists = await fetchAdmin(email, fullPhoneNumber);
+
+    if (adminExists) {
+      logWithTime(`❌ Duplicate admin creation attempt detected by ${creator.adminId} ${getLogIdentifiers(req)}`);
+      return throwConflictError(res, "Admin with provided email/phone already exists", "Please enter unique email/phone number");
+    }
+
     // Internal API call to Create Admin in Authentication Service can be placed here
     // If Yes we can proceed to create Admin in our DB
 
     // 🔧 Generate adminId
-    const adminId = await makeAdminId(res);
+    const adminId = await makeAdminId();
+
+    if (adminId === "") {
+      logWithTime(`❌ Failed to generate adminId for new admin by ${creator.adminId} ${getLogIdentifiers(req)}`);
+      return throwInternalServerError(res, "Failed to generate Admin ID. Please try again later.");
+    }
+
+    if(adminId === "0"){
+      logWithTime(`⚠️ Admin Data Capacity full. Cannot create new admin by ${creator.adminId} ${getLogIdentifiers(req)}`);
+      return throwBadRequestError(res, "Admin Data Capacity full. Cannot create new admin.");
+    }
 
     // 🧩 Create admin document
     const newAdmin = new AdminModel({
@@ -34,10 +62,10 @@ const createAdmin = async (req, res) => {
 
     // ⚙️ Determine event type based on role
     let eventType;
-    if(adminType === AdminType.ADMIN){
-        eventType = ACTIVITY_TRACKER_EVENTS.CREATE_ADMIN;
-    }else{
-        eventType = ACTIVITY_TRACKER_EVENTS.CREATE_MID_ADMIN;
+    if (adminType === AdminType.ADMIN) {
+      eventType = ACTIVITY_TRACKER_EVENTS.CREATE_ADMIN;
+    } else {
+      eventType = ACTIVITY_TRACKER_EVENTS.CREATE_MID_ADMIN;
     }
 
     // 🚀 Fire-and-Forget Activity Log
@@ -49,7 +77,7 @@ const createAdmin = async (req, res) => {
           email: newAdmin.email,
           fullPhoneNumber: newAdmin.fullPhoneNumber
         },
-        reason: "New admin account creation"
+        reason: req.body?.reason?.trim() || "New admin account creation"
       }
     });
 
@@ -59,6 +87,10 @@ const createAdmin = async (req, res) => {
       createdBy: creator.adminId
     });
   } catch (err) {
+    if (err.name === 'ValidationError') {
+      logWithTime(`⚠️ Validation Error: ${err.message}`);
+      return throwBadRequestError(res, err.message);
+    }
     logWithTime(`❌ Internal Error occurred in creating new admin ${getLogIdentifiers(req)}`);
     return throwInternalServerError(res, err);
   }

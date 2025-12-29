@@ -8,107 +8,172 @@ const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
 const { AdminType } = require("@configs/enums.config");
 const { makeAdminId } = require("@services/user-id.service");
+const { fetchAdmin } = require("@utils/fetch-admin.util"); 
 const XLSX = require("xlsx");
 const path = require("path");
 const fs = require("fs");
 
 const bulkAdminCreate = async (req, res) => {
   try {
-    const creator = req.admin; // Injected by auth middleware
-    const rows = req.validatedRows || [];
+    const creator = req.admin;
+    const rows = req.validatedRows || []; 
 
-    // ⚙️ Counters
     let createdCount = 0;
     let invalidCount = 0;
     let notApplicableCount = 0;
+    let errorCount = 0;
+    let abortedCount = 0; // 🆕 Track rows that were stopped
 
-    // 📊 Final report rows (for Excel output)
     const reportRows = [];
 
-    // 🚀 Process each row
+    // 🚀 Process each row sequentially
     for (const row of rows) {
-      const { status, email, fullPhoneNumber, adminType, supervisorId, reason } = row;
+      try {
+        const { status, email, fullPhoneNumber, adminType, supervisorId, reason } = row;
 
-      const report = {
-        email,
-        fullPhoneNumber,
-        adminType,
-        supervisorId,
-        initialStatus: status,
-        finalStatus: "",
-        reason: reason || "-",
-      };
+        const report = {
+          email: email || "-",
+          fullPhoneNumber: fullPhoneNumber || "-",
+          adminType: adminType || "-",
+          supervisorId: supervisorId || "-",
+          initialStatus: status,
+          finalStatus: "",
+          reason: reason || "-",
+        };
 
-      // Invalid rows
-      if (status === "Invalid") {
-        invalidCount++;
-        report.finalStatus = "Invalid";
-        report.reason = reason || "Invalid data";
+        // 1. Skip Pre-flagged Invalid rows
+        if (status === "Invalid") {
+          invalidCount++;
+          report.finalStatus = "Invalid";
+          report.reason = reason || "Invalid data format";
+          reportRows.push(report);
+          continue;
+        }
+
+        // 2. Skip Pre-flagged NotApplicable rows
+        if (status === "NotApplicable") {
+          notApplicableCount++;
+          report.finalStatus = "NotApplicable";
+          report.reason = reason || "Role not applicable";
+          reportRows.push(report);
+          continue;
+        }
+
+        // 3. Permission Check
+        if (
+          creator.adminType === AdminType.MID_ADMIN &&
+          adminType !== AdminType.MID_ADMIN 
+        ) {
+          notApplicableCount++;
+          report.finalStatus = "Forbidden";
+          report.reason = `Mid Admin cannot create ${adminType}`;
+          reportRows.push(report);
+          continue;
+        }
+
+        // 4. Duplicate Check
+        const exists = await fetchAdmin(email, fullPhoneNumber);
+
+        if (exists) {
+          notApplicableCount++;
+          report.finalStatus = "Exists";
+          report.reason = "Email or Phone already exists";
+          reportRows.push(report);
+          logWithTime(`⚠️ Skipping. Admin exists: ${email || fullPhoneNumber}`);
+          continue;
+        }
+
+        // 5. Generate adminId
+        const adminId = await makeAdminId();
+
+        // Case A: Technical Failure (Try next row)
+        if (adminId === "") {
+          errorCount++;
+          report.finalStatus = "Failed";
+          report.reason = "ID Gen Failed (Technical)";
+          reportRows.push(report);
+          logWithTime(`🛑 Row Skip: ID generation failed for ${email}`);
+          continue;
+        }
+
+        // Case B: Capacity Full (STOP EVERYTHING)
+        if (adminId === "0") {
+          errorCount++;
+          report.finalStatus = "Failed";
+          report.reason = "Server Capacity Full"; // Ye current row fail hui
+          reportRows.push(report);
+          
+          logWithTime(`🛑 Bulk ABORT: Capacity reached at ${email}. Stopping batch.`);
+          
+          // ⚠️ BREAK the loop immediately
+          break; 
+        }
+
+        // 6. Save to DB
+        const newAdmin = new AdminModel({
+          fullPhoneNumber,
+          email,
+          adminId,
+          adminType,
+          supervisorId: supervisorId || null,
+          createdBy: creator.adminId,
+        });
+
+        await newAdmin.save();
+        createdCount++;
+
+        // 7. Success Report
+        report.finalStatus = "Created";
+        report.reason = "Success";
+        report.createdAdminId = adminId;
         reportRows.push(report);
-        continue;
-      }
 
-      // NotApplicable rows
-      if (status === "NotApplicable") {
-        notApplicableCount++;
-        report.finalStatus = "NotApplicable";
-        report.reason = reason || "Not applicable for this role";
-        reportRows.push(report);
-        continue;
-      }
+        // 8. Activity Log
+        const eventType =
+          adminType === AdminType.ADMIN
+            ? ACTIVITY_TRACKER_EVENTS.CREATE_ADMIN
+            : ACTIVITY_TRACKER_EVENTS.CREATE_MID_ADMIN;
 
-      // Role Restriction
-      if (
-        creator.adminType === AdminType.MID_ADMIN &&
-        adminType !== AdminType.ADMIN
-      ) {
-        notApplicableCount++;
-        report.finalStatus = "Forbidden";
-        report.reason = `Mid Admin cannot create ${adminType}`;
-        reportRows.push(report);
-        continue;
-      }
-
-      // 🔧 Generate adminId
-      const adminId = await makeAdminId(res);
-
-      const newAdmin = new AdminModel({
-        fullPhoneNumber,
-        email,
-        adminId,
-        adminType,
-        supervisorId,
-        createdBy: creator.adminId,
-      });
-
-      await newAdmin.save();
-      createdCount++;
-
-      report.finalStatus = "Created";
-      report.reason = "-";
-      report.createdAdminId = adminId;
-      reportRows.push(report);
-
-      logWithTime(`✅ Bulk admin created: ${newAdmin.adminId} (${adminType}) by ${creator.adminId}`);
-
-      // 🎯 Determine event type
-      const eventType =
-        adminType === AdminType.ADMIN
-          ? ACTIVITY_TRACKER_EVENTS.CREATE_ADMIN
-          : ACTIVITY_TRACKER_EVENTS.CREATE_MID_ADMIN;
-
-      // 🧩 Fire-and-forget activity log
-      logActivityTrackerEvent(req, eventType, {
-        description: `Bulk creation: ${adminType} (${newAdmin.adminId}) created by ${creator.adminId}`,
-        adminActions: {
-          targetUserId: newAdmin.adminId,
-          targetUserDetails: {
-            email: newAdmin.email,
-            fullPhoneNumber: newAdmin.fullPhoneNumber,
+        logActivityTrackerEvent(req, eventType, {
+          description: `Bulk: ${adminType} (${newAdmin.adminId}) created`,
+          adminActions: {
+            targetUserId: newAdmin.adminId,
+            targetUserDetails: { email: newAdmin.email, fullPhoneNumber: newAdmin.fullPhoneNumber },
+            reason: "Bulk Upload",
           },
-          reason: "Bulk admin creation",
-        },
-      });
+        });
+
+      } catch (rowError) {
+        errorCount++;
+        logWithTime(`❌ Error processing row for ${row.email}: ${rowError.message}`);
+        reportRows.push({
+          email: row.email,
+          fullPhoneNumber: row.fullPhoneNumber,
+          finalStatus: "Error",
+          reason: `Internal Error: ${rowError.message}`
+        });
+      }
+    } // End Loop
+
+    // 🆕 9. Handle Aborted Rows (Logic for remaining items)
+    // Agar reportRows kam hain total rows se, iska matlab loop beech mein break hua hai
+    if (reportRows.length < rows.length) {
+        const processedCount = reportRows.length;
+        const remainingRows = rows.slice(processedCount);
+
+        logWithTime(`⚠️ Marking ${remainingRows.length} rows as Aborted due to capacity limit.`);
+
+        for (const skippedRow of remainingRows) {
+            abortedCount++;
+            reportRows.push({
+                email: skippedRow.email || "-",
+                fullPhoneNumber: skippedRow.fullPhoneNumber || "-",
+                adminType: skippedRow.adminType || "-",
+                initialStatus: skippedRow.status || "Pending",
+                finalStatus: "Aborted", // User ko dikhega "Aborted"
+                reason: "Process stopped: Server Capacity Full"
+            });
+        }
     }
 
     // 📁 Generate Excel Report
@@ -116,33 +181,35 @@ const bulkAdminCreate = async (req, res) => {
     const worksheet = XLSX.utils.json_to_sheet(reportRows);
     XLSX.utils.book_append_sheet(workbook, worksheet, "BulkCreationReport");
 
-    // 🧾 Define output path
-    const fileName = `bulk_admin_report_${Date.now()}.xlsx`;
-    const filePath = path.join(__dirname, `../../temp/${fileName}`);
-
-    // Ensure temp directory exists
-    if (!fs.existsSync(path.dirname(filePath))) {
-      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    const tempDir = path.join(__dirname, "../../temp");
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
     }
+
+    const fileName = `bulk_admin_report_${Date.now()}.xlsx`;
+    const filePath = path.join(tempDir, fileName);
 
     XLSX.writeFile(workbook, filePath);
 
-    logWithTime(`📄 Bulk admin report generated: ${fileName}`);
+    logWithTime(`📄 Bulk report generated: ${fileName}`);
 
     // ✅ Final Response
     return res.status(CREATED).json({
-      message: "Bulk admin creation completed successfully",
+      message: "Bulk admin creation process completed",
       summary: {
+        totalProcessed: rows.length,
         created: createdCount,
         invalid: invalidCount,
-        notApplicable: notApplicableCount,
-        totalProcessed: rows.length,
-        createdBy: creator.adminId,
+        skipped: notApplicableCount,
+        errors: errorCount,
+        aborted: abortedCount, // 🆕 Summary mein bhi dikhega
+        reportFile: fileName
       },
-      downloadPath: `/temp/${fileName}`, // serve from static or S3 in prod
+      downloadUrl: `/api/v1/downloads/${fileName}`
     });
+
   } catch (err) {
-    logWithTime(`❌ Internal Error occurred during bulk admin creation ${getLogIdentifiers(req)}`);
+    logWithTime(`❌ Critical Error in bulk admin creation ${getLogIdentifiers(req)}`);
     return throwInternalServerError(res, err);
   }
 };
