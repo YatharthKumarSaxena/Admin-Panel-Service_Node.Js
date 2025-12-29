@@ -59,7 +59,8 @@ const PerformedBy = Object.freeze({
 const AuthModes = Object.freeze({
   EMAIL: "email",
   PHONE: "phone",
-  BOTH: "both"
+  BOTH: "both",
+  EITHER: "either"
 });
 
 const Roles = Object.freeze({
@@ -80,16 +81,16 @@ const Status = Object.freeze({
 
 const IdentifierKeys = Object.freeze({
   email: {
-    User: ["userId", "emailId"],
-    Admin: ["adminId", "emailId"]
+    User: ["userId", "email"],
+    Admin: ["adminId", "email"]
   },
   phone: {
     User: ["userId", "fullPhoneNumber"],
     Admin: ["adminId", "fullPhoneNumber"]
   },
   both: {
-    User: ["userId", "emailId", "fullPhoneNumber"],
-    Admin: ["adminId", "emailId", "fullPhoneNumber"]
+    User: ["userId", "email", "fullPhoneNumber"],
+    Admin: ["adminId", "email", "fullPhoneNumber"]
   }
 });
 

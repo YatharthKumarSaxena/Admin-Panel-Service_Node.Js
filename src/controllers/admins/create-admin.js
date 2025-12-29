@@ -6,12 +6,11 @@ const { CREATED } = require("../../configs/http-status.config");
 const { logActivityTrackerEvent } = require("../../utils/activity-tracker.util");
 const { AdminType } = require("../../configs/enums.config");
 const { makeAdminId } = require("../../services/user-id.service");
-const { AuthMode } = require("@configs/auth-mode.config");
 
 const createAdmin = async (req, res) => {
   try {
     const creator = req.admin; // Injected by middleware
-    const { fullPhoneNumber, emailId, adminType, supervisorId } = req.body;
+    const { fullPhoneNumber, email, adminType, supervisorId } = req.body;
 
     // Internal API call to Create Admin in Authentication Service can be placed here
     // If Yes we can proceed to create Admin in our DB
@@ -22,7 +21,7 @@ const createAdmin = async (req, res) => {
     // 🧩 Create admin document
     const newAdmin = new AdminModel({
       fullPhoneNumber,
-      emailId,
+      email,
       adminId,
       adminType,
       supervisorId,
@@ -47,7 +46,7 @@ const createAdmin = async (req, res) => {
       adminActions: {
         targetUserId: newAdmin.adminId,
         targetUserDetails: {
-          emailId: newAdmin.emailId,
+          email: newAdmin.email,
           fullPhoneNumber: newAdmin.fullPhoneNumber
         },
         reason: "New admin account creation"

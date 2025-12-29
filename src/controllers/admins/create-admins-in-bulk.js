@@ -27,10 +27,10 @@ const bulkAdminCreate = async (req, res) => {
 
     // 🚀 Process each row
     for (const row of rows) {
-      const { status, emailId, fullPhoneNumber, adminType, supervisorId, reason } = row;
+      const { status, email, fullPhoneNumber, adminType, supervisorId, reason } = row;
 
       const report = {
-        emailId,
+        email,
         fullPhoneNumber,
         adminType,
         supervisorId,
@@ -74,7 +74,7 @@ const bulkAdminCreate = async (req, res) => {
 
       const newAdmin = new AdminModel({
         fullPhoneNumber,
-        emailId,
+        email,
         adminId,
         adminType,
         supervisorId,
@@ -103,7 +103,7 @@ const bulkAdminCreate = async (req, res) => {
         adminActions: {
           targetUserId: newAdmin.adminId,
           targetUserDetails: {
-            emailId: newAdmin.emailId,
+            email: newAdmin.email,
             fullPhoneNumber: newAdmin.fullPhoneNumber,
           },
           reason: "Bulk admin creation",

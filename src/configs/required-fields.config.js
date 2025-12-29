@@ -4,14 +4,14 @@ const getAuthFields = () => {
   // 🔹 Step 1: Determine login identifiers
   let identifierFields = [];
   if (mode === AuthModes.EMAIL) {
-    identifierFields = ["emailId"];
+    identifierFields = ["email"];
   } else if (mode === AuthModes.PHONE) {
     identifierFields = ["fullPhoneNumber"];
   } else if (mode === AuthModes.BOTH) {
-    identifierFields = ["emailId", "fullPhoneNumber"];
+    identifierFields = ["email", "fullPhoneNumber"];
   } else {
     // Safe fallback (if env misconfigured)
-    identifierFields = ["emailId", "fullPhoneNumber"];
+    identifierFields = ["email", "fullPhoneNumber"];
   }
   return identifierFields;
 };

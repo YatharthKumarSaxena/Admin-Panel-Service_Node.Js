@@ -48,7 +48,7 @@ const userSchema = mongoose.Schema({
         immutable: true,
         index: true // Perfect for performance in token-based auth.
     },
-    emailID: {
+    email: {
         type: String,
         unique: true,
         lowercase: true,

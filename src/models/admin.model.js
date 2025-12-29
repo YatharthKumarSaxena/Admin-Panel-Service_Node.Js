@@ -1,21 +1,10 @@
 const mongoose = require("mongoose");
 const { fullPhoneNumberLength, emailLength } = require("../configs/fields-length.config");
-const { AuthModes, AdminType, PerformedBy } = require("../configs/enums.config")
+const { AuthModes, AdminType, PerformedBy } = require("../configs/enums.config");
 const { emailRegex, fullPhoneNumberRegex, customIdRegex } = require("../configs/regex.config");
 
 /* Admin Schema */
 
-/*
- * Admin_ID
- * Email_ID
- * createdBy
- * isActive
- * userType
- * supervisorID
- * updatedBy
-*/
-
-// Defined Document Structure of a Admin
 const adminSchema = mongoose.Schema({
     fullPhoneNumber: {
         type: String,
@@ -41,9 +30,9 @@ const adminSchema = mongoose.Schema({
         unique: true,
         immutable: true,
         match: customIdRegex,
-        index: true // Perfect for performance in token-based auth.
+        index: true
     },
-    emailId: {
+    email: {
         type: String,
         unique: true,
         lowercase: true,
@@ -76,11 +65,10 @@ const adminSchema = mongoose.Schema({
         default: null,
         validate: {
             validator: function (value) {
-                // If adminType is ADMIN or MID_ADMIN, supervisorId must not be null
                 if ([AdminType.ADMIN, AdminType.MID_ADMIN].includes(this.adminType)) {
                     return value !== null;
                 }
-                return true; // SUPER_ADMIN can have null
+                return true;
             },
             message: `supervisorId is required for ${AdminType.ADMIN} and ${AdminType.MID_ADMIN} users.`
         }
@@ -88,7 +76,7 @@ const adminSchema = mongoose.Schema({
     createdBy: {
         type: String,
         required: true,
-        default: PerformedBy.SYSTEM  // For SUPER_ADMIN Creation
+        default: PerformedBy.SYSTEM
     },
     updatedBy: {
         type: String,
@@ -96,12 +84,25 @@ const adminSchema = mongoose.Schema({
     }
 }, { timestamps: true, versionKey: false });
 
-adminSchema.index({ emailId: 1 }, { unique: true, sparse: true });
+/* Indexes */
+adminSchema.index({ email: 1 }, { unique: true, sparse: true });
 adminSchema.index({ fullPhoneNumber: 1 }, { unique: true, sparse: true });
 
-// Creating a Collection named Admins that will Include Admin Documents / Records
-// module.exports convert the whole file into a Module
+/* Mutual Exclusivity Validator for EITHER Mode */
+adminSchema.pre("validate", function (next) {
+    const mode = process.env.DEFAULT_AUTH_MODE;
+
+    if (mode === AuthModes.EITHER) {
+        if (!this.email && !this.fullPhoneNumber) {
+            return next(new Error("Either email or fullPhoneNumber is required in EITHER mode."));
+        }
+        if (this.email && this.fullPhoneNumber) {
+            return next(new Error("Provide only one identifier (email OR fullPhoneNumber) in EITHER mode."));
+        }
+    }
+    next();
+});
+
 module.exports = {
     AdminModel: mongoose.model("Admin", adminSchema)
-}
-// By Default Mongoose Convert Admin into Plural Form i.e Admins
+};
