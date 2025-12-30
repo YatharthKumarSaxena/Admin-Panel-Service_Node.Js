@@ -1,8 +1,9 @@
 const { ActivityTrackerModel } = require("@models/activity-tracker.model");
 const { logWithTime } = require("./time-stamps.util");
 const { errorMessage } = require("@utils/error-handler.util");
-const { validatePhoneLength, validatePhoneRegex } = require("./phone-validator.util");
-const { validateEmailLength, validateEmailRegex } = require("./email-validator.util");
+const { validateLength, isValidRegex } = require("./validators-factory.util");
+const { emailRegex, fullPhoneNumberRegex } = require("@configs/regex.config");
+const { emailLength, fullPhoneNumberLength } = require("@configs/fields-length.config");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { AuthModes, PerformedBy } = require("@configs/enums.config");
 
@@ -12,7 +13,8 @@ const { AuthModes, PerformedBy } = require("@configs/enums.config");
 const logActivityTrackerEvent = async (req, eventType, logOptions = {}) => {
     try {
       // 1. Validate Event Type
-      if (!ACTIVITY_TRACKER_EVENTS.includes(eventType)) {
+      const validEvents = Object.values(ACTIVITY_TRACKER_EVENTS);
+      if (!validEvents.includes(eventType)) {
         logWithTime(`⚠️ Invalid eventType: ${eventType}. Skipping activity log.`);
         return;
       }
@@ -32,8 +34,8 @@ const logActivityTrackerEvent = async (req, eventType, logOptions = {}) => {
       const rawPhone = admin.fullPhoneNumber ? admin.fullPhoneNumber.trim() : null;
 
       // Validation Helper to avoid repetitive code
-      const isEmailValid = (e) => e && validateEmailLength(e) && validateEmailRegex(e);
-      const isPhoneValid = (p) => p && validatePhoneLength(p) && validatePhoneRegex(p);
+      const isEmailValid = (e) => e && validateLength(e, emailLength.min, emailLength.max) && isValidRegex(e, emailRegex);
+      const isPhoneValid = (p) => p && validateLength(p, fullPhoneNumberLength.min, fullPhoneNumberLength.max) && isValidRegex(p, fullPhoneNumberRegex);
 
       // --- Admin Details Validation Logic ---
       if (AuthMode === AuthModes.EMAIL) {
