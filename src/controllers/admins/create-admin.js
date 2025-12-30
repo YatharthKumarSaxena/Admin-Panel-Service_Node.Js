@@ -13,16 +13,6 @@ const createAdmin = async (req, res) => {
     const creator = req.admin; // Injected by middleware
     const { fullPhoneNumber, email, adminType, supervisorId } = req.body;
 
-    if (adminType === AdminType.SUPER_ADMIN) {
-      logWithTime(`❌ Unauthorized attempt to create SUPER_ADMIN by ${creator.adminId} ${getLogIdentifiers(req)}`);
-      return throwAccessDeniedError(res, "Creating SUPER_ADMIN via this endpoint is not allowed");
-    }
-
-    if (creator.adminType === AdminType.MID_ADMIN && adminType === AdminType.MID_ADMIN) {
-      logWithTime(`❌ MID_ADMIN ${creator.adminId} attempted to create another MID_ADMIN ${getLogIdentifiers(req)}`);
-      return throwAccessDeniedError(res, "MID_ADMINs are not allowed to create other MID_ADMINs");
-    }
-
     const adminExists = await fetchAdmin(email, fullPhoneNumber);
 
     if (adminExists) {
