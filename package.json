@@ -29,6 +29,7 @@
   "_moduleAliases": {
     "@": "src",
     "@app": "src/app",
+    "@testing": "src/testing",
     "@configs": "src/configs",
     "@utils": "src/utils",
     "@middlewares": "src/middlewares",
