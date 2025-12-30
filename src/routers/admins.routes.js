@@ -2,7 +2,7 @@
 
 
 const express = require("express");
-const adminRouter = express.Router();
+const adminRoutes = express.Router();
 const { ADMIN_ROUTES } = require("@configs/uri.config");
 
 const {
@@ -25,7 +25,7 @@ const baseMiddlerwares = [
   commonMiddlewares.isAdminAccountActive,
 ];
 
-adminRouter.post(`${CREATE_ADMIN}`,
+adminRoutes.post(`${CREATE_ADMIN}`,
   [
     ...baseMiddlerwares,
     adminMiddlewares.midAdminsAndSuperAdmins,
@@ -36,5 +36,5 @@ adminRouter.post(`${CREATE_ADMIN}`,
 
 
 module.exports = {
-  adminRouter
+  adminRoutes
 }

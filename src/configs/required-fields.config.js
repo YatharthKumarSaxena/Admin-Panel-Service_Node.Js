@@ -1,3 +1,5 @@
+const { AuthModes } = require("@configs/enums.config")
+
 const getAuthFields = () => {
   const mode = process.env.DEFAULT_AUTH_MODE;
 

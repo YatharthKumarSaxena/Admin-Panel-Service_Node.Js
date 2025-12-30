@@ -28,21 +28,21 @@ module.exports = {
     // 🛠️ Admin-specific routes (e.g. category creation, update, delete)
     ADMIN_ROUTES: {
         USERS: {
-            BLOCK_USER: `${USER_BASE}/block-user`,              // PATCH /admin-panel-service/api/v1/users/block-user
-            UNBLOCK_USER: `${USER_BASE}/unblock-user`,          // PATCH /admin-panel-service/api/v1/users/unblock-user
-            BLOCK_DEVICE: `${USER_BASE}/block-device`,          // PATCH /admin-panel-service/api/v1/users/block-device
-            UNBLOCK_DEVICE: `${USER_BASE}/unblock-device`,      // PATCH /admin-panel-service/api/v1/users/unblock-device
-            GET_USER_ACTIVE_SESSIONS: `${USER_BASE}/active-sessions`,   // GET /admin-panel-service/api/v1/users/active-sessions
-            FETCH_USER_DETAILS: `${USER_BASE}/fetch-user-details`,       // GET /admin-panel-service/api/v1/users/fetch-user-details
-            GET_USER_AUTH_LOGS: `${USER_BASE}/auth-logs`  // GET /admin-panel-service/api/v1/users/auth-logs
+            BLOCK_USER: `/block-user`,              // PATCH /admin-panel-service/api/v1/users/block-user
+            UNBLOCK_USER: `/unblock-user`,          // PATCH /admin-panel-service/api/v1/users/unblock-user
+            BLOCK_DEVICE: `/block-device`,          // PATCH /admin-panel-service/api/v1/users/block-device
+            UNBLOCK_DEVICE: `/unblock-device`,      // PATCH /admin-panel-service/api/v1/users/unblock-device
+            GET_USER_ACTIVE_SESSIONS: `/active-sessions`,   // GET /admin-panel-service/api/v1/users/active-sessions
+            FETCH_USER_DETAILS: `/fetch-user-details`,       // GET /admin-panel-service/api/v1/users/fetch-user-details
+            GET_USER_AUTH_LOGS: `/auth-logs`  // GET /admin-panel-service/api/v1/users/auth-logs
         },
         ADMINS: {
-            GET_ADMIN_AUTH_LOGS: `${ADMIN_BASE}/auth-logs`,        // POST /admin-panel-service/api/v1/admin/auth-logs
-            GET_TOTAL_REGISTERED_USERS: `${ADMIN_BASE}/total-users`,      // GET /admin-panel-service/api/v1/admin/total-users
-            CREATE_ADMIN: `${ADMIN_BASE}/create`           // POST /admin-panel-service/api/v1/admin/create
+            GET_ADMIN_AUTH_LOGS: `/auth-logs`,        // POST /admin-panel-service/api/v1/admin/auth-logs
+            GET_TOTAL_REGISTERED_USERS: `/total-users`,      // GET /admin-panel-service/api/v1/admin/total-users
+            CREATE_ADMIN: `/create`           // POST /admin-panel-service/api/v1/admin/create
         },
         INTERNAL: {
-            SYNC_USER_DATA: `${INTERNAL_BASE}/sync-user-data`               // POST /admin-panel-service/api/v1/internal/sync-user-data
+            SYNC_USER_DATA: `/sync-user-data`               // POST /admin-panel-service/api/v1/internal/sync-user-data
         }
     }
 }

@@ -7,6 +7,7 @@ const { malformedJsonHandler } = require("@middlewares/handlers/malformed-json-h
 const { unknownRouteHandler } = require("@middlewares/handlers/unknown-route-handler.middleware");
 
 const app = express();
+
 const jsonParser = express.json;
 
 // 🔹 Order is VERY IMPORTANT
@@ -24,7 +25,7 @@ app.use(cookieParser());
 app.use(malformedJsonHandler);
 
 // 5. Routes
-// require("@routes/index.routes")(app);
+require("@routes/index")(app);
 
 // 6. Unknown route fallback
 app.use(unknownRouteHandler);
