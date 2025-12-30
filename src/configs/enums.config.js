@@ -43,6 +43,14 @@ const AdminType = Object.freeze({
   MID_ADMIN: "mid_admin"
 });
 
+// Role Hierarchy: Higher numeric value = Higher authority
+// An admin can ONLY act on roles with STRICTLY LOWER hierarchy values
+const RoleHierarchy = Object.freeze({
+  [AdminType.SUPER_ADMIN]: 3,
+  [AdminType.MID_ADMIN]: 2,
+  [AdminType.ADMIN]: 1
+});
+
 const DeviceType = Object.freeze({
   MOBILE: "mobile",
   TABLET: "tablet",
@@ -101,6 +109,7 @@ module.exports = {
   BlockVia,
   UnblockVia,
   AdminType,
+  RoleHierarchy,
   DeviceType,
   PerformedBy,
   AuthModes,
