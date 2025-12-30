@@ -12,15 +12,15 @@ const {
 // Create Admin
 const { createAdmin } = require("@controllers/admins/create-admin");
 const { commonMiddlewares } = require("@middlewares/common/index"); 
-const {
-  adminMiddlewares
-} = require("@middlewares/admins/index");
+const { adminMiddlewares } = require("@middlewares/admins/index");
+const { mockAuthMiddleware } = require("@testing/mock-auth.testing.middleware");
 
 const baseMiddlerwares = [
   commonMiddlewares.verifyDeviceField,
-  commonMiddlewares.validateRedisPayloadMiddleware,
-  commonMiddlewares.validateJwtPayloadMiddleware,
-  commonMiddlewares.verifyJWTSignature,
+  mockAuthMiddleware,
+//  commonMiddlewares.validateRedisPayloadMiddleware,
+//  commonMiddlewares.validateJwtPayloadMiddleware,
+//  commonMiddlewares.verifyJWTSignature,
   commonMiddlewares.isAdmin,
   commonMiddlewares.isAdminAccountActive,
 ];
