@@ -29,6 +29,7 @@ adminRoutes.post(`${CREATE_ADMIN}`,
   [
     ...baseMiddlerwares,
     adminMiddlewares.midAdminsAndSuperAdmins,
+    adminMiddlewares.hierarchyGuard, 
     commonMiddlewares.authModeValidator,
     adminMiddlewares.validateCreateAdminRequestBody
   ] , 
