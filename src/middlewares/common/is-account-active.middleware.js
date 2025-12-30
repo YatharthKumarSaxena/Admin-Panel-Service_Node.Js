@@ -1,13 +1,13 @@
 const { logWithTime } = require("@utils/time-stamps.util");
 const { throwInternalServerError, logMiddlewareError } = require("@utils/error-handler.util");
 const { FORBIDDEN } = require("@configs/http-status.config");
-const { UserType } = require("@configs/enums.config");
+const { AdminType } = require("@configs/enums.config");
 
 // ✅ Checking if admin Account is Active
 const isAdminAccountActive = async (req, res, next) => {
     try {
         const admin = req.admin;
-        if (admin.adminType === UserType.SUPER_ADMIN) { // Super Admin Account can never be deactivated
+        if (admin.adminType === AdminType.SUPER_ADMIN) { // Super Admin Account can never be deactivated
             logWithTime(`✅ Super Admin (${admin.adminId}) bypassed deactivation check`);
             return next();
         }

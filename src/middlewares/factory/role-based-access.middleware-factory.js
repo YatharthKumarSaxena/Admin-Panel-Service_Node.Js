@@ -5,6 +5,7 @@ const {
   logMiddlewareError,
   errorMessage
 } = require("@utils/error-handler.util");
+const { logWithTime } = require("@utils/time-stamps.util");
 
 /**
  * Creates a role-checking middleware with structured logging
@@ -22,7 +23,7 @@ function createRoleMiddleware(allowedRoles, label) {
         return throwAccessDeniedError(res, `Access denied for role: ${role}`);
       }
 
-      logMiddlewareError(label, `✅ Access granted for role: ${role}`, req);
+      logWithTime(`✅ [${label}] Access granted for role: ${role}`);
       return next();
     } catch (err) {
       logMiddlewareError(label, "❌ Internal error during role check", req);

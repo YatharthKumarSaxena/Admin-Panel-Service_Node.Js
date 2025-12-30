@@ -29,7 +29,7 @@ const verifyDeviceField = async (req,res,next) => {
             req.deviceName = deviceName;
         }
         if (deviceType && deviceType.trim() !=="") {
-            const type = deviceType.toUpperCase().trim();
+            const type = deviceType.toLowerCase().trim();
             if (!DeviceTypeHelper.validate(type, res)) {
                 logMiddlewareError("verifyDeviceField", "Invalid Device Type", req);
                 return;
