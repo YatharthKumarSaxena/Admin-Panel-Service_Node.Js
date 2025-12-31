@@ -1,0 +1,75 @@
+const { AdminModel } = require("@models/admin.model");
+const { logWithTime } = require("@utils/time-stamps.util");
+const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
+const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwConflictError } = require("@utils/error-handler.util");
+const { OK } = require("@configs/http-status.config");
+const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { fetchAdmin } = require("@utils/fetch-admin.util");
+
+/**
+ * Update Own Admin Details Controller
+ * Allows an admin to update their own email/phone
+ */
+const updateOwnAdminDetails = async (req, res) => {
+  try {
+    const admin = req.admin;
+    const { email, fullPhoneNumber } = req.body;
+
+    if (!email && !fullPhoneNumber) {
+      logWithTime(`❌ No update fields provided ${getLogIdentifiers(req)}`);
+      return throwBadRequestError(res, "At least one field (email or phone) must be provided");
+    }
+
+    // Check for duplicate email/phone
+    if (email || fullPhoneNumber) {
+      const existingAdmin = await fetchAdmin(email, fullPhoneNumber);
+      if (existingAdmin && existingAdmin.adminId !== admin.adminId) {
+        logWithTime(`❌ Duplicate admin found during self-update ${getLogIdentifiers(req)}`);
+        return throwConflictError(res, "Admin with provided email/phone already exists");
+      }
+    }
+
+    // Update fields
+    if (email) admin.email = email.trim().toLowerCase();
+    if (fullPhoneNumber) admin.fullPhoneNumber = fullPhoneNumber.trim();
+    
+    admin.updatedBy = admin.adminId;
+
+    await admin.save();
+
+    logWithTime(`✅ Admin ${admin.adminId} (${admin.adminType}) updated own details`);
+
+    // Log activity
+    logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.UPDATE_OWN_ADMIN_DETAILS, {
+      description: `Admin ${admin.adminId} (${admin.adminType}) updated own details`,
+      adminActions: {
+        targetUserId: admin.adminId,
+        targetUserDetails: {
+          email: admin.email,
+          fullPhoneNumber: admin.fullPhoneNumber,
+          adminType: admin.adminType
+        },
+        reason: "Self-update"
+      }
+    });
+
+    return res.status(OK).json({
+      message: "Your details updated successfully",
+      adminId: admin.adminId,
+      updatedFields: {
+        email: email ? true : false,
+        fullPhoneNumber: fullPhoneNumber ? true : false
+      }
+    });
+
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      logWithTime(`⚠️ Validation Error: ${err.message}`);
+      return throwBadRequestError(res, err.message);
+    }
+    logWithTime(`❌ Internal Error in updating own details ${getLogIdentifiers(req)}`);
+    return throwInternalServerError(res, err);
+  }
+};
+
+module.exports = { updateOwnAdminDetails };

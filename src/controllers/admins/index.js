@@ -1,5 +1,5 @@
-const { createAdmin } = require("./create-admin");
-const { bulkAdminCreate } = require("./create-admins-in-bulk");
+const { createAdmin } = require("./create-admin.controller");
+const { bulkAdminCreate } = require("./create-admins-in-bulk.controller");
 
 const adminControllers = {
     createAdmin,
