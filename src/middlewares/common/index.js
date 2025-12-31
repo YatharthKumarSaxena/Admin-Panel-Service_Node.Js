@@ -5,6 +5,8 @@ const { isAdmin } = require("./verify-admin-role.middleware");
 const { validateRedisPayloadMiddleware } = require("./validate-redis-payload.middleware");
 const { verifyDeviceField } = require("./verify-device-field.middleware");
 const { authModeValidator } = require("./auth.middleware");
+const { fetchAdminMiddleware } = require("./fetch-admin.middleware");
+const { fetchUserMiddleware } = require("./fetch-user.middleware");
 
 const commonMiddlewares = {
     isAdminAccountActive,
@@ -13,7 +15,9 @@ const commonMiddlewares = {
     isAdmin,
     validateRedisPayloadMiddleware,
     verifyDeviceField,
-    authModeValidator
+    authModeValidator,
+    fetchAdminMiddleware,
+    fetchUserMiddleware
 };
 
 module.exports = {
