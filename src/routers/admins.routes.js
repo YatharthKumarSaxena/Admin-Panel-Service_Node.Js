@@ -10,7 +10,7 @@ const {
 } = ADMIN_ROUTES.ADMINS;
 
 // Create Admin
-const { createAdmin } = require("@controllers/admins/create-admin");
+const { createAdmin } = require("@/controllers/admins/create-admin.controller");
 const { commonMiddlewares } = require("@middlewares/common/index"); 
 const { adminMiddlewares } = require("@middlewares/admins/index");
 const { mockAuthMiddleware } = require("@testing/mock-auth.testing.middleware");
