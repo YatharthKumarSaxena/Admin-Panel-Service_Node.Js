@@ -5,6 +5,7 @@ const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throw
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { AdminType } = require("@configs/enums.config");
+const { prepareAuditData, cloneForAudit } = require("@utils/audit-data.util");
 
 /**
  * Deactivate Admin Controller
@@ -13,7 +14,7 @@ const { AdminType } = require("@configs/enums.config");
 const deactivateAdmin = async (req, res) => {
   try {
     const actor = req.admin;
-    const { adminId, reason, reasonDetails } = req.body;
+    const { reason, notes } = req.body;
 
     const targetAdmin = req.foundAdmin;
     
@@ -30,45 +31,54 @@ const deactivateAdmin = async (req, res) => {
 
     // Check if already inactive
     if (!targetAdmin.isActive) {
-      logWithTime(`⚠️ Admin ${adminId} is already inactive ${getLogIdentifiers(req)}`);
+      logWithTime(`⚠️ Admin ${targetAdmin.adminId} is already inactive ${getLogIdentifiers(req)}`);
       return throwBadRequestError(res, "Admin is already inactive");
     }
+
+    // Clone entity before changes for audit
+    const oldState = cloneForAudit(targetAdmin);
 
     // Deactivate the admin
     targetAdmin.isActive = false;
     targetAdmin.deactivatedAt = new Date();
     targetAdmin.deactivatedBy = actor.adminId;
-    targetAdmin.deactivationReason = reason || null;
-    targetAdmin.deactivationReasonDetails = reasonDetails || null;
+    targetAdmin.deactivationReason = reason;
+    targetAdmin.deactivationNotes = notes || null;
     targetAdmin.updatedBy = actor.adminId;
 
     await targetAdmin.save();
 
-    logWithTime(`✅ Admin ${adminId} (${targetAdmin.adminType}) deactivated by ${actor.adminId}`);
+    // Prepare audit data (ENV decides full or changed only)
+    const { oldData, newData, changedFields } = prepareAuditData(oldState, targetAdmin);
+
+    logWithTime(`✅ Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) deactivated by ${actor.adminId}`);
 
     // Determine event type
     const eventType = targetAdmin.adminType === AdminType.MID_ADMIN 
       ? ACTIVITY_TRACKER_EVENTS.DEACTIVATE_MID_ADMIN 
       : ACTIVITY_TRACKER_EVENTS.DEACTIVATE_ADMIN;
 
-    // Log activity
+    // Log activity with audit data
     logActivityTrackerEvent(req, eventType, {
-      description: `Admin ${adminId} (${targetAdmin.adminType}) deactivated by ${actor.adminId}`,
+      description: `Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) deactivated by ${actor.adminId}`,
+      oldData,
+      newData,
+      changedFields,
       adminActions: {
-        targetUserId: adminId,
+        targetUserId: targetAdmin.adminId,
         targetUserDetails: {
           email: targetAdmin.email,
           fullPhoneNumber: targetAdmin.fullPhoneNumber,
           adminType: targetAdmin.adminType
         },
-        reason: reason || "Admin account deactivation",
-        reasonDetails: reasonDetails || "No additional details"
+        reason: reason,
+        notes: notes || null
       }
     });
 
     return res.status(OK).json({
       message: `${targetAdmin.adminType} deactivated successfully`,
-      adminId: adminId,
+      adminId: targetAdmin.adminId,
       deactivatedBy: actor.adminId,
       reason: reason
     });
