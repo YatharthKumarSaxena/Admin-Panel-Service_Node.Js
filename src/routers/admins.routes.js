@@ -6,11 +6,11 @@ const adminRoutes = express.Router();
 const { ADMIN_ROUTES } = require("@configs/uri.config");
 
 const {
-  CREATE_ADMIN
+  CREATE_ADMIN, ACTIVATE_ADMIN, DEACTIVATE_ADMIN, 
 } = ADMIN_ROUTES.ADMINS;
 
 // Create Admin
-const { createAdmin } = require("@/controllers/admins/create-admin.controller");
+const { adminControllers } = require("@/controllers/admins/index");
 const { commonMiddlewares } = require("@middlewares/common/index"); 
 const { adminMiddlewares } = require("@middlewares/admins/index");
 const { mockAuthMiddleware } = require("@testing/mock-auth.testing.middleware");
@@ -33,9 +33,32 @@ adminRoutes.post(`${CREATE_ADMIN}`,
     commonMiddlewares.authModeValidator,
     adminMiddlewares.validateCreateAdminRequestBody
   ] , 
-  createAdmin);
+  adminControllers.createAdmin);
 
+adminRoutes.patch(`${ACTIVATE_ADMIN}`,
+  [
+    ...baseMiddlerwares,
+    adminMiddlewares.midAdminsAndSuperAdmins,
+    commonMiddlewares.authModeValidator,                  // Validate email/phone/userId
+    ...adminMiddlewares.validateActivateAdminRequestBody, // Validate reason + notes
+    commonMiddlewares.fetchAdminMiddleware,               // Fetch target admin
+    adminMiddlewares.hierarchyGuard                       // Check hierarchy
+  ],
+  adminControllers.activateAdmin);
 
+adminRoutes.patch(`${DEACTIVATE_ADMIN}`,
+  [
+    ...baseMiddlerwares,
+    adminMiddlewares.midAdminsAndSuperAdmins,
+    commonMiddlewares.authModeValidator,                    // Validate email/phone/userId
+    ...adminMiddlewares.validateDeactivateAdminRequestBody, // Validate reason + notes
+    commonMiddlewares.fetchAdminMiddleware,                 // Fetch target admin
+    adminMiddlewares.hierarchyGuard                         // Check hierarchy
+  ],
+  adminControllers.deactivateAdmin
+)
+
+adminRoutes.patch(`${UP}`)
 module.exports = {
   adminRoutes
 }
