@@ -34,13 +34,21 @@ module.exports = {
             UNBLOCK_DEVICE: `/unblock-device`,      // PATCH /admin-panel-service/api/v1/users/unblock-device
             GET_USER_ACTIVE_SESSIONS: `/active-sessions`,   // GET /admin-panel-service/api/v1/users/active-sessions
             FETCH_USER_DETAILS: `/fetch-user-details`,       // GET /admin-panel-service/api/v1/users/fetch-user-details
-            GET_USER_AUTH_LOGS: `/auth-logs`  // GET /admin-panel-service/api/v1/users/auth-logs
+            GET_USER_AUTH_LOGS: `/auth-logs`,  // GET /admin-panel-service/api/v1/users/auth-logs
+            GET_TOTAL_REGISTERED_USERS: `/total-users`,      // GET /admin-panel-service/api/v1/admin/total-users
         },
         ADMINS: {
             GET_ADMIN_AUTH_LOGS: `/auth-logs`,        // POST /admin-panel-service/api/v1/admin/auth-logs
-            GET_TOTAL_REGISTERED_USERS: `/total-users`,      // GET /admin-panel-service/api/v1/admin/total-users
-            CREATE_ADMIN: `/create`           // POST /admin-panel-service/api/v1/admin/create
-        },
+            UPDATE_ADMIN_ROLE: `/update-role`,      // PATCH /admin-panel-service/api/v1/admin/update-role
+            UPDATE_ADMIN_DETAILS: `/update-details`, // PATCH /admin-panel-service/api/v1/admin/update-details
+            UPDATE_MY_DETAILS: `/update-my-details`, // PATCH /admin-panel-service/api/v1/admin/update-my-details
+            CHANGE_ROLE_REQUEST: `/change-role-request`, // POST /admin-panel-service/api/v1/admin/change-role-request
+            APPROVE_ROLE_REQUEST: `/approve-role-request`, // POST /admin-panel-service/api/v1/admin/approve-role-request
+            REJECT_ROLE_REQUEST: `/reject-role-request`,   // POST /admin-panel-service/api/v1/admin/reject-role-request
+            CREATE_ADMIN: `/create` ,          // POST /admin-panel-service/api/v1/admin/create
+            ACTIVATE_ADMIN: `/activate`,         // PATCH /admin-panel-service/api/v1/admin/activate
+            DEACTIVATE_ADMIN: `/deactivate`      // PATCH /admin-panel-service/api/v1/admin/deactivate
+         },
         INTERNAL: {
             SYNC_USER_DATA: `/sync-user-data`               // POST /admin-panel-service/api/v1/internal/sync-user-data
         }

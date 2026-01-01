@@ -102,6 +102,11 @@ const IdentifierKeys = Object.freeze({
   }
 });
 
+const AuditMode = Object.freeze({
+  FULL: "FULL",
+  CHANGED_ONLY: "CHANGED_ONLY"
+})
+
 module.exports = {
   AdminActionReasons,   // PascalCase values → audit logs
   BlockReasons,         // snake_case values → DB/API
@@ -116,5 +121,6 @@ module.exports = {
   Roles,
   ServiceName,
   Status,
-  IdentifierKeys
+  IdentifierKeys,
+  AuditMode
 };

@@ -1,26 +1,5 @@
-const { AuthModes } = require("@configs/enums.config")
-
-const getAuthFields = () => {
-  const mode = process.env.DEFAULT_AUTH_MODE;
-
-  // 🔹 Step 1: Determine login identifiers
-  let identifierFields = [];
-  if (mode === AuthModes.EMAIL) {
-    identifierFields = ["email"];
-  } else if (mode === AuthModes.PHONE) {
-    identifierFields = ["fullPhoneNumber"];
-  } else if (mode === AuthModes.BOTH) {
-    identifierFields = ["email", "fullPhoneNumber"];
-  } else {
-    // Safe fallback (if env misconfigured)
-    identifierFields = ["email", "fullPhoneNumber"];
-  }
-  return identifierFields;
-};
-
 const adminCreationRequiredFields = [
-  ...getAuthFields(),
-  "adminType"
+  "adminType"  // authModeValidator handles email/phone
 ];
 
 const adminCreationInBulkRequiredFields = [
@@ -28,7 +7,31 @@ const adminCreationInBulkRequiredFields = [
   "adminType"
 ];
 
+// ========================================
+// 🔹 Admin Status Operation Fields
+// ========================================
+const activateAdminRequiredFields = ["reason"];   // WHY activating?
+const deactivateAdminRequiredFields = ["reason"]; // WHY deactivating?
+const blockAdminRequiredFields = ["reason"];      // WHY blocking?
+const unblockAdminRequiredFields = ["reason"];    // WHY unblocking?
+
+// ========================================
+// 🔹 User Status Operation Fields
+// ========================================
+const blockUserRequiredFields = ["reason"];
+const unblockUserRequiredFields = ["reason"];
+const blockDeviceRequiredFields = ["reason"];
+const unblockDeviceRequiredFields = ["reason"];
+
 module.exports = {
- adminCreationRequiredFields,
- adminCreationInBulkRequiredFields
+  adminCreationRequiredFields,
+  adminCreationInBulkRequiredFields,
+  activateAdminRequiredFields,
+  deactivateAdminRequiredFields,
+  blockAdminRequiredFields,
+  unblockAdminRequiredFields,
+  blockUserRequiredFields,
+  unblockUserRequiredFields,
+  blockDeviceRequiredFields,
+  unblockDeviceRequiredFields
 };
