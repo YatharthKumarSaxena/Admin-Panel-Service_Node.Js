@@ -2,10 +2,20 @@ const { validateCreateAdminRequestBody } = require("./validate-request-body.midd
 const { validateCreateAdminInBulkRequestBody } = require("./validate-xlsx-body.middleware");
 const { RoleMiddlewares } = require("./verify-admin-type.middleware");
 const { hierarchyGuard } = require("./role-hierarchy.middleware");
+const {
+  validateActivateAdminRequestBody,
+  validateDeactivateAdminRequestBody,
+  validateBlockAdminRequestBody,
+  validateUnblockAdminRequestBody
+} = require("./validate-admin-status-operations.middleware");
 
 const adminMiddlewares = {
   validateCreateAdminRequestBody,
   validateCreateAdminInBulkRequestBody,
+  validateActivateAdminRequestBody,
+  validateDeactivateAdminRequestBody,
+  validateBlockAdminRequestBody,
+  validateUnblockAdminRequestBody,
   hierarchyGuard,
   ...RoleMiddlewares
 };

@@ -13,7 +13,8 @@ const {
  * 
  * Features:
  * - Strict validation: Wrong data = Immediate rejection
- * - AuthMode ke according validation karta hai
+ * - AuthMode ke according validation karta hai (except when userId provided)
+ * - userId support: Agar userId di hai to email/phone ignore
  * - EITHER mode mein single check (dono allowed nahi)
  * - No silent modifications - client ko clear error milega
  * - Scalable: Koi bhi entity type ke liye kaam karega
@@ -21,11 +22,29 @@ const {
 const fetchEntityFactory = (fetchFunction, entityName) => {
   return async (req, res, next) => {
     try {
-      const { email, fullPhoneNumber } = req.body;
+      const { email, fullPhoneNumber, userId } = req.body;
       const authMode = process.env.AUTH_MODE || AuthModes.BOTH;
 
       let finalEmail = null;
       let finalPhone = null;
+      let finalUserId = null;
+
+      // 🆔 Priority 1: Check for userId
+      // Agar userId hai to email/phone ignore karo
+      if (userId) {
+        if (email || fullPhoneNumber) {
+          return throwBadRequestError(
+            res,
+            "Cannot send userId with email or phone",
+            "When using userId, do not provide email or fullPhoneNumber"
+          );
+        }
+        finalUserId = userId;
+        // AuthMode skip - direct userId se fetch karenge
+      }
+      
+      // 🔑 Priority 2: Email/Phone based fetch (AuthMode validation)
+      else {
 
       // 📧 EMAIL Mode: ONLY email allowed, phone REJECT
       if (authMode === AuthModes.EMAIL) {
@@ -100,10 +119,11 @@ const fetchEntityFactory = (fetchFunction, entityName) => {
         finalEmail = email || null;
         finalPhone = fullPhoneNumber || null;
       }
+      }
 
       // 🔍 Fetch entity using provided function
-      // Ab sirf valid values pass hongi, undefined nahi
-      const foundEntity = await fetchFunction(finalEmail, finalPhone);
+      // Function signature: fetchFunction(email, phone, userId)
+      const foundEntity = await fetchFunction(finalEmail, finalPhone, finalUserId);
       
       if (!foundEntity) {
         return throwDBResourceNotFoundError(res, entityName);
