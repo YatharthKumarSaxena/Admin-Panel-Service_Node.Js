@@ -8,6 +8,10 @@ const {
   validateBlockAdminRequestBody,
   validateUnblockAdminRequestBody
 } = require("./validate-admin-status-operations.middleware");
+const {
+  validateStatusRequestBody,
+  validateReviewRequestBody
+} = require("./validate-status-request.middleware");
 
 const adminMiddlewares = {
   validateCreateAdminRequestBody,
@@ -16,6 +20,8 @@ const adminMiddlewares = {
   validateDeactivateAdminRequestBody,
   validateBlockAdminRequestBody,
   validateUnblockAdminRequestBody,
+  validateStatusRequestBody,
+  validateReviewRequestBody,
   hierarchyGuard,
   ...RoleMiddlewares
 };
