@@ -1,26 +1,28 @@
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { throwBadRequestError, throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
+const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwAccessDeniedError } = require("@utils/error-handler.util");
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
-const { AdminType } = require("@configs/enums.config");
+const { AdminType, requestStatus, requestType } = require("@configs/enums.config");
 const { prepareAuditData, cloneForAudit } = require("@utils/audit-data.util");
+const { AdminStatusRequestModel } = require("@models/admin-status-request.model");
 
 /**
- * Activate Admin Controller
- * Activates a deactivated admin account
+ * Activate Admin Controller (Direct Activation)
+ * Allows SUPER_ADMIN to directly activate without request workflow
  */
 
 const activateAdmin = async (req, res) => {
   try {
     const actor = req.admin;
-    const { reason, notes } = req.body;
+    const { reason } = req.body;
 
     const targetAdmin = req.foundAdmin;
-    
-    if (!targetAdmin) {
-      logWithTime(`❌ Admin not found for activation ${getLogIdentifiers(req)}`);
-      return throwNotFoundError(res, "Admin not found");
+
+    // Super Admin cannot be activated or deactivated by others
+    if(targetAdmin.adminType === AdminType.SUPER_ADMIN){
+      logWithTime(`❌ Super Admin ${targetAdmin.adminId} activation attempt by ${actor.adminId} ${getLogIdentifiers(req)}`);
+      return throwAccessDeniedError(res, "Cannot activate or deactivate a Super Admin");
     }
 
     // Check if already active
@@ -32,20 +34,42 @@ const activateAdmin = async (req, res) => {
     // Clone entity before changes for audit
     const oldState = cloneForAudit(targetAdmin);
 
+    // ✅ Auto-approve any activation requests
+    const existingRequest = await AdminStatusRequestModel.findOne(
+      {
+        targetAdminId: targetAdmin.adminId,
+        requestType: { $in: [requestType.ACTIVATION, requestType.DEACTIVATION] },
+        status: requestStatus.PENDING
+      }
+    );
+
+    if(existingRequest){
+      if (existingRequest.requestType === requestType.ACTIVATION) {
+        existingRequest.status = requestStatus.APPROVED;
+      }
+      else if (existingRequest.requestType === requestType.DEACTIVATION) {
+        existingRequest.status = requestStatus.REJECTED;
+      }
+
+      existingRequest.reviewedBy = actor.adminId;
+      existingRequest.reviewedAt = new Date();
+      existingRequest.reviewNotes = `Auto-processed: Admin directly activated by Super Admin ${actor.adminId}`;
+
+      await existingRequest.save();
+    }
+
     // Activate the admin
     targetAdmin.isActive = true;
-    targetAdmin.activatedAt = new Date();
     targetAdmin.activatedBy = actor.adminId;
-    targetAdmin.activationReason = reason;
-    targetAdmin.activationNotes = notes || null;
+    targetAdmin.activatedReason = reason;
     targetAdmin.updatedBy = actor.adminId;
 
     await targetAdmin.save();
 
-    // Prepare audit data (ENV decides full or changed only)
-    const { oldData, newData, changedFields } = prepareAuditData(oldState, targetAdmin);
+    // Prepare audit data
+    const { oldData, newData } = prepareAuditData(oldState, targetAdmin);
 
-    logWithTime(`✅ Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) activated by ${actor.adminId}`);
+    logWithTime(`✅ Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) directly activated by Super Admin ${actor.adminId}`);
 
     // Determine event type
     const eventType = targetAdmin.adminType === AdminType.MID_ADMIN 
@@ -54,10 +78,9 @@ const activateAdmin = async (req, res) => {
 
     // Log activity with audit data
     logActivityTrackerEvent(req, eventType, {
-      description: `Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) activated by ${actor.adminId}`,
+      description: `Admin ${targetAdmin.adminId} directly activated by Super Admin ${actor.adminId}.`,
       oldData,
       newData,
-      changedFields,
       adminActions: {
         targetUserId: targetAdmin.adminId,
         targetUserDetails: {
@@ -65,13 +88,12 @@ const activateAdmin = async (req, res) => {
           fullPhoneNumber: targetAdmin.fullPhoneNumber,
           adminType: targetAdmin.adminType
         },
-        reason: reason,
-        notes: notes || null
+        reason: reason
       }
     });
 
     return res.status(OK).json({
-      message: `${targetAdmin.adminType} activated successfully`,
+      message: `${targetAdmin.adminType} activated successfully (Direct activation)`,
       adminId: targetAdmin.adminId,
       activatedBy: actor.adminId,
       reason: reason

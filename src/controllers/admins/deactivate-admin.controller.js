@@ -1,32 +1,28 @@
-const { AdminModel } = require("@models/admin.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwNotFoundError, throwAccessDeniedError } = require("@utils/error-handler.util");
+const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwAccessDeniedError } = require("@utils/error-handler.util");
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
-const { AdminType } = require("@configs/enums.config");
+const { AdminType, requestStatus, requestType } = require("@configs/enums.config");
 const { prepareAuditData, cloneForAudit } = require("@utils/audit-data.util");
+const { AdminStatusRequestModel } = require("@models/admin-status-request.model");
 
 /**
- * Deactivate Admin Controller
- * Deactivates an active admin account
+ * Deactivate Admin Controller (Direct Deactivation)
+ * Allows SUPER_ADMIN to directly deactivate without request workflow
  */
+
 const deactivateAdmin = async (req, res) => {
   try {
     const actor = req.admin;
-    const { reason, notes } = req.body;
+    const { reason } = req.body;
 
     const targetAdmin = req.foundAdmin;
-    
-    if (!targetAdmin) {
-      logWithTime(`❌ Admin not found for deactivation ${getLogIdentifiers(req)}`);
-      return throwNotFoundError(res, "Admin not found");
-    }
 
-    // Prevent self-deactivation
-    if (targetAdmin.adminId === actor.adminId) {
-      logWithTime(`❌ Admin ${actor.adminId} attempted self-deactivation ${getLogIdentifiers(req)}`);
-      return throwAccessDeniedError(res, "Cannot deactivate your own account");
+    // Super Admin cannot be deactivated
+    if (targetAdmin.adminType === AdminType.SUPER_ADMIN) {
+      logWithTime(`❌ Super Admin ${targetAdmin.adminId} deactivation attempt by ${actor.adminId} ${getLogIdentifiers(req)}`);
+      return throwAccessDeniedError(res, "Cannot activate or deactivate a Super Admin");
     }
 
     // Check if already inactive
@@ -38,32 +34,51 @@ const deactivateAdmin = async (req, res) => {
     // Clone entity before changes for audit
     const oldState = cloneForAudit(targetAdmin);
 
+    // ✅ Handle existing requests (PENDING or REJECTED)
+    const existingRequest = await AdminStatusRequestModel.findOne({
+      targetAdminId: targetAdmin.adminId,
+      status: requestStatus.PENDING,
+      requestType: { $in: [requestType.DEACTIVATION, requestType.ACTIVATION] }
+    });
+
+    if (existingRequest) {
+      if (existingRequest.requestType === requestType.DEACTIVATION) {
+        // Auto-approve existing deactivation request
+        existingRequest.status = requestStatus.APPROVED;
+      }
+      else if (existingRequest.requestType === requestType.ACTIVATION) {
+        existingRequest.status = requestStatus.REJECTED;
+      }
+
+      existingRequest.reviewedBy = actor.adminId;
+      existingRequest.reviewedAt = new Date();
+      existingRequest.reviewNotes = `Auto-processed: Admin directly deactivated by Super Admin ${actor.adminId}`;
+
+      await existingRequest.save();
+    }
     // Deactivate the admin
     targetAdmin.isActive = false;
-    targetAdmin.deactivatedAt = new Date();
     targetAdmin.deactivatedBy = actor.adminId;
-    targetAdmin.deactivationReason = reason;
-    targetAdmin.deactivationNotes = notes || null;
+    targetAdmin.deactivatedReason = reason;
     targetAdmin.updatedBy = actor.adminId;
 
     await targetAdmin.save();
 
-    // Prepare audit data (ENV decides full or changed only)
-    const { oldData, newData, changedFields } = prepareAuditData(oldState, targetAdmin);
+    // Prepare audit data
+    const { oldData, newData } = prepareAuditData(oldState, targetAdmin);
 
-    logWithTime(`✅ Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) deactivated by ${actor.adminId}`);
+    logWithTime(`✅ Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) directly deactivated by Super Admin ${actor.adminId}`);
 
     // Determine event type
-    const eventType = targetAdmin.adminType === AdminType.MID_ADMIN 
-      ? ACTIVITY_TRACKER_EVENTS.DEACTIVATE_MID_ADMIN 
+    const eventType = targetAdmin.adminType === AdminType.MID_ADMIN
+      ? ACTIVITY_TRACKER_EVENTS.DEACTIVATE_MID_ADMIN
       : ACTIVITY_TRACKER_EVENTS.DEACTIVATE_ADMIN;
 
     // Log activity with audit data
     logActivityTrackerEvent(req, eventType, {
-      description: `Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) deactivated by ${actor.adminId}`,
+      description: `Admin ${targetAdmin.adminId} directly deactivated by Super Admin ${actor.adminId}`,
       oldData,
       newData,
-      changedFields,
       adminActions: {
         targetUserId: targetAdmin.adminId,
         targetUserDetails: {
@@ -71,8 +86,7 @@ const deactivateAdmin = async (req, res) => {
           fullPhoneNumber: targetAdmin.fullPhoneNumber,
           adminType: targetAdmin.adminType
         },
-        reason: reason,
-        notes: notes || null
+        reason: reason
       }
     });
 
