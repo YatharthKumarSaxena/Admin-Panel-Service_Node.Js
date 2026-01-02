@@ -1,7 +1,6 @@
-const { AdminModel } = require("@models/admin.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { throwInternalServerError, getLogIdentifiers, throwNotFoundError } = require("@utils/error-handler.util");
+const { throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 
@@ -9,19 +8,15 @@ const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
  * View Admin Details Controller
  * Retrieves comprehensive details of an admin
  */
+
 const viewAdminDetails = async (req, res) => {
   try {
     const actor = req.admin;
-    const { adminId } = req.params;
+    const { reason } = req.params;
 
     const targetAdmin = req.foundAdmin;
-    
-    if (!targetAdmin) {
-      logWithTime(`❌ Admin not found ${getLogIdentifiers(req)}`);
-      return throwNotFoundError(res, "Admin not found");
-    }
 
-    logWithTime(`🔍 Admin ${actor.adminId} viewing details of ${adminId}`);
+    logWithTime(`🔍 Admin ${actor.adminId} viewing details of ${targetAdmin.adminId}`);
 
     // Prepare sanitized admin details
     const adminDetails = {
@@ -35,19 +30,23 @@ const viewAdminDetails = async (req, res) => {
       updatedAt: targetAdmin.updatedAt,
       createdBy: targetAdmin.createdBy || null,
       updatedBy: targetAdmin.updatedBy || null,
-      deactivatedAt: targetAdmin.deactivatedAt || null,
+      activatedBy: targetAdmin.activatedBy || null,
+      activatedReason: targetAdmin.activatedReason || null,
       deactivatedBy: targetAdmin.deactivatedBy || null,
-      deactivationReason: targetAdmin.deactivationReason || null
+      deactivatedReason: targetAdmin.deactivatedReason || null
     };
 
-    // Log activity
-    logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.VIEW_ADMIN_DETAILS, {
-      description: `Admin ${actor.adminId} viewed details of ${adminId}`,
-      adminActions: {
-        targetUserId: adminId,
-        reason: req.body?.reason || "Administrative review"
-      }
-    });
+    // Log activity - only when viewing OTHER admins (not self)
+    // Industry standard: Self-views are not audit-worthy
+    if (actor.adminId !== targetAdmin.adminId) {
+      logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.VIEW_ADMIN_DETAILS, {
+        description: `Admin ${actor.adminId} viewed details of ${targetAdmin.adminId}`,
+        adminActions: {
+          targetAdminId: targetAdmin.adminId,
+          reason: reason
+        }
+      });
+    }
 
     return res.status(OK).json({
       message: "Admin details retrieved successfully",

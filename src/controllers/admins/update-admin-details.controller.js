@@ -1,4 +1,3 @@
-const { AdminModel } = require("@models/admin.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwNotFoundError, throwConflictError } = require("@utils/error-handler.util");
@@ -11,23 +10,15 @@ const { fetchAdmin } = require("@utils/fetch-admin.util");
  * Update Admin Details Controller
  * Updates email/phone of an admin (excluding self)
  */
+
+// Only Super Admins for Emergency Changes
+
 const updateAdminDetails = async (req, res) => {
   try {
     const actor = req.admin;
-    const { adminId, email, fullPhoneNumber, supervisorId } = req.body;
+    const { email, fullPhoneNumber, reason } = req.body;
 
     const targetAdmin = req.foundAdmin;
-    
-    if (!targetAdmin) {
-      logWithTime(`❌ Admin not found for update ${getLogIdentifiers(req)}`);
-      return throwNotFoundError(res, "Admin not found");
-    }
-
-    // Prevent updating own details through this endpoint
-    if (targetAdmin.adminId === actor.adminId) {
-      logWithTime(`❌ Admin ${actor.adminId} attempted to update own details via wrong endpoint ${getLogIdentifiers(req)}`);
-      return throwBadRequestError(res, "Use UPDATE_OWN_ADMIN_DETAILS endpoint to update your own details");
-    }
 
     // Check for duplicate email/phone
     if (email || fullPhoneNumber) {
@@ -41,7 +32,6 @@ const updateAdminDetails = async (req, res) => {
     // Update fields
     if (email) targetAdmin.email = email.trim().toLowerCase();
     if (fullPhoneNumber) targetAdmin.fullPhoneNumber = fullPhoneNumber.trim();
-    if (supervisorId) targetAdmin.supervisorId = supervisorId;
     
     targetAdmin.updatedBy = actor.adminId;
 
@@ -64,7 +54,7 @@ const updateAdminDetails = async (req, res) => {
           fullPhoneNumber: targetAdmin.fullPhoneNumber,
           adminType: targetAdmin.adminType
         },
-        reason: req.body?.reason || "Administrative update"
+        reason: reason
       }
     });
 

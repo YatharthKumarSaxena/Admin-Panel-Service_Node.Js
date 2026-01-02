@@ -1,4 +1,3 @@
-const { AdminModel } = require("@models/admin.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwConflictError } = require("@utils/error-handler.util");
@@ -10,6 +9,7 @@ const { fetchAdmin } = require("@utils/fetch-admin.util");
  * Update Own Admin Details Controller
  * Allows an admin to update their own email/phone
  */
+
 const updateOwnAdminDetails = async (req, res) => {
   try {
     const admin = req.admin;
@@ -30,8 +30,8 @@ const updateOwnAdminDetails = async (req, res) => {
     }
 
     // Update fields
-    if (email) admin.email = email.trim().toLowerCase();
-    if (fullPhoneNumber) admin.fullPhoneNumber = fullPhoneNumber.trim();
+    if (email) admin.email = email;
+    if (fullPhoneNumber) admin.fullPhoneNumber = fullPhoneNumber;
     
     admin.updatedBy = admin.adminId;
 
@@ -41,16 +41,7 @@ const updateOwnAdminDetails = async (req, res) => {
 
     // Log activity
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.UPDATE_OWN_ADMIN_DETAILS, {
-      description: `Admin ${admin.adminId} (${admin.adminType}) updated own details`,
-      adminActions: {
-        targetUserId: admin.adminId,
-        targetUserDetails: {
-          email: admin.email,
-          fullPhoneNumber: admin.fullPhoneNumber,
-          adminType: admin.adminType
-        },
-        reason: "Self-update"
-      }
+      description: `Admin ${admin.adminId} (${admin.adminType}) updated own details`
     });
 
     return res.status(OK).json({

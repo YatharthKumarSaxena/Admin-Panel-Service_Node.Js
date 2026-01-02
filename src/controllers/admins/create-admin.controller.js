@@ -1,12 +1,13 @@
 const { AdminModel } = require("@models/admin.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwAccessDeniedError, throwConflictError } = require("@utils/error-handler.util");
+const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwConflictError } = require("@utils/error-handler.util");
 const { CREATED } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { AdminType } = require("@configs/enums.config");
 const { makeAdminId } = require("@services/user-id.service");
 const { fetchAdmin } = require("@utils/fetch-admin.util");
+const { rollbackAdminCounter } = require("@services/counter-rollback.service");
 
 const createAdmin = async (req, res) => {
   try {
@@ -20,9 +21,6 @@ const createAdmin = async (req, res) => {
       return throwConflictError(res, "Admin with provided email/phone already exists", "Please enter unique email/phone number");
     }
 
-    // Internal API call to Create Admin in Authentication Service can be placed here
-    // If Yes we can proceed to create Admin in our DB
-
     // 🔧 Generate adminId
     const adminId = await makeAdminId();
 
@@ -35,6 +33,12 @@ const createAdmin = async (req, res) => {
       logWithTime(`⚠️ Admin Data Capacity full. Cannot create new admin by ${creator.adminId} ${getLogIdentifiers(req)}`);
       return throwBadRequestError(res, "Admin Data Capacity full. Cannot create new admin.");
     }
+
+    // Internal API call to Create Admin in Authentication Service can be placed here
+    // If Yes we can proceed to create Admin in our DB
+
+    // If Auth Service call fails, handle the error accordingly
+    // First decrease the adminId counter to avoid gaps (if needed)
 
     // 🧩 Create admin document
     const newAdmin = new AdminModel({
