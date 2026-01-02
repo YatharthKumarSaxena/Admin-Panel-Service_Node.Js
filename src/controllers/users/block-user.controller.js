@@ -1,4 +1,3 @@
-const { UserModel } = require("@models/user.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwNotFoundError } = require("@utils/error-handler.util");
@@ -23,11 +22,6 @@ const blockUser = async (req, res) => {
 
     // Find user (assumed to be in req.foundUser by middleware)
     const user = req.foundUser;
-    
-    if (!user) {
-      logWithTime(`❌ User not found for blocking ${getLogIdentifiers(req)}`);
-      return throwNotFoundError(res, "User not found");
-    }
 
     // Check if already blocked
     if (user.isBlocked) {
@@ -38,7 +32,7 @@ const blockUser = async (req, res) => {
     // Block the user
     user.isBlocked = true;
     user.blockReason = reason;
-    user.blockReasonDetails = reasonDetails || null;
+    user.blockReasonDetails = reasonDetails;
     user.blockedAt = new Date();
     user.blockedBy = admin.adminId;
     user.updatedBy = admin.adminId;
@@ -52,8 +46,7 @@ const blockUser = async (req, res) => {
       description: `User ${userId} blocked for reason: ${reason}`,
       adminActions: {
         targetUserId: userId,
-        reason: reason,
-        reasonDetails: reasonDetails || "No additional details provided"
+        reason: reasonDetails
       }
     });
 

@@ -1,6 +1,6 @@
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { throwInternalServerError, getLogIdentifiers, throwNotFoundError } = require("@utils/error-handler.util");
+const { throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 
@@ -13,14 +13,9 @@ const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const getUserActiveDevices = async (req, res) => {
   try {
     const admin = req.admin;
-    const { userId } = req.params;
+    const { userId, reason } = req.params;
 
     const user = req.foundUser;
-    
-    if (!user) {
-      logWithTime(`❌ User not found for active devices ${getLogIdentifiers(req)}`);
-      return throwNotFoundError(res, "User not found");
-    }
 
     logWithTime(`🔍 Admin ${admin.adminId} fetching active devices for user ${userId}`);
 
@@ -40,7 +35,7 @@ const getUserActiveDevices = async (req, res) => {
       description: `Admin ${admin.adminId} retrieved active devices for user ${userId}`,
       adminActions: {
         targetUserId: userId,
-        reason: req.body?.reason || "Security audit"
+        reason: reason
       }
     });
 

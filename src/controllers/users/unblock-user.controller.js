@@ -1,7 +1,6 @@
-const { UserModel } = require("@models/user.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwNotFoundError } = require("@utils/error-handler.util");
+const { throwBadRequestError, throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { UnblockReasons } = require("@configs/enums.config");
@@ -23,11 +22,6 @@ const unblockUser = async (req, res) => {
 
     // Find user (assumed to be in req.foundUser by middleware)
     const user = req.foundUser;
-    
-    if (!user) {
-      logWithTime(`❌ User not found for unblocking ${getLogIdentifiers(req)}`);
-      return throwNotFoundError(res, "User not found");
-    }
 
     // Check if user is actually blocked
     if (!user.isBlocked) {
@@ -38,13 +32,10 @@ const unblockUser = async (req, res) => {
     // Unblock the user
     user.isBlocked = false;
     user.unblockReason = reason;
-    user.unblockReasonDetails = reasonDetails || null;
+    user.unblockReasonDetails = reasonDetails;
     user.unblockedAt = new Date();
     user.unblockedBy = admin.adminId;
     user.updatedBy = admin.adminId;
-    // Clear block details
-    user.blockReason = null;
-    user.blockReasonDetails = null;
 
     await user.save();
 
@@ -55,8 +46,7 @@ const unblockUser = async (req, res) => {
       description: `User ${userId} unblocked for reason: ${reason}`,
       adminActions: {
         targetUserId: userId,
-        reason: reason,
-        reasonDetails: reasonDetails || "No additional details provided"
+        reason: reasonDetails
       }
     });
 

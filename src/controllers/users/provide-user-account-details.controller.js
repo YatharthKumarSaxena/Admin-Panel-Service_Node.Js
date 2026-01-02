@@ -1,7 +1,6 @@
-const { UserModel } = require("@models/user.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { throwInternalServerError, getLogIdentifiers, throwNotFoundError } = require("@utils/error-handler.util");
+const { throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 
@@ -12,14 +11,9 @@ const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const provideUserAccountDetails = async (req, res) => {
   try {
     const admin = req.admin;
-    const { userId } = req.params;
+    const { userId, reason } = req.params;
 
     const user = req.foundUser;
-    
-    if (!user) {
-      logWithTime(`❌ User not found ${getLogIdentifiers(req)}`);
-      return throwNotFoundError(res, "User not found");
-    }
 
     logWithTime(`🔍 Admin ${admin.adminId} accessing account details for user ${userId}`);
 
@@ -36,9 +30,7 @@ const provideUserAccountDetails = async (req, res) => {
       blockedBy: user.blockedBy || null,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      createdBy: user.createdBy || null,
-      lastLoginAt: user.lastLoginAt || null,
-      // Add other fields as per your User model
+      createdBy: user.createdBy || null
     };
 
     // Log activity
@@ -46,7 +38,7 @@ const provideUserAccountDetails = async (req, res) => {
       description: `Admin ${admin.adminId} viewed account details for user ${userId}`,
       adminActions: {
         targetUserId: userId,
-        reason: req.body?.reason || "Account verification"
+        reason: reason
       }
     });
 
