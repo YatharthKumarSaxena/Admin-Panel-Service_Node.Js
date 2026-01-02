@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { AuthModes, DeviceType, PerformedBy } = require("@configs/enums.config");
-const { emailRegex, fullPhoneNumberRegex } = require("@configs/regex.config");
+const { emailRegex, fullPhoneNumberRegex, customIdRegex, UUID_V4_REGEX } = require("@configs/regex.config");
 const { fullPhoneNumberLength, emailLength } = require("@configs/fields-length.config");
 
 // ✅ Validator Function (Reusable)
@@ -25,6 +25,7 @@ const activityTrackerSchema = new mongoose.Schema({
   adminId: {
     type: String,
     required: true,
+    match: customIdRegex,
     index: true
   },
 
@@ -64,7 +65,8 @@ const activityTrackerSchema = new mongoose.Schema({
 
   deviceId: {
     type: String,
-    required: true
+    required: true,
+    match: UUID_V4_REGEX
   },
 
   deviceName: {

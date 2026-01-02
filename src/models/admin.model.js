@@ -57,6 +57,24 @@ const adminSchema = new mongoose.Schema({
     updatedBy: {
         type: String,
         default: null
+    },
+    activatedBy: {
+        type: String,
+        default: null
+    },
+    deactivatedBy: {
+        type: String,
+        default: null
+    },
+    activatedReason: {
+        type: String,
+        trim: true,
+        default: null
+    },
+    deactivatedReason: {
+        type: String,
+        trim: true,
+        default: null
     }
 }, { timestamps: true, versionKey: false });
 
