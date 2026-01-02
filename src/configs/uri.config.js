@@ -35,7 +35,8 @@ module.exports = {
             GET_USER_ACTIVE_SESSIONS: `/active-sessions`,   // GET /admin-panel-service/api/v1/users/active-sessions
             FETCH_USER_DETAILS: `/fetch-user-details`,       // GET /admin-panel-service/api/v1/users/fetch-user-details
             GET_USER_AUTH_LOGS: `/auth-logs`,  // GET /admin-panel-service/api/v1/users/auth-logs
-            GET_TOTAL_REGISTERED_USERS: `/total-users`,      // GET /admin-panel-service/api/v1/admin/total-users
+            GET_TOTAL_REGISTERED_USERS: `/total-users`,      // GET /admin-panel-service/api/v1/users/total-users
+            LIST_USERS: `/list`                     // GET /admin-panel-service/api/v1/users/list
         },
         ADMINS: {
             GET_ADMIN_AUTH_LOGS: `/auth-logs`,        // POST /admin-panel-service/api/v1/admin/auth-logs
@@ -47,7 +48,20 @@ module.exports = {
             REJECT_ROLE_REQUEST: `/reject-role-request`,   // POST /admin-panel-service/api/v1/admin/reject-role-request
             CREATE_ADMIN: `/create` ,          // POST /admin-panel-service/api/v1/admin/create
             ACTIVATE_ADMIN: `/activate`,         // PATCH /admin-panel-service/api/v1/admin/activate
-            DEACTIVATE_ADMIN: `/deactivate`      // PATCH /admin-panel-service/api/v1/admin/deactivate
+            DEACTIVATE_ADMIN: `/deactivate`,      // PATCH /admin-panel-service/api/v1/admin/deactivate
+            
+            // Status Request Routes
+            CREATE_DEACTIVATION_REQUEST: `/deactivation-request`,           // POST /admin-panel-service/api/v1/admin/deactivation-request
+            LIST_DEACTIVATION_REQUESTS: `/deactivation-requests`,           // GET /admin-panel-service/api/v1/admin/deactivation-requests
+            APPROVE_DEACTIVATION_REQUEST: `/deactivation-request/:requestId/approve`,  // POST /admin-panel-service/api/v1/admin/deactivation-request/:requestId/approve
+            REJECT_DEACTIVATION_REQUEST: `/deactivation-request/:requestId/reject`,    // POST /admin-panel-service/api/v1/admin/deactivation-request/:requestId/reject
+            
+            CREATE_ACTIVATION_REQUEST: `/activation-request`,               // POST /admin-panel-service/api/v1/admin/activation-request
+            LIST_ACTIVATION_REQUESTS: `/activation-requests`,               // GET /admin-panel-service/api/v1/admin/activation-requests
+            APPROVE_ACTIVATION_REQUEST: `/activation-request/:requestId/approve`,      // POST /admin-panel-service/api/v1/admin/activation-request/:requestId/approve
+            REJECT_ACTIVATION_REQUEST: `/activation-request/:requestId/reject`,        // POST /admin-panel-service/api/v1/admin/activation-request/:requestId/reject
+            
+            VIEW_STATUS_REQUEST: `/status-request/:requestId`              // GET /admin-panel-service/api/v1/admin/status-request/:requestId (both activation & deactivation)
          },
         INTERNAL: {
             SYNC_USER_DATA: `/sync-user-data`               // POST /admin-panel-service/api/v1/internal/sync-user-data

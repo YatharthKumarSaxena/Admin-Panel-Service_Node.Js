@@ -107,6 +107,23 @@ const AuditMode = Object.freeze({
   CHANGED_ONLY: "CHANGED_ONLY"
 })
 
+const requestType = Object.freeze({
+  DEACTIVATION: "deactivation",
+  ACTIVATION: "activation"
+});
+
+const requestStatus = Object.freeze({
+  PENDING: "PENDING",
+  APPROVED: "APPROVED",
+  REJECTED: "REJECTED"
+});
+
+const viewScope = Object.freeze({
+  ALL: "ALL",
+  ADMINS_ONLY: "ADMINS_ONLY",
+  SELF_ONLY: "SELF_ONLY"
+});
+
 module.exports = {
   AdminActionReasons,   // PascalCase values → audit logs
   BlockReasons,         // snake_case values → DB/API
@@ -122,5 +139,8 @@ module.exports = {
   ServiceName,
   Status,
   IdentifierKeys,
-  AuditMode
+  AuditMode,
+  requestType,
+  requestStatus,
+  viewScope
 };
