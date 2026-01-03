@@ -9,6 +9,7 @@ const { BlockReasons } = require("@configs/enums.config");
  * Block User Controller
  * Blocks a user account with a specified reason
  */
+
 const blockUser = async (req, res) => {
   try {
     const admin = req.admin;
@@ -39,6 +40,7 @@ const blockUser = async (req, res) => {
 
     await user.save();
 
+    // Update isBlocked status in Auth Service and all other services
     logWithTime(`✅ User ${userId} blocked successfully by ${admin.adminId}`);
 
     // Log activity

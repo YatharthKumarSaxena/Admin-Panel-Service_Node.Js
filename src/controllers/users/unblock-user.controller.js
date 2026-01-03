@@ -41,6 +41,8 @@ const unblockUser = async (req, res) => {
 
     logWithTime(`✅ User ${userId} unblocked successfully by ${admin.adminId}`);
 
+    // Update isBlocked status in Auth Service and all other services
+    
     // Log activity
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.UNBLOCK_USER, {
       description: `User ${userId} unblocked for reason: ${reason}`,
