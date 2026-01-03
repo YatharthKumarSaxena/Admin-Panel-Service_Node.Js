@@ -6,7 +6,7 @@ const adminRoutes = express.Router();
 const { ADMIN_ROUTES } = require("@configs/uri.config");
 
 const {
-  CREATE_ADMIN, ACTIVATE_ADMIN, DEACTIVATE_ADMIN,
+  CREATE_ADMIN, ACTIVATE_ADMIN, DEACTIVATE_ADMIN, CHANGE_SUPERVISOR,
   CREATE_DEACTIVATION_REQUEST, LIST_DEACTIVATION_REQUESTS, 
   APPROVE_DEACTIVATION_REQUEST, REJECT_DEACTIVATION_REQUEST,
   CREATE_ACTIVATION_REQUEST, LIST_ACTIVATION_REQUESTS,
@@ -63,7 +63,22 @@ adminRoutes.patch(`${DEACTIVATE_ADMIN}`,
   adminControllers.deactivateAdmin
 );
 
-// ========== 🔄 DEACTIVATION REQUEST ROUTES ==========
+// ========== � CHANGE SUPERVISOR ROUTE ==========
+
+// Change supervisor of an admin
+adminRoutes.patch(`${CHANGE_SUPERVISOR}`,
+  [
+    ...baseMiddlerwares,
+    adminMiddlewares.midAdminsAndSuperAdmins,
+    adminMiddlewares.validateChangeSupervisorRequestBody,  // Validate newSupervisorId + reason
+    commonMiddlewares.authModeValidator,                   // Validate email/phone/userId
+    commonMiddlewares.fetchAdminMiddleware,                // Fetch target admin
+    adminMiddlewares.hierarchyGuard                        // Check hierarchy
+  ],
+  adminControllers.changeSupervisor
+);
+
+// ========== �🔄 DEACTIVATION REQUEST ROUTES ==========
 
 // Create deactivation request (self)
 adminRoutes.post(`${CREATE_DEACTIVATION_REQUEST}`,
