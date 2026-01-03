@@ -1,6 +1,6 @@
 const { AdminModel } = require("@models/admin.model");
 const { extractAccessToken } = require("@utils/access-token.util");
-const { validateMongoID } = require("@utils/mongoid-validator.util");
+const { isValidMongoID } = require("@utils/id-validators.util");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { throwResourceNotFoundError, throwInternalServerError, logMiddlewareError, throwAccessDeniedError } = require("@utils/error-handler.util");
 
@@ -29,9 +29,10 @@ const mockAuthMiddleware = async (req, res, next) => {
         }
 
         // Validate MongoDB ObjectId format using existing validator
-        if (!validateMongoID(res, token)) {
+        if (!isValidMongoID(token)) {
+            logWithTime(`❌ Mock Auth: Invalid MongoDB ObjectId format: ${token}`);
             logMiddlewareError("mockAuthMiddleware", "Invalid MongoDB ObjectId token", req);
-            return; // validateMongoID already throws error
+            return throwAccessDeniedError(res, "Invalid MOCK_AUTH_ADMIN_ID format. Must be a valid MongoDB ObjectID");
         }
 
         // Fetch admin from database using _id
