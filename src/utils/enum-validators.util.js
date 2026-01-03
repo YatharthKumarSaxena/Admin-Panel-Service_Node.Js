@@ -15,30 +15,29 @@ const {
 const { tokenPayloads } = require("@configs/token.config");
 
 /**
- * 🏭 Factory to create enum helper with tracing
+ * 🏭 Factory to create enum helper with boolean returns
+ * Returns true/false only - caller decides response handling
+ * This allows collecting multiple validation errors
+ * 
  * @param {Object} enumObj - The frozen enum object
  * @param {String} name - Enum name for logging context
  */
 
 const createEnumHelper = (enumObj, name) => ({
-  validate: (value,res) => {
+  validate: (value) => {
     const result = isValidEnumValue(enumObj, value);
     logWithTime(`[${name}] validate("${value}") →`, result);
-    if (!result) {
-      throwInvalidResourceError(res, name, `"${value}" is not a valid ${name}`);
-      return false;
-    }
-    return true;
+    return result;
   },
-  reverseLookup: (value,res) => {
+  reverseLookup: (value) => {
     const result = getEnumKeyByValue(enumObj, value);
     logWithTime(`[${name}] reverseLookup("${value}") →`, result);
-    if (!result) {
-      throwInvalidResourceError(res, name, `"${value}" is not a valid ${name}`);
-      return false;
-    }
-    return true;
-  }
+    return result;
+  },
+  getValidValues: () => {
+    return Object.values(enumObj);
+  },
+  getName: () => name
 });
 
 // 🧩 Enum-specific helpers
