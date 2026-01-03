@@ -1,180 +1,53 @@
-const { validateRequestBodyMiddleware } = require("../factory/validate-request-body.middleware-factory");
-const { 
-  activateAdminRequiredFields,
-  deactivateAdminRequiredFields,
-  blockAdminRequiredFields,
-  unblockAdminRequiredFields
-} = require("@configs/required-fields.config.js");
-const { throwBadRequestError } = require("@utils/error-handler.util");
+const { validateFields } = require("../factory/validate-fields.middleware-factory");
+
+/**
+ * ✅ Admin Status Operations Validation
+ * 
+ * Uses centralized validation config for consistent validation
+ * All field rules defined in validation.config.js
+ * 
+ * Benefits:
+ * - ✅ Collects ALL errors before responding
+ * - ✅ Auto-validates length, regex, enum based on config
+ * - ✅ DRY - No repeated validation logic
+ * - ✅ Maintainable - Change config, all routes update
+ */
 
 /**
  * ✅ Validate Activate Admin Request Body
+ * Fields: reason (required, 10-500 chars), notes (optional, max 500 chars)
  */
-const validateActivateAdminRequestBody = [
-  validateRequestBodyMiddleware(activateAdminRequiredFields, "validateActivateAdminRequestBody"),
-  (req, res, next) => {
-    const { reason, notes } = req.body;
-
-    // Validate reason (compulsory)
-    if (typeof reason !== 'string') {
-      return throwBadRequestError(res, "Invalid reason format", "Reason must be a string");
-    }
-    if (reason.trim().length === 0) {
-      return throwBadRequestError(res, "Reason cannot be empty", "Please provide a valid reason");
-    }
-    if (reason.length < 10) {
-      return throwBadRequestError(res, "Reason too short", "Reason must be at least 10 characters");
-    }
-    if (reason.length > 500) {
-      return throwBadRequestError(res, "Reason too long", "Reason must be less than 500 characters");
-    }
-
-    // Optional notes validation
-    if (notes !== undefined) {
-      if (typeof notes !== 'string') {
-        return throwBadRequestError(res, "Invalid notes format", "Notes must be a string");
-      }
-      if (notes.trim().length === 0) {
-        return throwBadRequestError(res, "Notes cannot be empty", "Provide valid notes or remove the field");
-      }
-      if (notes.length > 500) {
-        return throwBadRequestError(res, "Notes too long", "Notes must be less than 500 characters");
-      }
-    }
-
-    next();
-  }
-];
+const validateActivateAdminRequestBody = validateFields(
+  ['reason', 'notes'], 
+  "validateActivateAdminRequestBody"
+);
 
 /**
  * ❌ Validate Deactivate Admin Request Body
+ * Fields: reason (required, 10-500 chars), deactivateReason (enum), notes (optional)
  */
-const validateDeactivateAdminRequestBody = [
-  validateRequestBodyMiddleware(deactivateAdminRequiredFields, "validateDeactivateAdminRequestBody"),
-  (req, res, next) => {
-    const { reason, notes } = req.body;
-
-    // Validate reason (compulsory)
-    if (typeof reason !== 'string') {
-      return throwBadRequestError(res, "Invalid reason format", "Reason must be a string");
-    }
-    if (reason.trim().length === 0) {
-      return throwBadRequestError(res, "Reason cannot be empty", "Please provide a valid reason");
-    }
-    if (reason.length < 10) {
-      return throwBadRequestError(res, "Reason too short", "Reason must be at least 10 characters");
-    }
-    if (reason.length > 500) {
-      return throwBadRequestError(res, "Reason too long", "Reason must be less than 500 characters");
-    }
-
-    // Optional notes validation
-    if (notes !== undefined) {
-      if (typeof notes !== 'string') {
-        return throwBadRequestError(res, "Invalid notes format", "Notes must be a string");
-      }
-      if (notes.trim().length === 0) {
-        return throwBadRequestError(res, "Notes cannot be empty", "Provide valid notes or remove the field");
-      }
-      if (notes.length > 500) {
-        return throwBadRequestError(res, "Notes too long", "Notes must be less than 500 characters");
-      }
-    }
-
-    next();
-  }
-];
+const validateDeactivateAdminRequestBody = validateFields(
+  ['reason', 'deactivateReason', 'notes'],
+  "validateDeactivateAdminRequestBody"
+);
 
 /**
  * 🚫 Validate Block Admin Request Body
+ * Fields: reason (required, 10-500 chars), blockReason (enum), notes (optional)
  */
-const validateBlockAdminRequestBody = [
-  validateRequestBodyMiddleware(blockAdminRequiredFields, "validateBlockAdminRequestBody"),
-  (req, res, next) => {
-    const { reason, notes, blockDuration } = req.body;
-
-    // Validate reason (compulsory)
-    if (typeof reason !== 'string') {
-      return throwBadRequestError(res, "Invalid reason format", "Reason must be a string");
-    }
-    if (reason.trim().length === 0) {
-      return throwBadRequestError(res, "Reason cannot be empty", "Please provide a valid reason");
-    }
-    if (reason.length < 10) {
-      return throwBadRequestError(res, "Reason too short", "Reason must be at least 10 characters");
-    }
-    if (reason.length > 500) {
-      return throwBadRequestError(res, "Reason too long", "Reason must be less than 500 characters");
-    }
-
-    // Optional blockDuration validation
-    if (blockDuration !== undefined) {
-      if (typeof blockDuration !== 'number') {
-        return throwBadRequestError(res, "Invalid blockDuration format", "blockDuration must be a number (days)");
-      }
-      if (blockDuration <= 0) {
-        return throwBadRequestError(res, "Invalid blockDuration value", "blockDuration must be greater than 0");
-      }
-      if (blockDuration > 365) {
-        return throwBadRequestError(res, "blockDuration too long", "blockDuration cannot exceed 365 days");
-      }
-    }
-
-    // Optional notes validation
-    if (notes !== undefined) {
-      if (typeof notes !== 'string') {
-        return throwBadRequestError(res, "Invalid notes format", "Notes must be a string");
-      }
-      if (notes.trim().length === 0) {
-        return throwBadRequestError(res, "Notes cannot be empty", "Provide valid notes or remove the field");
-      }
-      if (notes.length > 500) {
-        return throwBadRequestError(res, "Notes too long", "Notes must be less than 500 characters");
-      }
-    }
-
-    next();
-  }
-];
+const validateBlockAdminRequestBody = validateFields(
+  ['reason', 'blockReason', 'notes'],
+  "validateBlockAdminRequestBody"
+);
 
 /**
- * 🔓 Validate Unblock Admin Request Body
+ * ✅ Validate Unblock Admin Request Body
+ * Fields: reason (required, 10-500 chars), unblockReason (enum), notes (optional)
  */
-const validateUnblockAdminRequestBody = [
-  validateRequestBodyMiddleware(unblockAdminRequiredFields, "validateUnblockAdminRequestBody"),
-  (req, res, next) => {
-    const { reason, notes } = req.body;
-
-    // Validate reason (compulsory)
-    if (typeof reason !== 'string') {
-      return throwBadRequestError(res, "Invalid reason format", "Reason must be a string");
-    }
-    if (reason.trim().length === 0) {
-      return throwBadRequestError(res, "Reason cannot be empty", "Please provide a valid reason");
-    }
-    if (reason.length < 10) {
-      return throwBadRequestError(res, "Reason too short", "Reason must be at least 10 characters");
-    }
-    if (reason.length > 500) {
-      return throwBadRequestError(res, "Reason too long", "Reason must be less than 500 characters");
-    }
-
-    // Optional notes validation
-    if (notes !== undefined) {
-      if (typeof notes !== 'string') {
-        return throwBadRequestError(res, "Invalid notes format", "Notes must be a string");
-      }
-      if (notes.trim().length === 0) {
-        return throwBadRequestError(res, "Notes cannot be empty", "Provide valid notes or remove the field");
-      }
-      if (notes.length > 500) {
-        return throwBadRequestError(res, "Notes too long", "Notes must be less than 500 characters");
-      }
-    }
-
-    next();
-  }
-];
+const validateUnblockAdminRequestBody = validateFields(
+  ['reason', 'unblockReason', 'notes'],
+  "validateUnblockAdminRequestBody"
+);
 
 module.exports = {
   validateActivateAdminRequestBody,
