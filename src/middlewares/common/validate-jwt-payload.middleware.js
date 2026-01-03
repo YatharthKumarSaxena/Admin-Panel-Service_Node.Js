@@ -5,9 +5,7 @@ const {
 } = require("@utils/error-handler.util");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { tokenPayloads } = require("@configs/token.config");
-const { validateUUID } = require("@utils/uuid-validator.util");
-const {  validateCustomID } = require("@utils/customid-validator.util");
-const { validateMongoID } = require("@utils/mongoid-validator.util");
+const { isValidUUID, isValidCustomID, isValidMongoID } = require("@utils/id-validators.util");
 const { validateObjectShape } = require("@utils/object-shape-validator.util");
 
 const validateJwtPayloadMiddleware = (req, res, next) => {
@@ -17,32 +15,57 @@ const validateJwtPayloadMiddleware = (req, res, next) => {
     // 📋 Required fields
     const requiredFields = tokenPayloads;
 
-    // 🧩 Shape validation
-    if (
-      !validateObjectShape(accessToken, requiredFields, "Access", res) ||
-      !validateObjectShape(refreshToken, requiredFields, "Refresh", res)
-    ) {
-      logMiddlewareError("validateJwtPayloadMiddleware", "JWT payload shape validation failed", req);
-      return;
+    // 🧩 Shape validation for access token
+    const accessShapeResult = validateObjectShape(accessToken, requiredFields, "Access");
+    if (!accessShapeResult.valid) {
+      logWithTime(`❌ [validateJwtPayloadMiddleware] Access token malformed`);
+      logWithTime(`Missing: ${accessShapeResult.missing.join(", ") || "None"} | Extra: ${accessShapeResult.extra.join(", ") || "None"}`);
+      logMiddlewareError("validateJwtPayloadMiddleware", "Access token shape validation failed", req);
+      return throwAccessDeniedError(res, "Access token payload malformed");
     }
 
-    // 🔍 Regex validation
-    if (
-      !validateUUID(accessToken.deviceId) ||
-      !validateCustomID(accessToken.customId) ||
-      !validateMongoID(accessToken.id)
-    ) {
-      logMiddlewareError("validateJwtPayloadMiddleware", "Access token regex validation failed", req);
-      return;
+    // 🧩 Shape validation for refresh token
+    const refreshShapeResult = validateObjectShape(refreshToken, requiredFields, "Refresh");
+    if (!refreshShapeResult.valid) {
+      logWithTime(`❌ [validateJwtPayloadMiddleware] Refresh token malformed`);
+      logWithTime(`Missing: ${refreshShapeResult.missing.join(", ") || "None"} | Extra: ${refreshShapeResult.extra.join(", ") || "None"}`);
+      logMiddlewareError("validateJwtPayloadMiddleware", "Refresh token shape validation failed", req);
+      return throwAccessDeniedError(res, "Refresh token payload malformed");
     }
 
-    if (
-      !validateUUID(refreshToken.deviceId) ||
-      !validateCustomID(refreshToken.customId) ||
-      !validateMongoID(refreshToken.id)
-    ) {
-      logMiddlewareError("validateJwtPayloadMiddleware", "Refresh token regex validation failed", req);
-      return;
+    // 🔍 Regex validation for access token
+    if (!isValidUUID(accessToken.deviceId)) {
+      logWithTime(`❌ [validateJwtPayloadMiddleware] Invalid access token deviceId format`);
+      logMiddlewareError("validateJwtPayloadMiddleware", "Access token deviceId validation failed", req);
+      return throwAccessDeniedError(res, "Invalid access token deviceId");
+    }
+    
+    if (!isValidCustomID(accessToken.customId)) {
+      logWithTime(`❌ [validateJwtPayloadMiddleware] Invalid access token customId format`);
+      logMiddlewareError("validateJwtPayloadMiddleware", "Access token customId validation failed", req);
+      return throwAccessDeniedError(res, "Invalid access token customId");
+    }
+    if (!isValidMongoID(accessToken.id)) {
+      logWithTime(`❌ [validateJwtPayloadMiddleware] Invalid access token id format`);
+      logMiddlewareError("validateJwtPayloadMiddleware", "Access token id validation failed", req);
+      return throwAccessDeniedError(res, "Invalid access token id");
+    }
+
+    // 🔍 Regex validation for refresh token
+    if (!isValidUUID(refreshToken.deviceId)) {
+      logWithTime(`❌ [validateJwtPayloadMiddleware] Invalid refresh token deviceId format`);
+      logMiddlewareError("validateJwtPayloadMiddleware", "Refresh token deviceId validation failed", req);
+      return throwAccessDeniedError(res, "Invalid refresh token deviceId");
+    }
+    if (!isValidCustomID(refreshToken.customId)) {
+      logWithTime(`❌ [validateJwtPayloadMiddleware] Invalid refresh token customId format`);
+      logMiddlewareError("validateJwtPayloadMiddleware", "Refresh token customId validation failed", req);
+      return throwAccessDeniedError(res, "Invalid refresh token customId");
+    }
+    if (!isValidMongoID(refreshToken.id)) {
+      logWithTime(`❌ [validateJwtPayloadMiddleware] Invalid refresh token id format`);
+      logMiddlewareError("validateJwtPayloadMiddleware", "Refresh token id validation failed", req);
+      return throwAccessDeniedError(res, "Invalid refresh token id");
     }
 
     // 🔁 Device ID match check

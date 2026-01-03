@@ -1,38 +1,44 @@
 const { logWithTime } = require("@utils/time-stamps.util");
-const { throwInternalServerError, throwResourceNotFoundError, logMiddlewareError } = require("@utils/error-handler.util");
-const { validateUUID } = require("@utils/uuid-validator.util");
-const { validateDeviceNameLength } = require("@utils/device-validator.util");
+const { throwInternalServerError, throwResourceNotFoundError, logMiddlewareError, throwBadRequestError } = require("@utils/error-handler.util");
+const { isValidUUID, isValidDeviceNameLength } = require("@utils/id-validators.util");
 const { DeviceTypeHelper } = require("@utils/enum-validators.util");
+const { deviceFieldsLength } = require("@configs/fields-length.config");
 
 const verifyDeviceField = async (req,res,next) => {
     try{
         const deviceId = req.headers["x-device-uuid"];
         let deviceName = req.headers["x-device-name"]; // Optional
         const deviceType = req.headers["x-device-type"]; // Optional
+        
         // Device ID is mandatory
         if (!deviceId || deviceId.trim() === "") {
             logMiddlewareError("verifyDeviceField", "Missing device UUID in headers", req);
             return throwResourceNotFoundError(res, "Device UUID (x-device-uuid) is required in request headers");
         }
+
         // Attach to request object for later use in controller
         req.deviceId = deviceId.trim();
-        if (!validateUUID(res, req.deviceId)) {
-            logMiddlewareError("verifyDeviceField", "Invalid Device ID", req);
-            return;
+        
+        if (!isValidUUID(req.deviceId)) {
+            logMiddlewareError("verifyDeviceField", "Invalid Device ID format", req);
+            return throwBadRequestError(res, "Invalid deviceId format. Must be a valid UUID v4");
         }
+
         if (deviceName && deviceName.trim() !== "") {
             deviceName = deviceName.trim();
-            if (!validateDeviceNameLength(res, deviceName)) {
-                logMiddlewareError("verifyDeviceField", "Invalid Device Name", req);
-                return;
+            if (!isValidDeviceNameLength(deviceName)) {
+                logMiddlewareError("verifyDeviceField", "Invalid Device Name length", req);
+                return throwBadRequestError(res, `Device name must be between ${deviceFieldsLength.deviceName.min} and ${deviceFieldsLength.deviceName.max} characters`);
             }
             req.deviceName = deviceName;
         }
+
         if (deviceType && deviceType.trim() !=="") {
             const type = deviceType.toLowerCase().trim();
-            if (!DeviceTypeHelper.validate(type, res)) {
+            if (!DeviceTypeHelper.validate(type)) {
                 logMiddlewareError("verifyDeviceField", "Invalid Device Type", req);
-                return;
+                const validTypes = DeviceTypeHelper.getValidValues().join(', ');
+                return throwBadRequestError(res, `Invalid device type. Must be one of: ${validTypes}`);
             }
             req.deviceType = type;
         }
