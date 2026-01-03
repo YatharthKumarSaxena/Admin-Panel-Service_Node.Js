@@ -4,7 +4,7 @@ const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throw
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { AdminType } = require("@configs/enums.config");
-const { fetchAdmin } = require("@utils/fetch-admin.util");
+const { fetchAdmin } = require("@/utils/fetch-admin.util");
 
 /**
  * Update Admin Details Controller

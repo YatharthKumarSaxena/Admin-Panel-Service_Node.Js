@@ -3,7 +3,7 @@ const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwConflictError } = require("@utils/error-handler.util");
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
-const { fetchAdmin } = require("@utils/fetch-admin.util");
+const { fetchAdmin } = require("@/utils/fetch-admin.util");
 
 /**
  * Update Own Admin Details Controller

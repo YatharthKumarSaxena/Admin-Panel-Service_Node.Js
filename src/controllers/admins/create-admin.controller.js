@@ -6,7 +6,7 @@ const { CREATED } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { AdminType } = require("@configs/enums.config");
 const { makeAdminId } = require("@services/user-id.service");
-const { fetchAdmin } = require("@utils/fetch-admin.util");
+const { fetchAdmin } = require("@/utils/fetch-admin.util");
 const { rollbackAdminCounter } = require("@services/counter-rollback.service");
 
 const createAdmin = async (req, res) => {
