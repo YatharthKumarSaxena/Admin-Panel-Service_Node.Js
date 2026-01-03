@@ -1,5 +1,5 @@
 const { fetchEntityFactory } = require("@middlewares/factory/fetch-entity.middleware-factory");
-const { fetchAdmin } = require("@utils/fetch-admin.util");
+const { fetchAdmin } = require("@/utils/fetch-admin.util");
 
 /**
  * 🔍 Fetch Admin Middleware

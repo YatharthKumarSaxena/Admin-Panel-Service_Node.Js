@@ -12,6 +12,7 @@ const {
   validateStatusRequestBody,
   validateReviewRequestBody
 } = require("./validate-status-request.middleware");
+const { validateChangeSupervisorRequestBody } = require("./validate-change-supervisor.middleware");
 
 const adminMiddlewares = {
   validateCreateAdminRequestBody,
@@ -22,6 +23,7 @@ const adminMiddlewares = {
   validateUnblockAdminRequestBody,
   validateStatusRequestBody,
   validateReviewRequestBody,
+  validateChangeSupervisorRequestBody,
   hierarchyGuard,
   ...RoleMiddlewares
 };
