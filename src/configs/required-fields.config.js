@@ -14,6 +14,7 @@ const activateAdminRequiredFields = ["reason"];   // WHY activating?
 const deactivateAdminRequiredFields = ["reason"]; // WHY deactivating?
 const blockAdminRequiredFields = ["reason"];      // WHY blocking?
 const unblockAdminRequiredFields = ["reason"];    // WHY unblocking?
+const changeSupervisorRequiredFields = ["newSupervisorId", "reason"]; // Change supervisor
 
 // ========================================
 // 🔹 User Status Operation Fields
@@ -30,6 +31,7 @@ module.exports = {
   deactivateAdminRequiredFields,
   blockAdminRequiredFields,
   unblockAdminRequiredFields,
+  changeSupervisorRequiredFields,
   blockUserRequiredFields,
   unblockUserRequiredFields,
   blockDeviceRequiredFields,

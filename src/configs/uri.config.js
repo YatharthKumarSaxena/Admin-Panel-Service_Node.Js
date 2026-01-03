@@ -49,6 +49,7 @@ module.exports = {
             CREATE_ADMIN: `/create` ,          // POST /admin-panel-service/api/v1/admin/create
             ACTIVATE_ADMIN: `/activate`,         // PATCH /admin-panel-service/api/v1/admin/activate
             DEACTIVATE_ADMIN: `/deactivate`,      // PATCH /admin-panel-service/api/v1/admin/deactivate
+            CHANGE_SUPERVISOR: `/change-supervisor`,  // PATCH /admin-panel-service/api/v1/admin/change-supervisor
             
             // Status Request Routes
             CREATE_DEACTIVATION_REQUEST: `/deactivation-request`,           // POST /admin-panel-service/api/v1/admin/deactivation-request

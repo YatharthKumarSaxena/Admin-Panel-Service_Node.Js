@@ -12,5 +12,20 @@ module.exports = {
   deviceNameLength: {
     min: 3,
     max: 64
+  },
+  reasonFieldLength: {
+    min: 10,
+    max: 500
+  },
+  notesFieldLength: {
+    max: 500
+  },
+  customIdLength: {
+    min: 10, 
+    max: 10
+  }
+  ,mongoIdLength: {
+    min: 24,
+    max: 24
   }
 };
