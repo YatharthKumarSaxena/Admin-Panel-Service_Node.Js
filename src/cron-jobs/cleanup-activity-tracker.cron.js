@@ -32,3 +32,5 @@ const cleanActivityLogs = async () => {
 cron.schedule(activityTrackerCleanup.cronSchedule, cleanActivityLogs, {
   timezone: activityTrackerCleanup.timezone
 });
+
+module.exports = { cleanActivityLogs };
