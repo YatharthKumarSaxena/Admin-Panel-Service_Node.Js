@@ -2,6 +2,7 @@ const { activateAdmin } = require("./activate-admin.controller");
 const { createAdmin } = require("./create-admin.controller");
 const { bulkAdminCreate } = require("./create-admins-in-bulk.controller");
 const { deactivateAdmin } = require("./deactivate-admin.controller");
+const { changeSupervisor } = require("./change-supervisor.controller");
 const { updateAdminDetails } = require("./update-admin-details.controller");
 const { updateOwnAdminDetails } = require("./update-own-admin-details.controller");
 const { viewAdminDetails } = require("./view-admin-details.controller");
@@ -26,6 +27,7 @@ const adminControllers = {
     bulkAdminCreate,
     activateAdmin,
     deactivateAdmin,
+    changeSupervisor,
     updateAdminDetails,
     viewAdminDetails,
     viewOwnAdminDetails,
