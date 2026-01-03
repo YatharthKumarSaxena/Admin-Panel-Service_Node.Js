@@ -8,6 +8,7 @@ const { IP_Address_Code } = require("@configs/system.config");
  * Format: REQ{IP_Code}{Sequence}
  * Example: REQIN001, REQIN002
  */
+
 const makeRequestId = async () => {
   try {
     const requestIdPrefix = "REQ";
