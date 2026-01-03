@@ -1,13 +1,22 @@
 const { validateRequestBody } = require("@utils/validate-request-body.util");
-const { throwInternalServerError, logMiddlewareError } = require("@utils/error-handler.util");
+const { throwInternalServerError, logMiddlewareError, throwResourceNotFoundError } = require("@utils/error-handler.util");
+const { logWithTime } = require("@utils/time-stamps.util");
 
 const validateRequestBodyMiddleware = (requiredFields, middlewareName) => {
     return (req, res, next) => {
         try {
-            if (!validateRequestBody(req, requiredFields, res)) {
+            const result = validateRequestBody(req.body, requiredFields);
+            
+            if (!result.valid) {
+                logWithTime(`❌ [${middlewareName}] Validation failed: ${result.missingFields.join(', ')}`);
                 logMiddlewareError(middlewareName, "Request body validation failed", req);
-                return;
+                return throwResourceNotFoundError(res, result.missingFields);
             }
+            
+            // Apply trimmed body back to request
+            req.body = result.trimmedBody;
+            
+            logWithTime(`✅ [${middlewareName}] All required fields present and valid`);
             return next();
         } catch (error) {
             logMiddlewareError(middlewareName, "Unexpected error occurred", req);
