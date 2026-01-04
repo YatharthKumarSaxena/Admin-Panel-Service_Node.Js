@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { fullPhoneNumberLength, emailLength } = require("@configs/fields-length.config");
-const { AuthModes, AdminType, PerformedBy } = require("@configs/enums.config");
-const { emailRegex, fullPhoneNumberRegex, customIdRegex } = require("@configs/regex.config");
+const { AuthModes, AdminType, ActivationReasons, DeactivationReasons } = require("@configs/enums.config");
+const { emailRegex, fullPhoneNumberRegex, adminIdRegex } = require("@configs/regex.config");
 
 /* Admin Schema */
 const adminSchema = new mongoose.Schema({
@@ -13,14 +13,14 @@ const adminSchema = new mongoose.Schema({
         maxlength: fullPhoneNumberLength.max,
         default: null,
         index: true,
-        unique: true, 
+        unique: true,
         sparse: true
     },
     adminId: {
         type: String,
         unique: true,
         immutable: true,
-        match: customIdRegex,
+        match: adminIdRegex,
         index: true
     },
     email: {
@@ -46,42 +46,45 @@ const adminSchema = new mongoose.Schema({
     },
     supervisorId: {
         type: String,
+        match: adminIdRegex,
         default: null
-        // Validation moved to hook for better control
     },
     createdBy: {
         type: String,
-        required: true,
-        default: PerformedBy.SYSTEM
+        default: null,
+        match: adminIdRegex
     },
     updatedBy: {
         type: String,
+        match: adminIdRegex,
         default: null
     },
     activatedBy: {
         type: String,
+        match: adminIdRegex,
         default: null
     },
     deactivatedBy: {
         type: String,
+        match: adminIdRegex,
         default: null
     },
     activatedReason: {
         type: String,
-        trim: true,
-        default: null
+        default: null,
+        enum: ActivationReasons
     },
     deactivatedReason: {
         type: String,
-        trim: true,
-        default: null
+        default: null,
+        enum: DeactivationReasons
     }
 }, { timestamps: true, versionKey: false });
 
 /* 🔐 Centralized Validation Hook */
 adminSchema.pre("validate", function (next) {
-    const mode = process.env.DEFAULT_AUTH_MODE;
-    
+    const mode = process.env.AUTH_MODE;
+
     // 1. Auth Mode Validation
     const hasEmail = this.email && this.email.length > 0;
     const hasPhone = this.fullPhoneNumber && this.fullPhoneNumber.length > 0;
@@ -104,14 +107,23 @@ adminSchema.pre("validate", function (next) {
         }
     }
 
-    // 2. Supervisor Validation (Dependent on AdminType)
-    // Agar Admin ya Mid-Admin hai, to Supervisor ID honi chahiye
+    // 2. Supervisor Validation (Dependent on AdminType) 
     if ([AdminType.ADMIN, AdminType.MID_ADMIN].includes(this.adminType)) {
         if (!this.supervisorId) {
             return next(new Error(`supervisorId is required for ${this.adminType} users.`));
         }
     }
-
+    
+    // 3. createdBy Validation (Dependent on AdminType) 
+    if (this.adminType === AdminType.SUPER_ADMIN) {
+        if (this.createdBy !== null && this.createdBy !== "SYSTEM") {
+            return next(new Error("SUPER_ADMIN must have createdBy as null or 'SYSTEM'."));
+        }
+    } else {
+        if (!this.createdBy) {
+            return next(new Error(`${this.adminType} must have a valid createdBy adminId.`));
+        }
+    }
     next();
 });
 

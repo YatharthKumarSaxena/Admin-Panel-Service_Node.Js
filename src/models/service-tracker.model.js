@@ -29,7 +29,7 @@ const serviceTrackerSchema = new mongoose.Schema({
   affectedUserId: {
     type: String,
     immutable: true,
-    match: customIdRegex,
+    match: adminIdRegex,
     default: null
   },
   oldData: {

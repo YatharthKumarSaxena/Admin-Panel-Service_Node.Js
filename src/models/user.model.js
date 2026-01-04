@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
-const { fullPhoneNumberLength, emailLength } = require("@configs/fields-length.config");
-const { AuthModes, BlockReasons, UnblockReasons, BlockVia, UnblockVia } = require("@configs/enums.config");
-const { emailRegex, fullPhoneNumberRegex } = require("@configs/regex.config");
+const { fullPhoneNumberLength, emailLength, reasonFieldLength } = require("@configs/fields-length.config");
+const { AuthModes, BlockReasons, UnblockReasons } = require("@configs/enums.config");
+const { emailRegex, fullPhoneNumberRegex, userIdRegex, adminIdRegex } = require("@configs/regex.config");
 
 /* User Schema */
 const userSchema = new mongoose.Schema({
@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         unique: true,
         immutable: true,
+        match: userIdRegex,
         index: true
     },
     email: {
@@ -36,14 +37,12 @@ const userSchema = new mongoose.Schema({
     },
     isBlocked: { type: Boolean, default: false },
     blockReason: { type: String, enum: Object.values(BlockReasons), default: null },
-    blockedBy: { type: String, default: null },
-    blockReasonDetails: { type: String, maxlength: 1000, default: null },
-    blockedVia: { type: String, enum: Object.values(BlockVia), default: null },
+    blockedBy: { type: String, default: null, match: adminIdRegex },
+    blockReasonDetails: { type: String, minlength: reasonFieldLength.min, maxlength: reasonFieldLength.max, default: null },
     blockCount: { type: Number, default: 0 },
     unblockReason: { type: String, enum: Object.values(UnblockReasons), default: null },
-    unblockReasonDetails: { type: String, maxlength: 1000, default: null },
-    unblockedBy: { type: String, default: null },
-    unblockedVia: { type: String, enum: Object.values(UnblockVia), default: null },
+    unblockReasonDetails: { type: String, minlength: reasonFieldLength.min, maxlength: reasonFieldLength.max, default: null },
+    unblockedBy: { type: String, default: null, match: adminIdRegex },
     unblockCount: { type: Number, default: 0 },
     blockedAt: { type: Date, default: null },
     unblockedAt: { type: Date, default: null }
@@ -51,7 +50,7 @@ const userSchema = new mongoose.Schema({
 
 /* 🔐 Conditional AuthMode Validator */
 userSchema.pre("validate", function (next) {
-    const mode = process.env.DEFAULT_AUTH_MODE;
+    const mode = process.env.AUTH_MODE;
     const hasEmail = !!this.email;
     const hasPhone = !!this.fullPhoneNumber;
 
@@ -72,7 +71,28 @@ userSchema.pre("validate", function (next) {
             return next(new Error("Provide only one identifier (email OR phone) in EITHER mode."));
         }
     }
+    if (this.isBlocked) {
+        if (!this.blockReason || !this.blockedBy) {
+            return next(new Error("Blocked users must have blockReason and blockedBy."));
+        }
+    } else {
+        if (this.unblockReason && !this.unblockedBy) {
+            return next(new Error("Unblocked users must have unblockedBy when unblockReason is set."));
+        }
+    }
     next();
+});
+
+userSchema.pre("save", function(next) {
+  if (this.isBlocked && this.isModified("isBlocked")) {
+    this.blockCount += 1;
+    this.blockedAt = new Date();
+  }
+  if (!this.isBlocked && this.isModified("isBlocked")) {
+    this.unblockCount += 1;
+    this.unblockedAt = new Date();
+  }
+  next();
 });
 
 // Creating a Collection named Users that will Include User Documents / Records

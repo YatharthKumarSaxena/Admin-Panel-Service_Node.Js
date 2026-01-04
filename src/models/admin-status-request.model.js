@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
-const { customIdRegex } = require("@configs/regex.config");
-const { requestType } = require("@configs/enums.config");
+const { adminIdRegex } = require("@configs/regex.config");
+const { requestType, requestStatus } = require("@configs/enums.config");
+const { reasonFieldLength, notesFieldLength } = require("@/configs/fields-length.config");
 
 /**
  * Admin Status Request Schema
@@ -22,25 +23,27 @@ const adminStatusRequestSchema = new mongoose.Schema({
   requestedBy: {
     type: String,
     required: true,
-    match: customIdRegex,
+    match: adminIdRegex,
     index: true
   },
   targetAdminId: {
     type: String,
     required: true,
-    match: customIdRegex,
+    match: adminIdRegex,
     index: true
   },
   reason: {
     type: String,
     required: true,
     trim: true,
-    maxlength: 500
+    minlength: reasonFieldLength.min,
+    maxlength: reasonFieldLength.max
   },
   notes: {
     type: String,
     trim: true,
-    maxlength: 1000,
+    minlength: notesFieldLength.min,
+    maxlength: notesFieldLength.max,
     default: null
   },
   status: {
@@ -51,7 +54,7 @@ const adminStatusRequestSchema = new mongoose.Schema({
   },
   reviewedBy: {
     type: String,
-    match: customIdRegex,
+    match: adminIdRegex,
     default: null
   },
   reviewedAt: {
@@ -61,17 +64,14 @@ const adminStatusRequestSchema = new mongoose.Schema({
   reviewNotes: {
     type: String,
     trim: true,
-    maxlength: 1000,
+    minlength: notesFieldLength.min,
+    maxlength: notesFieldLength.max,
     default: null
   },
   createdAt: {
     type: Date,
     default: Date.now,
     immutable: true
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
   }
 }, {
   timestamps: true,
@@ -88,7 +88,7 @@ adminStatusRequestSchema.index(
   { targetAdminId: 1, requestType: 1, status: 1 },
   { 
     unique: true,
-    partialFilterExpression: { status: "PENDING" }
+    partialFilterExpression: { status: requestStatus.PENDING }
   }
 );
 

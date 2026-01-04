@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { AuthModes, DeviceType, PerformedBy } = require("@configs/enums.config");
-const { emailRegex, fullPhoneNumberRegex, customIdRegex, UUID_V4_REGEX } = require("@configs/regex.config");
+const { emailRegex, fullPhoneNumberRegex, adminIdRegex, UUID_V4_REGEX , userIdRegex} = require("@configs/regex.config");
 const { fullPhoneNumberLength, emailLength } = require("@configs/fields-length.config");
 
 // ✅ Validator Function (Reusable)
@@ -9,7 +9,7 @@ const { fullPhoneNumberLength, emailLength } = require("@configs/fields-length.c
 const authModeValidator = function (v) {
   if (!v) return true; // Agar value null hai to pass hone dein (handle required elsewhere)
   
-  const mode = process.env.DEFAULT_AUTH_MODE;
+  const mode = process.env.AUTH_MODE;
   const hasEmail = !!v.email;
   const hasPhone = !!v.fullPhoneNumber;
 
@@ -25,13 +25,19 @@ const activityTrackerSchema = new mongoose.Schema({
   adminId: {
     type: String,
     required: true,
-    match: customIdRegex,
+    match: adminIdRegex,
     index: true
   },
 
   // ✅ FIX 1: adminDetails ko SubSchema banaya aur validator yahin laga diya
   adminDetails: {
     type: new mongoose.Schema({
+      adminId: {
+        type: String,
+        required: true,
+        match: adminIdRegex,
+        index: true
+      },
       email: {
         type: String,
         lowercase: true,
@@ -105,6 +111,7 @@ const activityTrackerSchema = new mongoose.Schema({
     type: new mongoose.Schema({
       targetUserId: {
         type: String,
+        match: userIdRegex,
         default: null
       },
       // ✅ FIX 2: targetUserDetails ko bhi SubSchema banaya validation ke liye
