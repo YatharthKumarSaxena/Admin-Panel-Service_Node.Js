@@ -1,6 +1,6 @@
 const { RoleHierarchy } = require("@configs/enums.config");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { throwAccessDeniedError, throwInternalServerError } = require("@utils/error-handler.util");
+const { throwAccessDeniedError, throwInternalServerError, logMiddlewareError } = require("@utils/error-handler.util");
 const { canActOnRole } = require("@utils/role.util");
 
 /**
@@ -17,6 +17,7 @@ const { canActOnRole } = require("@utils/role.util");
  * 
  * @middleware
  */
+
 const hierarchyGuard = (req, res, next) => {
     try {
         const actor = req.admin; // current logged-in admin
@@ -26,6 +27,7 @@ const hierarchyGuard = (req, res, next) => {
             req?.foundUser?.userType;
 
         if (!actor || !targetAdminType) {
+            logMiddlewareError(`❌ Missing actor or target type in hierarchyGuard middleware`, req);
             return throwAccessDeniedError(res, "Actor or target type missing");
         }
 
@@ -37,8 +39,9 @@ const hierarchyGuard = (req, res, next) => {
         const allowed = canActOnRole(actorType, targetAdminType);
 
         if (!allowed) {
-            logWithTime(
-                `🚫 Hierarchy violation: ${actorType}(${actorHierarchy}) -> ${targetAdminType}(${targetHierarchy})`
+            logMiddlewareError(
+                `❌ Hierarchy violation: ${actorType}(${actorHierarchy}) cannot act on ${targetAdminType}(${targetHierarchy})`,
+                req
             );
             return throwAccessDeniedError(
                 res,
@@ -51,7 +54,7 @@ const hierarchyGuard = (req, res, next) => {
         );
         return next();
     } catch (err) {
-        logWithTime(`❌ Error in hierarchyGuard middleware: ${err.message}`);
+        logMiddlewareError(`❌ Internal Error in hierarchyGuard middleware`, req);
         return throwInternalServerError(res, err);
     }
 };

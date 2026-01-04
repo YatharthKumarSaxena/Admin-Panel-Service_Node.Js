@@ -1,29 +1,72 @@
-const { validateCreateAdminRequestBody } = require("./validate-request-body.middleware");
+const {
+  validateCreateAdminRequestBody,
+  validateUpdateAdminDetailsRequestBody,
+  validateActivateAdminRequestBody,
+  validateDeactivateAdminRequestBody,
+  validateApproveActivationRequestBody,
+  validateRejectActivationRequestBody,
+  validateApproveDeactivationRequestBody,
+  validateRejectDeactivationRequestBody,
+  validateCreateActivationRequestBody,
+  validateCreateDeactivationRequestBody,
+  validateChangeSupervisorRequestBody,
+  validateViewAdminActivityTrackerRequestBody,
+  validateListActivityTrackerRequestBody
+} = require("./validate-request-body.middleware");
+
+const {
+  validateCreateAdminFields,
+  validateUpdateAdminDetailsFields,
+  validateActivateAdminFields,
+  validateDeactivateAdminFields,
+  validateApproveActivationRequestFields,
+  validateRejectActivationRequestFields,
+  validateApproveDeactivationRequestFields,
+  validateRejectDeactivationRequestFields,
+  validateCreateActivationRequestFields,
+  validateCreateDeactivationRequestFields,
+  validateChangeSupervisorFields,
+  validateViewAdminActivityTrackerFields,
+  validateListActivityTrackerFields,
+} = require("./field-validation.middleware");
+
 const { validateCreateAdminInBulkRequestBody } = require("./validate-xlsx-body.middleware");
 const { RoleMiddlewares } = require("./verify-admin-type.middleware");
 const { hierarchyGuard } = require("./role-hierarchy.middleware");
-const {
-  validateActivateAdminRequestBody,
-  validateDeactivateAdminRequestBody,
-  validateBlockAdminRequestBody,
-  validateUnblockAdminRequestBody
-} = require("./validate-admin-status-operations.middleware");
-const {
-  validateStatusRequestBody,
-  validateReviewRequestBody
-} = require("./validate-status-request.middleware");
-const { validateChangeSupervisorRequestBody } = require("./validate-change-supervisor.middleware");
 
 const adminMiddlewares = {
+  // Request Body Validation (Required Fields)
   validateCreateAdminRequestBody,
-  validateCreateAdminInBulkRequestBody,
+  validateUpdateAdminDetailsRequestBody,
   validateActivateAdminRequestBody,
   validateDeactivateAdminRequestBody,
-  validateBlockAdminRequestBody,
-  validateUnblockAdminRequestBody,
-  validateStatusRequestBody,
-  validateReviewRequestBody,
+  validateApproveActivationRequestBody,
+  validateRejectActivationRequestBody,
+  validateApproveDeactivationRequestBody,
+  validateRejectDeactivationRequestBody,
+  validateCreateActivationRequestBody,
+  validateCreateDeactivationRequestBody,
   validateChangeSupervisorRequestBody,
+  validateCreateAdminInBulkRequestBody,
+  validateViewAdminActivityTrackerRequestBody,
+  validateListActivityTrackerRequestBody,
+
+  // Field Validation (Enum/Regex/Length)
+  validateCreateAdminFields,
+  validateUpdateAdminDetailsFields,
+  validateActivateAdminFields,
+  validateDeactivateAdminFields,
+  validateApproveActivationRequestFields,
+  validateRejectActivationRequestFields,
+  validateApproveDeactivationRequestFields,
+  validateRejectDeactivationRequestFields,
+  validateCreateActivationRequestFields,
+  validateCreateDeactivationRequestFields,
+  validateChangeSupervisorFields,
+  validateViewAdminActivityTrackerFields,
+  validateListActivityTrackerFields,
+
+  // Role & Hierarchy
   hierarchyGuard,
   ...RoleMiddlewares
 };
