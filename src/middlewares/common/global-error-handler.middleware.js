@@ -8,9 +8,6 @@ const { logWithTime } = require("@utils/time-stamps.util");
 
 const globalErrorHandler = (err, req, res, next) => {
     logWithTime("💥 Uncaught Server Error: " + err.message);
-
-    if (res.headersSent) return; // 🔐 Prevent duplicate response
-
     return throwInternalServerError(res, err);
 };
 

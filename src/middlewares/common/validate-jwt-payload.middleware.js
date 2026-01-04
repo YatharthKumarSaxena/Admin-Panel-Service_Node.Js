@@ -5,7 +5,7 @@ const {
 } = require("@utils/error-handler.util");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { tokenPayloads } = require("@configs/token.config");
-const { isValidUUID, isValidCustomID, isValidMongoID } = require("@utils/id-validators.util");
+const { isValidUUID, isValidadminId, isValidMongoID } = require("@utils/id-validators.util");
 const { validateObjectShape } = require("@utils/object-shape-validator.util");
 
 const validateJwtPayloadMiddleware = (req, res, next) => {
@@ -40,10 +40,10 @@ const validateJwtPayloadMiddleware = (req, res, next) => {
       return throwAccessDeniedError(res, "Invalid access token deviceId");
     }
     
-    if (!isValidCustomID(accessToken.customId)) {
-      logWithTime(`❌ [validateJwtPayloadMiddleware] Invalid access token customId format`);
-      logMiddlewareError("validateJwtPayloadMiddleware", "Access token customId validation failed", req);
-      return throwAccessDeniedError(res, "Invalid access token customId");
+    if (!isValidadminId(accessToken.adminId)) {
+      logWithTime(`❌ [validateJwtPayloadMiddleware] Invalid access token adminId format`);
+      logMiddlewareError("validateJwtPayloadMiddleware", "Access token adminId validation failed", req);
+      return throwAccessDeniedError(res, "Invalid access token adminId");
     }
     if (!isValidMongoID(accessToken.id)) {
       logWithTime(`❌ [validateJwtPayloadMiddleware] Invalid access token id format`);
@@ -57,10 +57,10 @@ const validateJwtPayloadMiddleware = (req, res, next) => {
       logMiddlewareError("validateJwtPayloadMiddleware", "Refresh token deviceId validation failed", req);
       return throwAccessDeniedError(res, "Invalid refresh token deviceId");
     }
-    if (!isValidCustomID(refreshToken.customId)) {
-      logWithTime(`❌ [validateJwtPayloadMiddleware] Invalid refresh token customId format`);
-      logMiddlewareError("validateJwtPayloadMiddleware", "Refresh token customId validation failed", req);
-      return throwAccessDeniedError(res, "Invalid refresh token customId");
+    if (!isValidadminId(refreshToken.adminId)) {
+      logWithTime(`❌ [validateJwtPayloadMiddleware] Invalid refresh token adminId format`);
+      logMiddlewareError("validateJwtPayloadMiddleware", "Refresh token adminId validation failed", req);
+      return throwAccessDeniedError(res, "Invalid refresh token adminId");
     }
     if (!isValidMongoID(refreshToken.id)) {
       logWithTime(`❌ [validateJwtPayloadMiddleware] Invalid refresh token id format`);
@@ -75,7 +75,7 @@ const validateJwtPayloadMiddleware = (req, res, next) => {
     }
 
     // 🔁 Custom ID match check
-    if (accessToken.customId !== refreshToken.customId) {
+    if (accessToken.adminId !== refreshToken.adminId) {
       logMiddlewareError("validateJwtPayloadMiddleware", "Access and refresh token Custom ID mismatch", req);
       return throwAccessDeniedError(res, "Token Custom ID mismatch");
     }

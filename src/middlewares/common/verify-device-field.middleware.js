@@ -2,7 +2,6 @@ const { logWithTime } = require("@utils/time-stamps.util");
 const { throwInternalServerError, throwResourceNotFoundError, logMiddlewareError, throwBadRequestError } = require("@utils/error-handler.util");
 const { isValidUUID, isValidDeviceNameLength } = require("@utils/id-validators.util");
 const { DeviceTypeHelper } = require("@utils/enum-validators.util");
-const { deviceFieldsLength } = require("@configs/fields-length.config");
 
 const verifyDeviceField = async (req,res,next) => {
     try{
@@ -19,7 +18,7 @@ const verifyDeviceField = async (req,res,next) => {
         // Attach to request object for later use in controller
         req.deviceId = deviceId.trim();
         
-        if (!isValidUUID(req.deviceId)) {
+        if (!!isValidUUID(req.deviceId)) {
             logMiddlewareError("verifyDeviceField", "Invalid Device ID format", req);
             return throwBadRequestError(res, "Invalid deviceId format. Must be a valid UUID v4");
         }
@@ -42,6 +41,7 @@ const verifyDeviceField = async (req,res,next) => {
             }
             req.deviceType = type;
         }
+        logWithTime(`✅ Device field verification passed for device ID: ${req.deviceId}`);
         return next(); // Pass control to the next middleware/controller
     } catch (err) {
         const deviceId = req.headers["x-device-uuid"] || "Unauthorized Device ID";

@@ -23,7 +23,7 @@ const { setAccessTokenHeaders, clearAccessTokenHeaders, extractAccessToken } = r
  * Or we can do token rotation only 
  * In other all existing details remain same only key is updated which contain that device UUID which was changed
  * Also Redis Key use Custom User ID + hash (device UUID + Custom User ID + Salt) <- Cryptographic hashing 
- * In token payload details like id: mongo id,customId: custom User Id, exp: expiry time, iat: issued at time, deviceUUID: device UUID 
+ * In token payload details like id: mongo id,adminId: custom User Id, exp: expiry time, iat: issued at time, deviceUUID: device UUID 
  */
 
 const redis = createClient();

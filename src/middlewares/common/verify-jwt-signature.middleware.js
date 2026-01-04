@@ -38,22 +38,22 @@ const verifyJWTSignature = async (req, res, next) => {
       }
     }
 
-    // 🧠 Resolve identity via customId
-    const customId = accessToken.customId;
-    let admin = await AdminModel.findOne({ adminId: customId });
+    // 🧠 Resolve identity via adminId
+    const adminId = accessToken.adminId;
+    let admin = await AdminModel.findOne({ adminId: adminId });
 
     if (!admin) {
-      const user = await UserModel.findOne({ userId: customId });
+      const user = await UserModel.findOne({ userId: adminId });
       if (!user) {
-        logWithTime(`❌ No user/admin found for customId: ${customId}`);
+        logWithTime(`❌ No user/admin found for adminId: ${adminId}`);
         return throwDBResourceNotFoundError(res, "Identity", "No matching user or admin found");
       }
 
       req.admin = user;
-      logWithTime(`✅ Verified user for customId: ${customId}, deviceId: ${deviceId}`);
+      logWithTime(`✅ Verified user for adminId: ${adminId}, deviceId: ${deviceId}`);
     } else {
       req.admin = admin;
-      logWithTime(`✅ Verified admin for customId: ${customId}, deviceId: ${deviceId}`);
+      logWithTime(`✅ Verified admin for adminId: ${adminId}, deviceId: ${deviceId}`);
     }
 
     return next();
