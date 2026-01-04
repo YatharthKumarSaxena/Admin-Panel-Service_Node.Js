@@ -8,6 +8,7 @@ const { adminIDPrefix } = require("@configs/system.config");
  * Decrements the sequence to avoid gaps in adminId
  * @returns {Promise<boolean>} Success status
  */
+
 const rollbackAdminCounter = async () => {
   try {
     const counter = await CounterModel.findOneAndUpdate(
