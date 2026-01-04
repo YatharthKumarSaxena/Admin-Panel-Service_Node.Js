@@ -7,32 +7,6 @@ const { adminTemplate } = require("@services/templates");
  */
 
 /**
- * 📬 Send Welcome Email (Admin Created)
- */
-
-const sendWelcomeEmail = (email, adminId, adminType, createdBy) => {
-  if (!email) return;
-
-  const config = {
-    ...adminTemplate.adminCreated,
-    user_name: adminType,
-    details: {
-      'Admin ID': adminId,
-      'Role': adminType,
-      'Email': email,
-      'Created By': createdBy,
-      'Created At': new Date().toLocaleString()
-    }
-  };
-
-  // Replace placeholders
-  config.actionlink = config.actionlink.replace('<ADMIN_PANEL_LINK>', process.env.ADMIN_PANEL_LINK || '#');
-  config.action_link = config.action_link.replace('<ADMIN_PANEL_LINK>', process.env.ADMIN_PANEL_LINK || '#');
-
-  sendEmail(email, config);
-};
-
-/**
  * ✅ Send Account Activated Email
  */
 const sendActivationEmail = (email, adminId, adminType, activatedBy) => {
@@ -77,31 +51,6 @@ const sendDeactivationEmail = (email, adminId, adminType, deactivatedBy, reason)
     user_name: adminType,
     details: detailsObj
   };
-
-  sendEmail(email, config);
-};
-
-/**
- * 🔄 Send Role Changed Email
- */
-const sendRoleChangeEmail = (email, adminId, oldRole, newRole, changedBy) => {
-  if (!email) return;
-
-  const config = {
-    ...adminTemplate.adminRoleChanged,
-    user_name: newRole,
-    action: `Role Changed: ${oldRole} → ${newRole}`,
-    details: {
-      'Admin ID': adminId,
-      'Previous Role': oldRole,
-      'New Role': newRole,
-      'Changed By': changedBy,
-      'Changed At': new Date().toLocaleString()
-    }
-  };
-
-  config.actionlink = config.actionlink.replace('<ADMIN_PANEL_LINK>', process.env.ADMIN_PANEL_LINK || '#');
-  config.action_link = config.action_link.replace('<ADMIN_PANEL_LINK>', process.env.ADMIN_PANEL_LINK || '#');
 
   sendEmail(email, config);
 };
@@ -177,40 +126,10 @@ const sendAccountUnblockedEmail = (email, adminId, adminType, unblockedBy) => {
   sendEmail(email, config);
 };
 
-/**
- * 📋 Send Role Change Request Email
- */
-const sendRoleChangeRequestEmail = (email, requestId, targetAdminId, currentRole, requestedRole, submittedBy) => {
-  if (!email) return;
-
-  const config = {
-    ...adminTemplate.roleChangeRequested,
-    user_name: currentRole,
-    details: {
-      'Request ID': requestId,
-      'Target Admin': targetAdminId,
-      'Current Role': currentRole,
-      'Requested Role': requestedRole,
-      'Submitted By': submittedBy,
-      'Submitted At': new Date().toLocaleString()
-    }
-  };
-
-  // Replace REQUEST_LINK placeholder
-  const requestLink = `${process.env.ADMIN_PANEL_LINK}/requests/${requestId}` || '#';
-  config.actionlink = config.actionlink.replace('<REQUEST_LINK>', requestLink);
-  config.action_link = config.action_link.replace('<REQUEST_LINK>', requestLink);
-
-  sendEmail(email, config);
-};
-
 module.exports = {
-  sendWelcomeEmail,
   sendActivationEmail,
   sendDeactivationEmail,
-  sendRoleChangeEmail,
   sendDetailsUpdatedEmail,
   sendAccountBlockedEmail,
-  sendAccountUnblockedEmail,
-  sendRoleChangeRequestEmail,
+  sendAccountUnblockedEmail
 };

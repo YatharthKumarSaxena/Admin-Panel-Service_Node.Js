@@ -1,16 +1,139 @@
+const { sendEmail } = require("@services/mail.service");
+const { sendSMS } = require("@services/sms.service");
+const { adminTemplate } = require("@services/templates");
+const { smsTemplate } = require("@services/templates");
 const { AuthModes } = require("@configs/enums.config");
 const { logWithTime } = require("@utils/time-stamps.util");
 
 /**
- * 🚀 Notification Dispatcher Utility
- * Smart dispatcher that sends Email/SMS based on AuthMode
- * 
- * Handles the logic of WHEN to send what notification
- * Controllers just pass the functions, this util decides what to call
+ * 🏭 Notification Dispatcher Factory
+ * Sends email/SMS based on AUTH_MODE
+ * Handles EITHER mode by checking which field exists
  */
 
 /**
- * 📤 Dispatch notification based on AuthMode
+ * 📤 Send notification based on auth mode (NEW FACTORY APPROACH)
+ * @param {Object} recipient - {email, fullPhoneNumber, adminId, adminType}
+ * @param {String} templateName - Name of template in adminTemplate/smsTemplate
+ * @param {Object} emailData - Data object for email template
+ * @param {Array} smsArgs - Arguments array for SMS template function
+ */
+const sendNotificationFactory = (recipient, templateName, emailData = {}, smsArgs = []) => {
+  if (!recipient) {
+    logWithTime("⚠️ No recipient provided for notification");
+    return;
+  }
+
+  const authMode = process.env.DEFAULT_AUTH_MODE || AuthModes.BOTH;
+  const { email, fullPhoneNumber, adminId, adminType } = recipient;
+
+  try {
+    switch (authMode) {
+      case AuthModes.EMAIL:
+        // Only email
+        if (email) {
+          sendEmailNotification(email, templateName, emailData, adminType || 'Admin');
+        } else {
+          logWithTime(`⚠️ Email not available for ${adminId}`);
+        }
+        break;
+
+      case AuthModes.PHONE:
+        // Only SMS
+        if (fullPhoneNumber) {
+          sendSMSNotification(fullPhoneNumber, templateName, smsArgs);
+        } else {
+          logWithTime(`⚠️ Phone number not available for ${adminId}`);
+        }
+        break;
+
+      case AuthModes.BOTH:
+        // Both email and SMS
+        if (email) {
+          sendEmailNotification(email, templateName, emailData, adminType || 'Admin');
+        }
+        if (fullPhoneNumber) {
+          sendSMSNotification(fullPhoneNumber, templateName, smsArgs);
+        }
+        if (!email && !fullPhoneNumber) {
+          logWithTime(`⚠️ Neither email nor phone available for ${adminId}`);
+        }
+        break;
+
+      case AuthModes.EITHER:
+        // Send to whichever exists (priority: email)
+        if (email) {
+          sendEmailNotification(email, templateName, emailData, adminType || 'Admin');
+        } else if (fullPhoneNumber) {
+          sendSMSNotification(fullPhoneNumber, templateName, smsArgs);
+        } else {
+          logWithTime(`⚠️ Neither email nor phone available for ${adminId}`);
+        }
+        break;
+
+      default:
+        logWithTime(`⚠️ Unknown auth mode: ${authMode}`);
+    }
+  } catch (error) {
+    logWithTime(`❌ Error sending notification: ${error.message}`);
+  }
+};
+
+/**
+ * 📧 Send email notification
+ */
+const sendEmailNotification = (email, templateName, emailData, userName = 'Admin') => {
+  try {
+    const template = adminTemplate[templateName];
+    
+    if (!template) {
+      logWithTime(`⚠️ Email template not found: ${templateName}`);
+      return;
+    }
+
+    const config = {
+      ...template,
+      user_name: userName,
+      details: emailData.details || {}
+    };
+
+    // Replace dynamic links if present
+    if (config.actionlink) {
+      config.actionlink = config.actionlink.replace('<ADMIN_PANEL_LINK>', process.env.ADMIN_PANEL_LINK || '#');
+    }
+    if (config.action_link) {
+      config.action_link = config.action_link.replace('<ADMIN_PANEL_LINK>', process.env.ADMIN_PANEL_LINK || '#');
+    }
+
+    sendEmail(email, config);
+    logWithTime(`📧 Email sent to ${email} using template: ${templateName}`);
+  } catch (error) {
+    logWithTime(`❌ Error sending email: ${error.message}`);
+  }
+};
+
+/**
+ * 📱 Send SMS notification
+ */
+const sendSMSNotification = (phoneNumber, templateName, args = []) => {
+  try {
+    const templateFunction = smsTemplate[templateName];
+    
+    if (!templateFunction || typeof templateFunction !== 'function') {
+      logWithTime(`⚠️ SMS template not found or invalid: ${templateName}`);
+      return;
+    }
+
+    const message = templateFunction(...args);
+    sendSMS(phoneNumber, message);
+    logWithTime(`📱 SMS sent to ${phoneNumber} using template: ${templateName}`);
+  } catch (error) {
+    logWithTime(`❌ Error sending SMS: ${error.message}`);
+  }
+};
+
+/**
+ * 📤 Dispatch notification based on AuthMode (OLD APPROACH - KEPT FOR BACKWARD COMPATIBILITY)
  * @param {Object} options - Configuration object
  * @param {string} options.authMode - AuthMode (EMAIL, PHONE, BOTH, EITHER)
  * @param {string|null} options.email - Email address
@@ -164,5 +287,8 @@ const notifyUser = (user, emailFunction, smsFunction, eventType) => {
 module.exports = {
   dispatchNotification,
   notifyAdmin,
-  notifyUser
+  notifyUser,
+  sendNotificationFactory,
+  sendEmailNotification,
+  sendSMSNotification
 };

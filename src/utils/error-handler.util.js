@@ -8,7 +8,7 @@
 
 // Extracts file that include timeStamp function
 const {logWithTime} = require("./time-stamps.util");
-const { BAD_REQUEST, INTERNAL_ERROR, UNAUTHORIZED, FORBIDDEN, CONFLICT } = require("@configs/http-status.config");
+const { BAD_REQUEST, INTERNAL_ERROR, UNAUTHORIZED, FORBIDDEN, CONFLICT, UNPROCESSABLE_ENTITY, NOT_FOUND } = require("@configs/http-status.config");
 
 const errorMessage = (err) => {
     logWithTime("🛑 Error occurred:");
@@ -101,7 +101,7 @@ const throwBadRequestError = (res, reason = "Bad Request", details = null) => {
 const logMiddlewareError = (middlewareName, reason, req) => {
   const adminId = req?.admin?.adminId || req?.admin?.userId || "UNKNOWN_admin";
   const deviceId = req?.deviceId || "UNKNOWN_device";
-  logWithTime(`❌ [${middlewareName}] Error: ${reason} | admin: (${adminId}) | device: (${deviceId})`);
+  logWithTime(`❌ [${middlewareName}Middleware] Error: ${reason} | admin: (${adminId}) | device: (${deviceId})`);
 };
 
 
@@ -121,7 +121,7 @@ const getLogIdentifiers = (req) => {
 
 const throwDBResourceNotFoundError = (res, resource) => {
     logWithTime("⚠️ Resource Not Found in Database: " + resource);
-    return res.status(BAD_REQUEST).json({
+    return res.status(NOT_FOUND).json({
         success: false,
         type: "ResourceNotFound",
         resource,
@@ -132,11 +132,21 @@ const throwDBResourceNotFoundError = (res, resource) => {
 
 const throwSessionExpiredError = (res, reason = "Session expired") => {
     logWithTime("⏳ Session Expired: " + reason);
-    return res.status(FORBIDDEN).json({
+    return res.status(UNAUTHORIZED).json({
         success: false,
         type: "SessionExpired",
         warning: reason,
         message: "Your session has expired. Please login again to continue."
+    });
+};
+
+const throwValidationError = (res, errors) => {
+    logWithTime("⚠️ Validation Error: " + JSON.stringify(errors));
+    return res.status(UNPROCESSABLE_ENTITY).json({
+        success: false,
+        type: "ValidationError",
+        errors,
+        message: "The request contains invalid data. Please review the errors and try again."
     });
 };
 
@@ -151,5 +161,6 @@ module.exports = {
     getLogIdentifiers,
     throwDBResourceNotFoundError,
     throwSessionExpiredError,
-    throwBadRequestError
+    throwBadRequestError,
+    throwValidationError
 }

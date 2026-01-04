@@ -27,7 +27,9 @@ const logActivityTrackerEvent = async (req, eventType, logOptions = {}) => {
 
       // 2. Prepare Admin Details based on Auth Mode
       const AuthMode = process.env.DEFAULT_AUTH_MODE || AuthModes.BOTH;
-      const adminDetails = {};
+      const adminDetails = {
+        adminId: admin.adminId  // ✅ Always include adminId in adminDetails
+      };
       
       // Data Cleaning
       const rawEmail = admin.email ? admin.email.trim().toLowerCase() : null;

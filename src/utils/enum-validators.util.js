@@ -1,15 +1,34 @@
 // ✅ Enum Helpers using Factory Design Pattern
 const { isValidEnumValue, getEnumKeyByValue } = require("./validators-factory.util");
 const { logWithTime } = require("./time-stamps.util");
-const { throwInvalidResourceError } = require("@utils/error-handler.util")
+
 const {
+  AdminType,
+  AuthModes,
   AdminActionReasons,
   BlockReasons,
   UnblockReasons,
-  BlockVia,
-  UnblockVia,
+  ActivationReasons,
+  DeactivationReasons,
+  AuthLogCheckReasons,
+  RequestReviewReasons,
+  UserAccountDetailsReasons,
+  UserActiveDevicesReasons,
+  UpdateAdminDetailsReasons,
+  ChangeSupervisorReasons,
   DeviceType,
-  PerformedBy
+  PerformedBy,
+  Roles,
+  ServiceName,
+  Status,
+  IdentifierKeys,
+  AuditMode,
+  requestType,
+  requestStatus,
+  viewScope,
+  ViewActivityTrackerReasons,
+  BlockDeviceReasons,
+  UnblockDeviceReasons
 } = require("@configs/enums.config");
 
 const { tokenPayloads } = require("@configs/token.config");
@@ -44,19 +63,59 @@ const createEnumHelper = (enumObj, name) => ({
 const AdminActionHelper = createEnumHelper(AdminActionReasons, "AdminActionReasons");
 const BlockReasonHelper = createEnumHelper(BlockReasons, "BlockReasons");
 const UnblockReasonHelper = createEnumHelper(UnblockReasons, "UnblockReasons");
-const BlockViaHelper = createEnumHelper(BlockVia, "BlockVia");
-const UnblockViaHelper = createEnumHelper(UnblockVia, "UnblockVia");
+const ActivationReasonHelper = createEnumHelper(ActivationReasons, "ActivationReasons");
+const DeactivationReasonHelper = createEnumHelper(DeactivationReasons, "DeactivationReasons");
+const AuthLogCheckReasonHelper = createEnumHelper(AuthLogCheckReasons, "AuthLogCheckReasons");
+const RequestReviewReasonHelper = createEnumHelper(RequestReviewReasons, "RequestReviewReasons");
+const UserAccountDetailsReasonHelper = createEnumHelper(UserAccountDetailsReasons, "UserAccountDetailsReasons");
+const UserActiveDevicesReasonHelper = createEnumHelper(UserActiveDevicesReasons, "UserActiveDevicesReasons");
+const UpdateAdminDetailsReasonHelper = createEnumHelper(UpdateAdminDetailsReasons, "UpdateAdminDetailsReasons");
+const ChangeSupervisorReasonHelper = createEnumHelper(ChangeSupervisorReasons, "ChangeSupervisorReasons");
 const DeviceTypeHelper = createEnumHelper(DeviceType, "DeviceType");
 const TokenPayloadHelper = createEnumHelper(tokenPayloads, "TokenPayloads");
 const PerformedByHelper = createEnumHelper(PerformedBy,"PerformedBy")
+const AdminTypeHelper = createEnumHelper(AdminType, "AdminType");
+const AuthModesHelper = createEnumHelper(AuthModes, "AuthModes");
+const RolesHelper = createEnumHelper(Roles, "Roles");
+const ServiceNameHelper = createEnumHelper(ServiceName, "ServiceName");
+const StatusHelper = createEnumHelper(Status, "Status");
+const IdentifierKeysHelper = createEnumHelper(IdentifierKeys, "IdentifierKeys");
+const AuditModeHelper = createEnumHelper(AuditMode, "AuditMode");
+const RequestTypeHelper = createEnumHelper(requestType, "requestType");
+const RequestStatusHelper = createEnumHelper(requestStatus, "requestStatus");
+const ViewScopeHelper = createEnumHelper(viewScope, "viewScope");
+const ViewActivityTrackerReasonsHelper = createEnumHelper(ViewActivityTrackerReasons, "ViewActivityTrackerReasons");
+const BlockDeviceReasonHelper = createEnumHelper(BlockDeviceReasons, "BlockDeviceReasons");
+const UnblockDeviceReasonHelper = createEnumHelper(UnblockDeviceReasons, "UnblockDeviceReasons");
 
 module.exports = {
   AdminActionHelper,
   BlockReasonHelper,
   UnblockReasonHelper,
-  BlockViaHelper,
-  UnblockViaHelper,
+  ActivationReasonHelper,
+  DeactivationReasonHelper,
+  AuthLogCheckReasonHelper,
+  RequestReviewReasonHelper,
+  UserAccountDetailsReasonHelper,
+  UserActiveDevicesReasonHelper,
+  UpdateAdminDetailsReasonHelper,
+  ChangeSupervisorReasonHelper,
   PerformedByHelper,
   DeviceTypeHelper,
-  TokenPayloadHelper
+  TokenPayloadHelper,
+  AdminTypeHelper,
+  RoleHierarchyHelper,
+  AuthModesHelper,
+  RolesHelper,
+  ServiceNameHelper,
+  StatusHelper,
+  IdentifierKeysHelper,
+  AuditModeHelper,
+  RequestTypeHelper,
+  RequestStatusHelper,
+  ViewScopeHelper,
+  ViewActivityTrackerReasonsHelper,
+  BlockDeviceReasonHelper,
+  UnblockDeviceReasonHelper
 };
+
