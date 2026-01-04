@@ -1,39 +1,50 @@
 const adminCreationRequiredFields = [
-  "adminType"  // authModeValidator handles email/phone
+  "adminType"
 ];
-
 const adminCreationInBulkRequiredFields = [
   ...getAuthFields(),
   "adminType"
 ];
-
-// ========================================
-// 🔹 Admin Status Operation Fields
-// ========================================
-const activateAdminRequiredFields = ["reason"];   // WHY activating?
-const deactivateAdminRequiredFields = ["reason"]; // WHY deactivating?
-const blockAdminRequiredFields = ["reason"];      // WHY blocking?
-const unblockAdminRequiredFields = ["reason"];    // WHY unblocking?
-const changeSupervisorRequiredFields = ["newSupervisorId", "reason"]; // Change supervisor
-
-// ========================================
-// 🔹 User Status Operation Fields
-// ========================================
-const blockUserRequiredFields = ["reason"];
-const unblockUserRequiredFields = ["reason"];
-const blockDeviceRequiredFields = ["reason"];
+const updateAdminDetailsRequiredFields = ["reason"];
+const activateAdminRequiredFields = ["reason"];
+const deactivateAdminRequiredFields = ["reason"];
+const approveActivationRequestRequiredFields = ["reviewNotes"];
+const rejectActivationRequestRequiredFields = ["reviewNotes"];
+const approveDeactivationRequestRequiredFields = ["reviewNotes"];
+const rejectDeactivationRequestRequiredFields = ["reviewNotes"];
+const createActivationRequestRequiredFields = ["reason", "notes"];
+const createDeactivationRequestRequiredFields = ["reason", "notes"];
+const changeSupervisorRequiredFields = ["newSupervisorId", "reason"];
+const blockUserRequiredFields = ["reason", "reasonDetails"];
+const unblockUserRequiredFields = ["reason", "reasonDetails"];
+const provideUserAccountDetailsRequiredFields = ["reason"];
+const getUserActiveDevicesRequiredFields = ["reason"];
+const checkAuthLogsRequiredFields = ["reason"];
+const viewAdminActivityTrackerRequiredFields = ["reason"];
+const listActivityTrackerRequiredFields = ["reason"];
+const blockDeviceRequiredFields = ["reason", "reasonDetails"];
 const unblockDeviceRequiredFields = ["reason"];
 
 module.exports = {
   adminCreationRequiredFields,
   adminCreationInBulkRequiredFields,
+  updateAdminDetailsRequiredFields,
   activateAdminRequiredFields,
   deactivateAdminRequiredFields,
-  blockAdminRequiredFields,
-  unblockAdminRequiredFields,
+  approveActivationRequestRequiredFields,
+  rejectActivationRequestRequiredFields,
+  approveDeactivationRequestRequiredFields,
+  rejectDeactivationRequestRequiredFields,
+  createActivationRequestRequiredFields,
+  createDeactivationRequestRequiredFields,
   changeSupervisorRequiredFields,
   blockUserRequiredFields,
   unblockUserRequiredFields,
+  provideUserAccountDetailsRequiredFields,
+  getUserActiveDevicesRequiredFields,
+  checkAuthLogsRequiredFields,
+  viewAdminActivityTrackerRequiredFields,
+  listActivityTrackerRequiredFields,
   blockDeviceRequiredFields,
   unblockDeviceRequiredFields
 };

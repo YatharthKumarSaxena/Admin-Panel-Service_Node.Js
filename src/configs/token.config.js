@@ -1,6 +1,6 @@
 const tokenPayloads = Object.freeze({
     id: "id",
-    customId: "customId",
+    adminId: "adminId",
     deviceUUID: "deviceUUID",
     exp: "exp",
     iat: "iat"

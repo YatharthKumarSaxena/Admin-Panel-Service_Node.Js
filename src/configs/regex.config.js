@@ -3,5 +3,6 @@ module.exports = {
     emailRegex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     UUID_V4_REGEX: /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
     mongoIdRegex: /^[a-f\d]{24}$/i,
-    customIdRegex: /^[A-Z]{3}[0-9]{7}$/
+    adminIdRegex: /^ADM[0-9]{7}$/,
+    userIdRegex: /^USR[0-9]{7}$/
 }

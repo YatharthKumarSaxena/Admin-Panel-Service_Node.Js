@@ -3,7 +3,7 @@
 module.exports = {
   fullPhoneNumberLength: {
     min: 11,
-    max: 16 // E.164 max with '+' sign
+    max: 16 
   },
   emailLength: {
     min: 5,
@@ -18,14 +18,19 @@ module.exports = {
     max: 500
   },
   notesFieldLength: {
+    min: 0,
     max: 500
   },
-  customIdLength: {
+  adminIdLength: {
     min: 10, 
     max: 10
   }
   ,mongoIdLength: {
     min: 24,
     max: 24
+  },
+  uuidV4Length: {
+    min: 36,
+    max: 36
   }
 };

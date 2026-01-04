@@ -65,7 +65,16 @@ module.exports = {
             VIEW_STATUS_REQUEST: `/status-request/:requestId`              // GET /admin-panel-service/api/v1/admin/status-request/:requestId (both activation & deactivation)
          },
         INTERNAL: {
-            SYNC_USER_DATA: `/sync-user-data`               // POST /admin-panel-service/api/v1/internal/sync-user-data
+            SYNC_USER_DATA: `/sync-user-data`,              // POST /admin-panel-service/api/v1/internal/sync-user-data
+            BLOCK_DEVICE: `/block-device`,                  // POST /admin-panel-service/api/v1/internal/block-device
+            UNBLOCK_DEVICE: `/unblock-device`               // POST /admin-panel-service/api/v1/internal/unblock-device
         }
+    },
+
+    // 🔒 Internal Service Routes (for service-to-service communication)
+    INTERNAL_ROUTES: {
+        SYNC_USER_DATA: `/sync-user-data`,
+        BLOCK_DEVICE: `/block-device`,
+        UNBLOCK_DEVICE: `/unblock-device`
     }
 }
