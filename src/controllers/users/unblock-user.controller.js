@@ -4,6 +4,8 @@ const { throwBadRequestError, throwInternalServerError, getLogIdentifiers } = re
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { UnblockReasons } = require("@configs/enums.config");
+const { notifyUserUnblocked, notifyUserUnblockedToSupervisor } = require("@utils/admin-notifications.util");
+const { fetchAdmin } = require("@/utils/fetch-admin.util");
 
 /**
  * Unblock User Controller
@@ -12,7 +14,7 @@ const { UnblockReasons } = require("@configs/enums.config");
 const unblockUser = async (req, res) => {
   try {
     const admin = req.admin;
-    const { userId, reason, reasonDetails } = req.body;
+    const { reason, reasonDetails } = req.body;
 
     // Validate unblock reason
     if (!Object.values(UnblockReasons).includes(reason)) {
@@ -23,6 +25,8 @@ const unblockUser = async (req, res) => {
     // Find user (assumed to be in req.foundUser by middleware)
     const user = req.foundUser;
 
+    const userId = user.userId;
+    
     // Check if user is actually blocked
     if (!user.isBlocked) {
       logWithTime(`⚠️ User ${userId} is not blocked ${getLogIdentifiers(req)}`);
@@ -33,13 +37,21 @@ const unblockUser = async (req, res) => {
     user.isBlocked = false;
     user.unblockReason = reason;
     user.unblockReasonDetails = reasonDetails;
-    user.unblockedAt = new Date();
     user.unblockedBy = admin.adminId;
     user.updatedBy = admin.adminId;
 
     await user.save();
 
     logWithTime(`✅ User ${userId} unblocked successfully by ${admin.adminId}`);
+
+    // Send notifications
+    await notifyUserUnblocked(user, admin, reason);
+    
+    // Notify supervisor if different from actor
+    const supervisor = await fetchAdmin(null, null, admin.supervisorId);
+    if(supervisor) {
+      await notifyUserUnblockedToSupervisor(supervisor, user, admin, reason, reasonDetails);
+    }
 
     // Update isBlocked status in Auth Service and all other services
     

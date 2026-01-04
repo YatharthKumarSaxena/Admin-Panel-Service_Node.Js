@@ -13,9 +13,11 @@ const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const getUserActiveDevices = async (req, res) => {
   try {
     const admin = req.admin;
-    const { userId, reason } = req.params;
+    const { reason } = req.params;
 
     const user = req.foundUser;
+
+    const userId = user.userId;
 
     logWithTime(`🔍 Admin ${admin.adminId} fetching active devices for user ${userId}`);
 

@@ -6,45 +6,64 @@ const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 
 /**
  * Check Auth Logs Controller
- * Retrieves authentication logs for a specific user from Auth Service
+ * Forwards request to Authentication Service with admin credentials
+ * Access control handled by Auth Service
  * 
  * NOTE: This will require integration with Authentication Service API
  */
 
 const checkAuthLogs = async (req, res) => {
   try {
-    const admin = req.admin;
-    const { userId, limit = 50, offset = 0, startDate, endDate } = req.query;
+    const actor = req.admin;
+    const { 
+      targetId,       // User ID or Admin ID to check logs for
+      limit = 50, 
+      offset = 0, 
+      startDate, 
+      endDate,
+      reason
+    } = req.query;
 
-    const user = req.foundUser;
+    if (!targetId) {
+      return res.status(400).json({
+        message: "targetId is required"
+      });
+    }
 
-    logWithTime(`🔍 Admin ${admin.adminId} checking auth logs for user ${userId}`);
+    logWithTime(`🔍 Admin ${actor.adminId} (${actor.adminType}) requesting auth logs for: ${targetId}`);
 
-    // TODO: Make API call to Authentication Service to fetch auth logs
-    // const authLogs = await fetchAuthLogsFromAuthService(userId, { limit, offset, startDate, endDate });
+    // TODO: Make API call to Authentication Service
+    // Auth Service will handle access control internally
+    // const authLogs = await fetchAuthLogsFromAuthService(targetId, {
+    //   requestedBy: actor.adminId,
+    //   requestedByType: actor.adminType,
+    //   limit, offset, startDate, endDate
+    // });
 
     // Placeholder response (to be replaced with actual Auth Service integration)
     const authLogs = {
-      userId: userId,
+      targetId: targetId,
       totalLogs: 0,
       logs: [],
-      message: "Auth Service integration pending"
+      message: "Auth Service integration pending",
+      note: "Access control will be enforced by Authentication Service"
     };
 
     // Log activity
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.CHECK_AUTH_LOGS, {
-      description: `Admin ${admin.adminId} checked auth logs for user ${userId}`,
+      description: `Admin ${actor.adminId} checked auth logs for ${targetId}`,
       adminActions: {
-        targetUserId: userId,
-        reason: reason,
-        filters: { limit, offset, startDate, endDate }
+        targetId: targetId,
+        filters: { limit, offset, startDate, endDate },
+        reason: reason
       }
     });
 
     return res.status(OK).json({
       message: "Auth logs retrieved successfully",
       data: authLogs,
-      checkedBy: admin.adminId
+      checkedBy: actor.adminId,
+      checkedByType: actor.adminType
     });
 
   } catch (err) {

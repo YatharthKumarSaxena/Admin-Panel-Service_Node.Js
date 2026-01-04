@@ -4,6 +4,8 @@ const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throw
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { BlockReasons } = require("@configs/enums.config");
+const { notifyUserBlocked, notifyUserBlockedToSupervisor } = require("@utils/admin-notifications.util");
+const { fetchAdmin } = require("@/utils/fetch-admin.util");
 
 /**
  * Block User Controller
@@ -13,7 +15,7 @@ const { BlockReasons } = require("@configs/enums.config");
 const blockUser = async (req, res) => {
   try {
     const admin = req.admin;
-    const { userId, reason, reasonDetails } = req.body;
+    const { reason, reasonDetails } = req.body;
 
     // Validate block reason
     if (!Object.values(BlockReasons).includes(reason)) {
@@ -24,6 +26,8 @@ const blockUser = async (req, res) => {
     // Find user (assumed to be in req.foundUser by middleware)
     const user = req.foundUser;
 
+    const userId = user.userId;
+    
     // Check if already blocked
     if (user.isBlocked) {
       logWithTime(`⚠️ User ${userId} already blocked ${getLogIdentifiers(req)}`);
@@ -34,11 +38,19 @@ const blockUser = async (req, res) => {
     user.isBlocked = true;
     user.blockReason = reason;
     user.blockReasonDetails = reasonDetails;
-    user.blockedAt = new Date();
     user.blockedBy = admin.adminId;
     user.updatedBy = admin.adminId;
 
     await user.save();
+
+    // Send notifications
+    await notifyUserBlocked(user, admin, reason, reasonDetails);
+    
+    // Notify supervisor if different from actor
+    const supervisor = await fetchAdmin(null, null, admin.supervisorId);
+    if(supervisor) {
+      await notifyUserBlockedToSupervisor(supervisor, user, admin, reason, reasonDetails);
+    }
 
     // Update isBlocked status in Auth Service and all other services
     logWithTime(`✅ User ${userId} blocked successfully by ${admin.adminId}`);

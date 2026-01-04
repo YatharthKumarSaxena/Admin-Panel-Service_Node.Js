@@ -8,12 +8,15 @@ const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
  * Provide User Account Details Controller
  * Returns comprehensive user account information
  */
+
 const provideUserAccountDetails = async (req, res) => {
   try {
     const admin = req.admin;
-    const { userId, reason } = req.params;
+    const { reason } = req.params;
 
     const user = req.foundUser;
+
+    const userId = user.userId;
 
     logWithTime(`🔍 Admin ${admin.adminId} accessing account details for user ${userId}`);
 
