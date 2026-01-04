@@ -2,7 +2,8 @@ const { AuthModes } = require("@configs/enums.config");
 const { 
   throwBadRequestError, 
   throwDBResourceNotFoundError, 
-  throwInternalServerError 
+  throwInternalServerError, 
+  logMiddlewareError
 } = require("@utils/error-handler.util");
 
 /**
@@ -19,6 +20,7 @@ const {
  * - No silent modifications - client ko clear error milega
  * - Scalable: Koi bhi entity type ke liye kaam karega
  */
+
 const fetchEntityFactory = (fetchFunction, entityName) => {
   return async (req, res, next) => {
     try {
@@ -33,6 +35,7 @@ const fetchEntityFactory = (fetchFunction, entityName) => {
       // Agar userId hai to email/phone ignore karo
       if (userId) {
         if (email || fullPhoneNumber) {
+          logMiddlewareError("fetchEntity", "Cannot send userId with email or phone", req);
           return throwBadRequestError(
             res,
             "Cannot send userId with email or phone",
@@ -49,6 +52,7 @@ const fetchEntityFactory = (fetchFunction, entityName) => {
       // 📧 EMAIL Mode: ONLY email allowed, phone REJECT
       if (authMode === AuthModes.EMAIL) {
         if (fullPhoneNumber) {
+          logMiddlewareError("fetchEntity", "Phone number not allowed in EMAIL auth mode", req);
           return throwBadRequestError(
             res, 
             "Phone number not allowed in EMAIL auth mode",
@@ -56,6 +60,7 @@ const fetchEntityFactory = (fetchFunction, entityName) => {
           );
         }
         if (!email) {
+          logMiddlewareError("fetchEntity", "Email is required for EMAIL auth mode", req);
           return throwBadRequestError(
             res, 
             "Email is required for EMAIL auth mode",
@@ -69,6 +74,7 @@ const fetchEntityFactory = (fetchFunction, entityName) => {
       // 📱 PHONE Mode: ONLY phone allowed, email REJECT
       else if (authMode === AuthModes.PHONE) {
         if (email) {
+          logMiddlewareError("fetchEntity", "Email not allowed in PHONE auth mode", req);
           return throwBadRequestError(
             res, 
             "Email not allowed in PHONE auth mode",
@@ -76,6 +82,7 @@ const fetchEntityFactory = (fetchFunction, entityName) => {
           );
         }
         if (!fullPhoneNumber) {
+          logMiddlewareError("fetchEntity", "Phone number is required for PHONE auth mode", req);
           return throwBadRequestError(
             res, 
             "Phone number is required for PHONE auth mode",
@@ -89,6 +96,7 @@ const fetchEntityFactory = (fetchFunction, entityName) => {
       // 🔀 BOTH Mode: Dono chahiye exactly
       else if (authMode === AuthModes.BOTH) {
         if (!email || !fullPhoneNumber) {
+          logMiddlewareError("fetchEntity", "Both email and fullPhoneNumber are required for BOTH auth mode", req);
           return throwBadRequestError(
             res, 
             "Both email and fullPhoneNumber are required for BOTH auth mode",
@@ -102,6 +110,7 @@ const fetchEntityFactory = (fetchFunction, entityName) => {
       // ⚡ EITHER Mode: Koi ek chahiye (dono nahi, koi ek bhi nahi)
       else if (authMode === AuthModes.EITHER) {
         if (email && fullPhoneNumber) {
+          logMiddlewareError("fetchEntity", "Send only one identifier in EITHER auth mode", req);
           return throwBadRequestError(
             res,
             "Send only one identifier in EITHER auth mode",
@@ -109,6 +118,7 @@ const fetchEntityFactory = (fetchFunction, entityName) => {
           );
         }
         if (!email && !fullPhoneNumber) {
+          logMiddlewareError("fetchEntity", "Either email or fullPhoneNumber is required", req);
           return throwBadRequestError(
             res, 
             "Missing identifier", 
@@ -126,6 +136,7 @@ const fetchEntityFactory = (fetchFunction, entityName) => {
       const foundEntity = await fetchFunction(finalEmail, finalPhone, finalUserId);
       
       if (!foundEntity) {
+        logMiddlewareError("fetchEntity", `${entityName} not found`, req);
         return throwDBResourceNotFoundError(res, entityName);
       }
 
@@ -133,9 +144,10 @@ const fetchEntityFactory = (fetchFunction, entityName) => {
       // e.g., req.foundAdmin or req.foundUser
       req[`found${entityName}`] = foundEntity;
 
-      next();
+      return next();
       
     } catch (error) {
+      logMiddlewareError("fetchEntity", `Internal server error: ${error.message}`, req);
       return throwInternalServerError(res, error);
     }
   };

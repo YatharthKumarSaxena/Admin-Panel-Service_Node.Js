@@ -15,7 +15,6 @@ const validateXLSXMiddleware = (requiredFields, middlewareName) => {
       const result = validateXLSXFile(file, requiredFields);
 
       if (!result.valid) {
-        logWithTime(`❌ [${middlewareName}] XLSX validation failed: ${result.error}`);
         logMiddlewareError(middlewareName, "XLSX validation failed", req);
         return throwResourceNotFoundError(res, result.missingFields);
       }

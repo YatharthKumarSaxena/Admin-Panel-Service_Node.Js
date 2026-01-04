@@ -7,6 +7,7 @@ const { validateFieldRegex } = require("./validate-field-regex.middleware-factor
 const { validateFieldEnum } = require("./validate-field-enum.middleware-factory");
 const { validateMultipleEnums } = require("./validate-multiple-enums.middleware-factory");
 const { validateFields } = require("./validate-fields.middleware-factory");
+const { fieldValidationMiddleware } = require("./field-validation.middleware-factory");
 
 const factoryMiddlewares = {
     createRoleMiddleware,
@@ -17,7 +18,8 @@ const factoryMiddlewares = {
     validateFieldRegex,
     validateFieldEnum,
     validateMultipleEnums,
-    validateFields  // ✅ New combined validation factory
+    validateFields,  // ✅ Combined validation factory
+    fieldValidationMiddleware  // ✅ Dynamic field validation factory
 };
 
 module.exports = { factoryMiddlewares };

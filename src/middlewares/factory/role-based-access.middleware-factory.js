@@ -2,8 +2,7 @@ const { checkRole } = require("@utils/role.util");
 const {
   throwAccessDeniedError,
   throwInternalServerError,
-  logMiddlewareError,
-  errorMessage
+  logMiddlewareError
 } = require("@utils/error-handler.util");
 const { logWithTime } = require("@utils/time-stamps.util");
 
@@ -27,8 +26,7 @@ function createRoleMiddleware(allowedRoles, label) {
       return next();
     } catch (err) {
       logMiddlewareError(label, "❌ Internal error during role check", req);
-      errorMessage(err);
-      return throwInternalServerError(res);
+      return throwInternalServerError(res, err);
     }
   };
 }

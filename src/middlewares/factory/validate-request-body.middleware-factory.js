@@ -8,7 +8,6 @@ const validateRequestBodyMiddleware = (requiredFields, middlewareName) => {
             const result = validateRequestBody(req.body, requiredFields);
             
             if (!result.valid) {
-                logWithTime(`❌ [${middlewareName}] Validation failed: ${result.missingFields.join(', ')}`);
                 logMiddlewareError(middlewareName, "Request body validation failed", req);
                 return throwResourceNotFoundError(res, result.missingFields);
             }
