@@ -6,6 +6,8 @@ const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { AdminType, requestStatus, requestType } = require("@configs/enums.config");
 const { prepareAuditData, cloneForAudit } = require("@utils/audit-data.util");
 const { AdminStatusRequestModel } = require("@models/admin-status-request.model");
+const { notifyAdminActivated, notifyActivationConfirmation, notifyActivationToSupervisor } = require("@utils/admin-notifications.util");
+const { fetchAdmin } = require("@/utils/fetch-admin.util");
 
 /**
  * Activate Admin Controller (Direct Activation)
@@ -70,6 +72,16 @@ const activateAdmin = async (req, res) => {
     const { oldData, newData } = prepareAuditData(oldState, targetAdmin);
 
     logWithTime(`✅ Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) directly activated by Super Admin ${actor.adminId}`);
+
+    // Send notifications
+    await notifyAdminActivated(targetAdmin, actor);
+    await notifyActivationConfirmation(actor, targetAdmin);
+    
+    // Notify supervisor if different from actor
+    const supervisor = await fetchAdmin(null, null, targetAdmin.supervisorId);
+    if(supervisor) {
+      await notifyActivationToSupervisor(supervisor, targetAdmin, actor);
+    }
 
     // Determine event type
     const eventType = targetAdmin.adminType === AdminType.MID_ADMIN 

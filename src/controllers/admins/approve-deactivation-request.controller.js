@@ -6,6 +6,9 @@ const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throw
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { prepareAuditData, cloneForAudit } = require("@utils/audit-data.util");
+const { requestType, requestStatus } = require("@/configs/enums.config");
+const { notifyDeactivationRequestApproved, notifyDeactivationApprovedToSupervisor } = require("@utils/admin-notifications.util");
+const { fetchAdmin } = require("@/utils/fetch-admin.util");
 
 /**
  * Approve Deactivation Request Controller
@@ -70,6 +73,15 @@ const approveDeactivationRequest = async (req, res) => {
     const { oldData, newData } = prepareAuditData(oldState, targetAdmin);
 
     logWithTime(`✅ Deactivation request ${requestId} approved by ${actor.adminId}, admin ${targetAdmin.adminId} deactivated`);
+
+    // Send notifications
+    await notifyDeactivationRequestApproved(targetAdmin, actor);
+    
+    // Notify supervisor if different from actor and target
+    const supervisor = await fetchAdmin(null, null, targetAdmin.supervisorId);
+    if(supervisor && supervisor.adminId !== actor.adminId) {
+      await notifyDeactivationApprovedToSupervisor(supervisor, targetAdmin, actor);
+    }
 
     // Log activity
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.APPROVE_DEACTIVATION_REQUEST, {

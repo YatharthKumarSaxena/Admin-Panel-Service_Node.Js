@@ -6,6 +6,8 @@ const { CREATED } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { makeRequestId } = require("@services/request-id.service");
 const { requestType, requestStatus } = require("@configs/enums.config");
+const { notifyDeactivationRequestSubmitted, notifyDeactivationRequestReview } = require("@utils/admin-notifications.util");
+const { fetchAdmin } = require("@/utils/fetch-admin.util");
 
 /**
  * Create Deactivation Request Controller
@@ -55,6 +57,15 @@ const createDeactivationRequest = async (req, res) => {
     await deactivationRequest.save();
 
     logWithTime(`✅ Deactivation request created: ${requestId} by ${actor.adminId}`);
+
+    // Send notifications
+    await notifyDeactivationRequestSubmitted(actor, requestId);
+    
+    // Notify supervisor if different from self
+    const supervisor = await fetchAdmin(null, null, actor.supervisorId);
+    if(supervisor) {
+      await notifyDeactivationRequestReview(supervisor, actor, requestId);
+    }
 
     // Log activity
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.CREATE_DEACTIVATION_REQUEST, {

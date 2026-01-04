@@ -1,10 +1,13 @@
 const { AdminStatusRequestModel } = require("@models/admin-status-request.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { throwBadRequestError, throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
+const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwDBResourceNotFoundError } = require("@utils/error-handler.util");
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
-const { requestType } = require("@/configs/enums.config");
+const { requestType, requestStatus } = require("@/configs/enums.config");
+const { notifyActivationRequestRejected, notifyRequesterActivationRejected } = require("@utils/admin-notifications.util");
+const { fetchAdmin } = require("@/utils/fetch-admin.util");
+const { AdminModel } = require("@models/admin.model");
 
 /**
  * Reject Activation Request Controller
@@ -46,6 +49,16 @@ const rejectActivationRequest = async (req, res) => {
     await request.save();
 
     logWithTime(`✅ Activation request ${requestId} rejected by ${actor.adminId}`);
+
+    // Send notifications
+    const requester = await fetchAdmin(null, null, request.requestedBy);
+    const targetAdmin = await AdminModel.findOne({ adminId: request.targetAdminId });
+    if(requester) {
+      await notifyRequesterActivationRejected(requester, targetAdmin, actor, reviewNotes);
+    }
+    if(targetAdmin) {
+      await notifyActivationRequestRejected(targetAdmin, actor, reviewNotes);
+    }
 
     // Log activity
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.REJECT_ACTIVATION_REQUEST, {

@@ -6,6 +6,8 @@ const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { AdminType, requestStatus, requestType } = require("@configs/enums.config");
 const { prepareAuditData, cloneForAudit } = require("@utils/audit-data.util");
 const { AdminStatusRequestModel } = require("@models/admin-status-request.model");
+const { notifyAdminDeactivated, notifyDeactivationConfirmation, notifyDeactivationToSupervisor } = require("@utils/admin-notifications.util");
+const { fetchAdmin } = require("@/utils/fetch-admin.util");
 
 /**
  * Deactivate Admin Controller (Direct Deactivation)
@@ -68,6 +70,16 @@ const deactivateAdmin = async (req, res) => {
     const { oldData, newData } = prepareAuditData(oldState, targetAdmin);
 
     logWithTime(`✅ Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) directly deactivated by Super Admin ${actor.adminId}`);
+
+    // Send notifications
+    await notifyAdminDeactivated(targetAdmin, actor, reason);
+    await notifyDeactivationConfirmation(actor, targetAdmin);
+    
+    // Notify supervisor if different from actor
+    const supervisor = await fetchAdmin(null, null, targetAdmin.supervisorId);
+    if(supervisor) {
+      await notifyDeactivationToSupervisor(supervisor, targetAdmin, actor);
+    }
 
     // Determine event type
     const eventType = targetAdmin.adminType === AdminType.MID_ADMIN

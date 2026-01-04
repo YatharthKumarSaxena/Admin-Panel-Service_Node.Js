@@ -8,6 +8,8 @@ const { AdminType } = require("@configs/enums.config");
 const { makeAdminId } = require("@services/user-id.service");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
 const { rollbackAdminCounter } = require("@services/counter-rollback.service");
+const { canActOnRole } = require("@/utils/role.util");
+const { notifySupervisorNewAdmin } = require("@utils/admin-notifications.util");
 
 const createAdmin = async (req, res) => {
   try {
@@ -19,6 +21,22 @@ const createAdmin = async (req, res) => {
     if (adminExists) {
       logWithTime(`❌ Duplicate admin creation attempt detected by ${creator.adminId} ${getLogIdentifiers(req)}`);
       return throwConflictError(res, "Admin with provided email/phone already exists", "Please enter unique email/phone number");
+    }
+
+    let supervisor = null;
+
+    if(supervisorId){
+      supervisor =  await fetchAdmin(null, null, supervisorId);
+      if(!supervisor){
+        logWithTime(`❌ Supervisor not found: ${supervisorId} while creating admin by ${creator.adminId} ${getLogIdentifiers(req)}`);
+        return throwBadRequestError(res, "Supervisor not found with provided supervisorId");
+      }
+      if(canActOnRole(supervisor.adminType, adminType) === false){
+        logWithTime(`❌ Supervisor cannot oversee an admin of equal or higher role: ${supervisorId} while creating admin by ${creator.adminId} ${getLogIdentifiers(req)}`);
+        return throwBadRequestError(res, "Supervisor cannot oversee an admin of equal or higher role");
+      }
+    }else{
+      supervisorId = creator.adminId;
     }
 
     // 🔧 Generate adminId
@@ -53,6 +71,14 @@ const createAdmin = async (req, res) => {
     await newAdmin.save();
 
     logWithTime(`✅ New admin created: ${newAdmin.adminId} (${adminType}) by ${creator.adminId}`);
+
+    if(supervisorId !== creator.adminId){
+      logWithTime(`👔 Admin ${newAdmin.adminId} assigned to supervisor ${supervisorId} upon creation by ${creator.adminId}`);
+      // Send notification to supervisor about new admin assignment
+      await notifySupervisorNewAdmin(supervisor, newAdmin, creator);
+    }else{
+      logWithTime(`👔 Admin ${newAdmin.adminId} assigned to self as supervisor upon creation by ${creator.adminId}`);
+    }
 
     // ⚙️ Determine event type based on role
     let eventType;

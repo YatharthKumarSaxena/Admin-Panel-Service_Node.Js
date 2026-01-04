@@ -22,6 +22,11 @@ const { rejectActivationRequest } = require("./reject-activation-request.control
 
 const { viewStatusRequest } = require("./view-status-request.controller");
 
+// Activity Tracker Controllers
+const { viewAdminActivityTracker } = require("./view-admin-activity-tracker.controller");
+const { listActivityTracker } = require("./list-activity-tracker.controller");
+const { viewOwnActivityTracker } = require("./view-own-activity-tracker.controller");
+
 const adminControllers = {
     createAdmin,
     bulkAdminCreate,
@@ -43,7 +48,12 @@ const adminControllers = {
     listActivationRequests,
     approveActivationRequest,
     rejectActivationRequest,
-    viewStatusRequest
+    viewStatusRequest,
+
+    // Activity Tracker
+    viewAdminActivityTracker,
+    listActivityTracker,
+    viewOwnActivityTracker
 }
 
 module.exports = {

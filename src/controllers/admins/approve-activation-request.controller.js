@@ -6,7 +6,9 @@ const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throw
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { prepareAuditData, cloneForAudit } = require("@utils/audit-data.util");
-const { requestType } = require("@/configs/enums.config");
+const { requestType, requestStatus } = require("@/configs/enums.config");
+const { notifyActivationRequestApproved, notifyActivationApprovalConfirmation, notifyActivationApprovedToSupervisor, notifyRequesterActivationApproved } = require("@utils/admin-notifications.util");
+const { fetchAdmin } = require("@/utils/fetch-admin.util");
 
 /**
  * Approve Activation Request Controller
@@ -72,6 +74,20 @@ const approveActivationRequest = async (req, res) => {
     const { oldData, newData } = prepareAuditData(oldState, targetAdmin);
 
     logWithTime(`✅ Activation request ${requestId} approved by ${actor.adminId}, admin ${targetAdmin.adminId} activated`);
+
+    // Send notifications to all parties
+    const requester = await fetchAdmin(null, null, request.requestedBy);
+    if(requester) {
+      await notifyRequesterActivationApproved(requester, targetAdmin, actor);
+    }
+    await notifyActivationRequestApproved(targetAdmin, actor);
+    await notifyActivationApprovalConfirmation(actor, targetAdmin);
+    
+    // Notify supervisor if different from actor
+    const supervisor = await fetchAdmin(null, null, targetAdmin.supervisorId);
+    if(supervisor) {
+      await notifyActivationApprovedToSupervisor(supervisor, targetAdmin, actor);
+    }
 
     // Log activity
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.APPROVE_ACTIVATION_REQUEST, {

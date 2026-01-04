@@ -4,6 +4,7 @@ const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throw
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
+const { notifyOwnDetailsUpdated, notifyOwnDetailsUpdateToSupervisor } = require("@utils/admin-notifications.util");
 
 /**
  * Update Own Admin Details Controller
@@ -38,6 +39,15 @@ const updateOwnAdminDetails = async (req, res) => {
     await admin.save();
 
     logWithTime(`✅ Admin ${admin.adminId} (${admin.adminType}) updated own details`);
+
+    // Send notifications
+    await notifyOwnDetailsUpdated(admin);
+    
+    // Notify supervisor
+    const supervisor = await fetchAdmin(null, null, admin.supervisorId);
+    if(supervisor) {
+      await notifyOwnDetailsUpdateToSupervisor(supervisor, admin);
+    }
 
     // Log activity
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.UPDATE_OWN_ADMIN_DETAILS, {

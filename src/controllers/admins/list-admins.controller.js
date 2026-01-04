@@ -17,9 +17,23 @@ const listAdmins = async (req, res) => {
       limit = 20, 
       type,           // Filter by adminType
       status,         // Filter by isActive
-      search,         // Search in email/phone/adminId
+      search,         // Search term for email, phone, adminId
       sortBy = 'createdAt',
-      sortOrder = 'desc'
+      sortOrder = 'desc',
+      // Date filters
+      createdAfter,   // createdAt >= this date
+      createdBefore,  // createdAt <= this date
+      createdFrom,    // createdAt >= this date (for range)
+      createdTo,      // createdAt <= this date (for range)
+      updatedAfter,   // updatedAt >= this date
+      updatedBefore,  // updatedAt <= this date
+      updatedFrom,    // updatedAt >= this date (for range)
+      updatedTo,      // updatedAt <= this date (for range)
+      // Activation/Deactivation filters
+      activatedBy,    // Filter by who activated
+      deactivatedBy,  // Filter by who deactivated
+      activationReason,   // Search in activation reason
+      deactivationReason  // Search in deactivation reason
     } = req.query;
 
     // ✅ Hierarchical access control
@@ -55,6 +69,64 @@ const listAdmins = async (req, res) => {
       ];
     }
 
+    // 📅 Date filtering for createdAt
+    if (createdFrom || createdTo || createdAfter || createdBefore) {
+      query.createdAt = {};
+      
+      // Range filtering (createdFrom to createdTo)
+      if (createdFrom) {
+        query.createdAt.$gte = new Date(createdFrom);
+      }
+      if (createdTo) {
+        query.createdAt.$lte = new Date(createdTo);
+      }
+      
+      // Individual filtering (after/before)
+      if (createdAfter && !createdFrom) {
+        query.createdAt.$gte = new Date(createdAfter);
+      }
+      if (createdBefore && !createdTo) {
+        query.createdAt.$lte = new Date(createdBefore);
+      }
+    }
+
+    // 📅 Date filtering for updatedAt
+    if (updatedFrom || updatedTo || updatedAfter || updatedBefore) {
+      query.updatedAt = {};
+      
+      // Range filtering (updatedFrom to updatedTo)
+      if (updatedFrom) {
+        query.updatedAt.$gte = new Date(updatedFrom);
+      }
+      if (updatedTo) {
+        query.updatedAt.$lte = new Date(updatedTo);
+      }
+      
+      // Individual filtering (after/before)
+      if (updatedAfter && !updatedFrom) {
+        query.updatedAt.$gte = new Date(updatedAfter);
+      }
+      if (updatedBefore && !updatedTo) {
+        query.updatedAt.$lte = new Date(updatedBefore);
+      }
+    }
+
+    // 👤 Filter by who activated/deactivated
+    if (activatedBy) {
+      query.activatedBy = activatedBy;
+    }
+    if (deactivatedBy) {
+      query.deactivatedBy = deactivatedBy;
+    }
+
+    // 📝 Search in activation/deactivation reasons
+    if (activationReason && activationReason.trim()) {
+      query.activatedReason = { $regex: activationReason.trim(), $options: 'i' };
+    }
+    if (deactivationReason && deactivationReason.trim()) {
+      query.deactivatedReason = { $regex: deactivationReason.trim(), $options: 'i' };
+    }
+
     // Pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const sortObj = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
@@ -62,7 +134,7 @@ const listAdmins = async (req, res) => {
     // Execute query with minimal fields for list view
     const [admins, totalCount] = await Promise.all([
       AdminModel.find(query)
-        .select('adminId email fullPhoneNumber adminType isActive createdAt supervisorId')
+        .select('adminId email fullPhoneNumber adminType isActive createdAt updatedAt supervisorId activatedBy deactivatedBy activatedReason deactivatedReason')
         .sort(sortObj)
         .limit(parseInt(limit))
         .skip(skip)
@@ -88,7 +160,23 @@ const listAdmins = async (req, res) => {
         status: status !== undefined ? status : null,
         search: search || null,
         sortBy: sortBy,
-        sortOrder: sortOrder
+        sortOrder: sortOrder,
+        dateFilters: {
+          createdAt: {
+            after: createdAfter || createdFrom || null,
+            before: createdBefore || createdTo || null
+          },
+          updatedAt: {
+            after: updatedAfter || updatedFrom || null,
+            before: updatedBefore || updatedTo || null
+          }
+        },
+        activationFilters: {
+          activatedBy: activatedBy || null,
+          deactivatedBy: deactivatedBy || null,
+          activationReason: activationReason || null,
+          deactivationReason: deactivationReason || null
+        }
       },
       meta: {
         viewScope: actor.adminType === AdminType.SUPER_ADMIN ? "ALL_ADMINS" : 

@@ -1,9 +1,13 @@
 const { AdminStatusRequestModel } = require("@models/admin-status-request.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { throwBadRequestError, throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
+const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwDBResourceNotFoundError } = require("@utils/error-handler.util");
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { requestType, requestStatus } = require("@/configs/enums.config");
+const { notifyDeactivationRequestRejected } = require("@utils/admin-notifications.util");
+const { fetchAdmin } = require("@/utils/fetch-admin.util");
+const { AdminModel } = require("@models/admin.model");
 
 /**
  * Reject Deactivation Request Controller
@@ -45,6 +49,12 @@ const rejectDeactivationRequest = async (req, res) => {
     await request.save();
 
     logWithTime(`✅ Deactivation request ${requestId} rejected by ${actor.adminId}`);
+
+    // Send notification
+    const targetAdmin = await AdminModel.findOne({ adminId: request.targetAdminId });
+    if(targetAdmin) {
+      await notifyDeactivationRequestRejected(targetAdmin, actor, reviewNotes);
+    }
 
     // Log activity
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.REJECT_DEACTIVATION_REQUEST, {

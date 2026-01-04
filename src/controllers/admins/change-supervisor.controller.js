@@ -6,6 +6,7 @@ const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { AdminType } = require("@configs/enums.config");
 const { prepareAuditData, cloneForAudit } = require("@utils/audit-data.util");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
+const { notifyNewSupervisorAssigned, notifySupervisorChanged, notifyOldSupervisorRemoved } = require("@utils/admin-notifications.util");
 
 /**
  * Change Supervisor Controller
@@ -73,12 +74,28 @@ const changeSupervisor = async (req, res) => {
 
         logWithTime(`✅ Supervisor changed for Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) from ${oldSupervisorId || 'none'} to ${newSupervisorId || 'none'} by ${actor.adminId}`);
 
-        // Determine event type
-        const eventType = targetAdmin.adminType === AdminType.MID_ADMIN
-            ? ACTIVITY_TRACKER_EVENTS.CHANGE_MID_ADMIN_SUPERVISOR
-            : ACTIVITY_TRACKER_EVENTS.CHANGE_ADMIN_SUPERVISOR;
+    // Send notifications to all parties
+    const oldSupervisor = oldSupervisorId ? await fetchAdmin(null, null, oldSupervisorId) : null;
+    
+    // Notify new supervisor if different from actor
+    if(newSupervisor.adminId !== actor.adminId) {
+      await notifyNewSupervisorAssigned(newSupervisor, targetAdmin, actor);
+    }
+    
+    // Notify target admin about supervisor change
+    await notifySupervisorChanged(targetAdmin, oldSupervisor, newSupervisor, actor);
+    
+    // Notify old supervisor if exists and different from actor
+    if(oldSupervisor && oldSupervisor.adminId !== actor.adminId) {
+      await notifyOldSupervisorRemoved(oldSupervisor, targetAdmin, newSupervisor, actor);
+    }
 
-        // Log activity with audit data
+    // Determine event type
+    const eventType = targetAdmin.adminType === AdminType.MID_ADMIN
+        ? ACTIVITY_TRACKER_EVENTS.CHANGE_MID_ADMIN_SUPERVISOR
+        : ACTIVITY_TRACKER_EVENTS.CHANGE_ADMIN_SUPERVISOR;
+
+    // Log activity with audit data
         logActivityTrackerEvent(req, eventType, {
             description: `Supervisor changed for Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) by ${actor.adminId}`,
             adminActions: {

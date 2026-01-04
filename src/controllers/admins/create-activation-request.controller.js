@@ -6,6 +6,8 @@ const { CREATED } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { makeRequestId } = require("@services/request-id.service");
 const { requestType, requestStatus } = require("@configs/enums.config");
+const { notifyActivationRequestSubmitted, notifyActivationRequestPending, notifyActivationRequestReview } = require("@utils/admin-notifications.util");
+const { fetchAdmin } = require("@/utils/fetch-admin.util");
 
 /**
  * Create Activation Request Controller
@@ -59,12 +61,22 @@ const createActivationRequest = async (req, res) => {
       requestedBy: actor.adminId, // Active admin
       targetAdminId: targetAdminId, // Deactivated admin
       reason,
-      notes: notes || null
+      notes: notes
     });
 
     await activationRequest.save();
 
     logWithTime(`✅ Activation request created: ${requestId} by ${actor.adminId} for ${targetAdminId}`);
+
+    // Send notifications to all parties
+    await notifyActivationRequestSubmitted(actor, targetAdmin, requestId);
+    await notifyActivationRequestPending(targetAdmin, actor, requestId);
+    
+    // Notify supervisor if different from actor
+    const supervisor = await fetchAdmin(null, null, targetAdmin.supervisorId);
+    if(supervisor) {
+      await notifyActivationRequestReview(supervisor, targetAdmin, actor, requestId);
+    }
 
     // Log activity
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.CREATE_ACTIVATION_REQUEST, {
