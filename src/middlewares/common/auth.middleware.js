@@ -1,4 +1,4 @@
-const { throwInternalServerError, logMiddlewareError, throwResourceNotFoundError, throwBadRequestError, throwValidationError } = require("@utils/error-handler.util");
+const { throwInternalServerError, logMiddlewareError, throwMissingFieldsError, throwBadRequestError, throwValidationError } = require("@utils/error-handler.util");
 const { isValidRegex, validateLength } = require("@utils/validators-factory.util")
 const { AuthModes } = require("@configs/enums.config");
 const { emailRegex, fullPhoneNumberRegex } = require("@configs/regex.config");
@@ -15,7 +15,7 @@ const authModeValidator = async (req, res, next) => {
             // Step 1: Check if email field is provided
             if (!email) {
                 logMiddlewareError("authModeValidator", "Missing email field", req);
-                return throwResourceNotFoundError(res, "email");
+                return throwMissingFieldsError(res, "email");
             }
 
             // Step 2: Validate email format + length
@@ -43,7 +43,7 @@ const authModeValidator = async (req, res, next) => {
             // Step 1: Check if fullPhoneNumber field is provided
             if (!fullPhoneNumber) {
                 logMiddlewareError("authModeValidator", "Missing fullPhoneNumber field", req);
-                return throwResourceNotFoundError(res, "fullPhoneNumber");
+                return throwMissingFieldsError(res, "fullPhoneNumber");
             }
 
             // Step 2: Validate phone format + length
@@ -70,7 +70,7 @@ const authModeValidator = async (req, res, next) => {
         else if (authMode === AuthModes.BOTH) {
             if(!email || !fullPhoneNumber){
                 logMiddlewareError("authModeValidator", "Full Phone Number and Email are required fields", req);
-                return throwResourceNotFoundError(res, "email or fullPhoneNumber");
+                return throwMissingFieldsError(res, "email or fullPhoneNumber");
             }
 
             // Validate Email if Provided
@@ -94,7 +94,7 @@ const authModeValidator = async (req, res, next) => {
         else{
             if(!email && !fullPhoneNumber){
                 logMiddlewareError("authModeValidator", "Exactly one identifier (Email or Full Phone Number) is required", req);
-                return throwResourceNotFoundError(res, "email or fullPhoneNumber");
+                return throwMissingFieldsError(res, "email or fullPhoneNumber");
             }
             if(email && fullPhoneNumber){
                 logMiddlewareError("authModeValidator", "Only one identifier (Email or Full Phone Number) should be provided", req);

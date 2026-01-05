@@ -1,5 +1,5 @@
 const { logWithTime } = require("@utils/time-stamps.util");
-const { throwInternalServerError, throwResourceNotFoundError, logMiddlewareError, throwBadRequestError } = require("@utils/error-handler.util");
+const { throwInternalServerError, throwMissingFieldsError, logMiddlewareError, throwBadRequestError } = require("@utils/error-handler.util");
 const { isValidUUID, isValidDeviceNameLength } = require("@utils/id-validators.util");
 const { DeviceTypeHelper } = require("@utils/enum-validators.util");
 
@@ -12,7 +12,7 @@ const verifyDeviceField = async (req,res,next) => {
         // Device ID is mandatory
         if (!deviceId || deviceId.trim() === "") {
             logMiddlewareError("verifyDeviceField", "Missing device UUID in headers", req);
-            return throwResourceNotFoundError(res, "Device UUID (x-device-uuid) is required in request headers");
+            return throwMissingFieldsError(res, "Device UUID (x-device-uuid) is required in request headers");
         }
 
         // Attach to request object for later use in controller

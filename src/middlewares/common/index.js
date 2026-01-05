@@ -7,6 +7,8 @@ const { verifyDeviceField } = require("./verify-device-field.middleware");
 const { authModeValidator } = require("./auth.middleware");
 const { fetchAdminMiddleware } = require("./fetch-admin.middleware");
 const { fetchUserMiddleware } = require("./fetch-user.middleware");
+const { RoleMiddlewares } = require("./verify-admin-type.middleware");
+const { hierarchyGuard } = require("./role-hierarchy.middleware");
 
 const commonMiddlewares = {
     isAdminAccountActive,
@@ -17,7 +19,9 @@ const commonMiddlewares = {
     verifyDeviceField,
     authModeValidator,
     fetchAdminMiddleware,
-    fetchUserMiddleware
+    fetchUserMiddleware,
+    ...RoleMiddlewares,
+    hierarchyGuard
 };
 
 module.exports = {
