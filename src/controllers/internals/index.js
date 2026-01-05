@@ -1,11 +1,13 @@
-const { cleanUpDeactivatedUser } = require("./clean-up-deactivated-user");
 const { listAuthLogs } = require("./list-auth-logs");
 const { blockDevice } = require("./block-device.controller");
 const { unblockDevice } = require("./unblock-device.controller");
 
-module.exports = {
-  cleanUpDeactivatedUser,
+const internalControllers = {
   listAuthLogs,
   blockDevice,
   unblockDevice
+};
+
+module.exports = {
+  internalControllers
 };

@@ -70,10 +70,6 @@ const unblockDevice = async (req, res) => {
     });
 
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      logWithTime(`⚠️ Validation Error: ${err.message}`);
-      return throwBadRequestError(res, err.message);
-    }
     logWithTime(`❌ Internal Error in unblocking device ${getLogIdentifiers(req)}`);
     return throwInternalServerError(res, err);
   }
