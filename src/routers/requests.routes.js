@@ -11,7 +11,7 @@ const {
 
 const { requestMiddlewares } = require("@middlewares/requests/index");
 const { commonMiddlewares } = require("@middlewares/common/index");
-const { mockAuthMiddleware } = require("@middlewares/factory/mock-auth.middleware-factory");
+const { mockAuthMiddleware } = require("@testing/mock-auth.testing.middleware");
 const { requestControllers } = require("@controllers/requests/index");
 
 const requestRoutes = require("express").Router();
@@ -85,7 +85,7 @@ requestRoutes.post(`${CREATE_ACTIVATION_REQUEST}`,
 requestRoutes.post(`${APPROVE_ACTIVATION_REQUEST}`,
   [
     ...baseMiddlerwares,
-    requestMiddlewares.midAdminsAndSuperAdmins,
+    commonMiddlewares.midAdminsAndSuperAdmins,
     requestMiddlewares.validateApproveActivationRequestBody,
     requestMiddlewares.validateApproveActivationRequestFields
   ],
@@ -96,7 +96,7 @@ requestRoutes.post(`${APPROVE_ACTIVATION_REQUEST}`,
 requestRoutes.post(`${REJECT_ACTIVATION_REQUEST}`,
   [
     ...baseMiddlerwares,
-    requestMiddlewares.midAdminsAndSuperAdmins,
+    commonMiddlewares.midAdminsAndSuperAdmins,
     requestMiddlewares.validateRejectActivationRequestBody,
     requestMiddlewares.validateRejectActivationRequestFields
   ],

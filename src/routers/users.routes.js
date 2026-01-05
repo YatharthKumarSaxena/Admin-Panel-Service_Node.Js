@@ -12,7 +12,7 @@ const {
 
 const { userMiddlewares } = require("@middlewares/users/index");
 const { commonMiddlewares } = require("@middlewares/common/index");
-const { mockAuthMiddleware } = require("@middlewares/factory/mock-auth.middleware-factory");
+const { mockAuthMiddleware } = require("@testing/mock-auth.testing.middleware");
 const { userControllers } = require("@controllers/users/index");
 
 const userRoutes = require("express").Router();
@@ -72,7 +72,7 @@ userRoutes.get(`${GET_USER_AUTH_LOGS}`,
         userMiddlewares.validateCheckAuthLogsRequestBody,
         userMiddlewares.validateCheckAuthLogsFields
     ],
-    userControllers.getUserAuthLogs
+    userControllers.checkAuthLogs
 );
 
 // Fetch user details
@@ -82,7 +82,7 @@ userRoutes.get(`${FETCH_USER_DETAILS}`,
         userMiddlewares.validateProvideUserAccountDetailsRequestBody,
         userMiddlewares.validateProvideUserAccountDetailsFields
     ],
-    userControllers.fetchUserDetails
+    userControllers.provideUserAccountDetails
 );
 
 // List users

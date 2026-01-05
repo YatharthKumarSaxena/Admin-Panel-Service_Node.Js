@@ -55,4 +55,6 @@ internalRoutes.post(
   internalControllers.unblockDevice
 );
 
-module.exports = internalRoutes;
+module.exports = {
+  internalRoutes
+}
