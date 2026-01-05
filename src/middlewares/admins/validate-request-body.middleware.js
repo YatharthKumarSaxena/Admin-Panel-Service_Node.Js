@@ -4,18 +4,12 @@ const {
   updateAdminDetailsRequiredFields,
   activateAdminRequiredFields,
   deactivateAdminRequiredFields,
-  approveActivationRequestRequiredFields,
-  rejectActivationRequestRequiredFields,
-  approveDeactivationRequestRequiredFields,
-  rejectDeactivationRequestRequiredFields,
-  createActivationRequestRequiredFields,
-  createDeactivationRequestRequiredFields,
   changeSupervisorRequiredFields,
-  viewAdminActivityTrackerRequiredFields,
-  listActivityTrackerRequiredFields
+  updateAdminRoleRequiredFields,
+  fetchAdminDetailsRequiredFields
 } = require("@configs/required-fields.config.js");
 
-module.exports = {
+const validateRequestBodyMiddlewares = {
   // Admin Management
   validateCreateAdminRequestBody: validateRequestBodyMiddleware(
     adminCreationRequiredFields,
@@ -38,54 +32,23 @@ module.exports = {
     "validateDeactivateAdminRequestBody"
   ),
 
-  validateApproveActivationRequestBody: validateRequestBodyMiddleware(
-    approveActivationRequestRequiredFields,
-    "validateApproveActivationRequestBody"
-  ),
-
-  validateRejectActivationRequestBody: validateRequestBodyMiddleware(
-    rejectActivationRequestRequiredFields,
-    "validateRejectActivationRequestBody"
-  ),
-
-  validateApproveDeactivationRequestBody: validateRequestBodyMiddleware(
-    approveDeactivationRequestRequiredFields,
-    "validateApproveDeactivationRequestBody"
-  ),
-
-  validateRejectDeactivationRequestBody: validateRequestBodyMiddleware(
-    rejectDeactivationRequestRequiredFields,
-    "validateRejectDeactivationRequestBody"
-  ),
-
-  validateCreateActivationRequestBody: validateRequestBodyMiddleware(
-    createActivationRequestRequiredFields,
-    "validateCreateActivationRequestBody"
-  ),
-
-  validateCreateDeactivationRequestBody: validateRequestBodyMiddleware(
-    createDeactivationRequestRequiredFields,
-    "validateCreateDeactivationRequestBody"
-  ),
-
   // Supervisor Management
   validateChangeSupervisorRequestBody: validateRequestBodyMiddleware(
     changeSupervisorRequiredFields,
     "validateChangeSupervisorRequestBody"
   ),
 
-  validateViewAdminActivityTrackerRequestBody: validateRequestBodyMiddleware(
-    viewAdminActivityTrackerRequiredFields,
-    "validateViewAdminActivityTrackerRequestBody"
+  validateUpdateAdminRoleRequestBody: validateRequestBodyMiddleware(
+    updateAdminRoleRequiredFields,
+    "validateUpdateAdminRoleRequestBody"
   ),
 
-  validateListActivityTrackerRequestBody: validateRequestBodyMiddleware(
-    listActivityTrackerRequiredFields,
-    "validateListActivityTrackerRequestBody"
-  ),
-
-  validateUpdateOwnAdminDetailsRequestBody: validateRequestBodyMiddleware(
-    updateAdminDetailsRequiredFields,
-    "validateUpdateOwnAdminDetailsRequestBody"
+  validateFetchAdminDetailsRequestBody: validateRequestBodyMiddleware(
+    fetchAdminDetailsRequiredFields,
+    "validateFetchAdminDetailsRequestBody"
   )
+}
+
+module.exports = {
+  validateRequestBodyMiddlewares
 };
