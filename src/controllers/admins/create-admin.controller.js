@@ -9,7 +9,7 @@ const { makeAdminId } = require("@services/user-id.service");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
 const { rollbackAdminCounter } = require("@services/counter-rollback.service");
 const { canActOnRole } = require("@/utils/role.util");
-const { notifySupervisorNewAdmin } = require("@utils/admin-notifications.util");
+const { notifySupervisorNewAdmin, notifySupervisorOnAdminCreation } = require("@utils/admin-notifications.util");
 
 const createAdmin = async (req, res) => {
   try {
@@ -78,6 +78,14 @@ const createAdmin = async (req, res) => {
       await notifySupervisorNewAdmin(supervisor, newAdmin, creator);
     }else{
       logWithTime(`👔 Admin ${newAdmin.adminId} assigned to self as supervisor upon creation by ${creator.adminId}`);
+    }
+
+    // Inform Creator Supervisor about new admin creation
+    if(creator.adminType !== AdminType.SUPER_ADMIN){
+      const creatorSupervisor = await fetchAdmin(null, null, creator.supervisorId);
+      if(creatorSupervisor){
+        await notifySupervisorOnAdminCreation(creatorSupervisor, newAdmin, creator);
+      }
     }
 
     // ⚙️ Determine event type based on role
