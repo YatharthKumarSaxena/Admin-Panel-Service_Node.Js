@@ -1,5 +1,4 @@
 const { sendNotificationFactory } = require("./notification-dispatcher.util");
-const { logWithTime } = require("./time-stamps.util");
 
 /**
  * 📬 Admin Notifications Helper
@@ -723,9 +722,32 @@ const notifyUserDeviceUnblockedToSupervisor = async (supervisor, user, deviceId,
     await sendNotificationFactory(supervisor, 'deviceUnblockedSupervisor', emailData, smsArgs);
 };
 
+const notifySupervisorOnAdminCreation = (supervisor, newAdmin, creator) => {
+    if (!supervisor || supervisor.adminId === creator.adminId) {
+        // Skip if self-assigned
+        return;
+    }
+
+    const emailData = {
+        details: {
+            'Admin ID': newAdmin.adminId,
+            'Role': newAdmin.adminType,
+            'Email': newAdmin.email || 'N/A',
+            'Phone': newAdmin.fullPhoneNumber || 'N/A',
+            'Created By': creator.adminId,
+            'Created At': new Date().toLocaleString()
+        }
+    };
+
+    const smsArgs = [newAdmin, creator.adminId];
+
+    sendNotificationFactory(supervisor, 'supervisorOnAdminCreationNotification', emailData, smsArgs);
+};
+
 module.exports = {
     // Create Admin
     notifySupervisorNewAdmin,
+    notifySupervisorOnAdminCreation,
 
     // Activation Requests
     notifyActivationRequestSubmitted,

@@ -1,10 +1,6 @@
 // utils/fetch-factory.util.js
 const { 
-  throwInvalidResourceError, 
-  throwResourceNotFoundError, 
-  throwInternalServerError, 
   errorMessage, 
-  logMiddlewareError, 
   getLogIdentifiers 
 } = require("@utils/error-handler.util");
 
@@ -12,18 +8,24 @@ const { logWithTime } = require("./time-stamps.util");
 
 /**
  * Generic fetch factory for User/Admin
- * @param {Object} req - Express request
- * @param {Object} res - Express response
+ * 
+ * ⚠️ IMPORTANT: This util does NOT throw HTTP responses
+ * It ONLY fetches entity from DB and returns result object
+ * Caller (middleware/controller) is responsible for handling errors and sending responses
+ * 
+ * @param {Object} req - Express request (only for reading data)
  * @param {Object} Model - Mongoose model (UserModel/AdminModel)
  * @param {Object} identifiers - identifier mapping { idKey, emailKey, phoneKey }
  * @param {String} entityName - "User" or "Admin"
+ * @returns {Promise<Object>} - { success: boolean, entity: Object|null, verifyWith: string, error: string|null }
  */
-const fetchEntity = async (req, res, Model, identifiers, entityName) => {
+const fetchEntity = async (req, Model, identifiers, entityName) => {
   try {
-    let entity;
+    let entity = null;
     let verifyWith = "";
     let anyResourcePresent = true;
 
+    // Check query params first, then body
     if (req?.query?.[identifiers.idKey]) {
       entity = await Model.findOne({ [identifiers.idKey]: req.query[identifiers.idKey].trim() });
       if (entity) verifyWith = "ID";
@@ -46,30 +48,47 @@ const fetchEntity = async (req, res, Model, identifiers, entityName) => {
       anyResourcePresent = false;
     }
 
+    // No identifier provided
     if (!anyResourcePresent) {
-      const resource = "Phone Number, Email ID or ID (Any One)";
-      logMiddlewareError(`Fetch ${entityName}, No resource provided`, req);
-      throwResourceNotFoundError(res, resource);
-      return verifyWith;
+      logWithTime(`⚠️ No resource provided for ${entityName} fetch`);
+      return { 
+        success: false, 
+        entity: null, 
+        verifyWith: "", 
+        error: "NO_IDENTIFIER" 
+      };
     }
 
+    // Identifier provided but entity not found
     if (!entity) {
-      logMiddlewareError(`Fetch ${entityName}, Unauthorized details provided`, req);
-      throwInvalidResourceError(res, "Phone Number, Email ID or ID");
-      return verifyWith;
+      logWithTime(`❌ ${entityName} not found with provided identifier`);
+      return { 
+        success: false, 
+        entity: null, 
+        verifyWith, 
+        error: "NOT_FOUND" 
+      };
     }
 
-    req.verifyWith = verifyWith;
-    req[`found${entityName}`] = entity;
-    logWithTime(`🆔 ${entityName} identified using: ${verifyWith}`);
-    return verifyWith;
+    // Success - entity found
+    logWithTime(`✅ ${entityName} identified using: ${verifyWith}`);
+    return { 
+      success: true, 
+      entity, 
+      verifyWith, 
+      error: null 
+    };
 
   } catch (err) {
     const getIdentifiers = getLogIdentifiers(req);
     logWithTime(`❌ Internal Error while fetching ${entityName} ${getIdentifiers}`);
     errorMessage(err);
-    throwInternalServerError(res);
-    return "";
+    return { 
+      success: false, 
+      entity: null, 
+      verifyWith: "", 
+      error: "INTERNAL_ERROR" 
+    };
   }
 };
 

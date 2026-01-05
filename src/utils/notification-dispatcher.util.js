@@ -18,6 +18,7 @@ const { logWithTime } = require("@utils/time-stamps.util");
  * @param {Object} emailData - Data object for email template
  * @param {Array} smsArgs - Arguments array for SMS template function
  */
+
 const sendNotificationFactory = (recipient, templateName, emailData = {}, smsArgs = []) => {
   if (!recipient) {
     logWithTime("⚠️ No recipient provided for notification");

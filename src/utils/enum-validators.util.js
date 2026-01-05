@@ -5,7 +5,6 @@ const { logWithTime } = require("./time-stamps.util");
 const {
   AdminType,
   AuthModes,
-  AdminActionReasons,
   BlockReasons,
   UnblockReasons,
   ActivationReasons,
@@ -28,7 +27,10 @@ const {
   viewScope,
   ViewActivityTrackerReasons,
   BlockDeviceReasons,
-  UnblockDeviceReasons
+  UnblockDeviceReasons,
+  AdminCreationReasons,
+  AdminUpdateRoleReasons,
+  FetchAdminDetailsReasons
 } = require("@configs/enums.config");
 
 const { tokenPayloads } = require("@configs/token.config");
@@ -60,7 +62,6 @@ const createEnumHelper = (enumObj, name) => ({
 });
 
 // 🧩 Enum-specific helpers
-const AdminActionHelper = createEnumHelper(AdminActionReasons, "AdminActionReasons");
 const BlockReasonHelper = createEnumHelper(BlockReasons, "BlockReasons");
 const UnblockReasonHelper = createEnumHelper(UnblockReasons, "UnblockReasons");
 const ActivationReasonHelper = createEnumHelper(ActivationReasons, "ActivationReasons");
@@ -87,9 +88,11 @@ const ViewScopeHelper = createEnumHelper(viewScope, "viewScope");
 const ViewActivityTrackerReasonsHelper = createEnumHelper(ViewActivityTrackerReasons, "ViewActivityTrackerReasons");
 const BlockDeviceReasonHelper = createEnumHelper(BlockDeviceReasons, "BlockDeviceReasons");
 const UnblockDeviceReasonHelper = createEnumHelper(UnblockDeviceReasons, "UnblockDeviceReasons");
+const AdminCreationReasonHelper = createEnumHelper(AdminCreationReasons, "AdminCreationReasons");
+const AdminUpdateRoleReasonHelper = createEnumHelper(AdminUpdateRoleReasons, "AdminUpdateRoleReasons");
+const FetchAdminDetailsReasonHelper = createEnumHelper(FetchAdminDetailsReasons, "FetchAdminDetailsReasons");
 
 module.exports = {
-  AdminActionHelper,
   BlockReasonHelper,
   UnblockReasonHelper,
   ActivationReasonHelper,
@@ -104,7 +107,6 @@ module.exports = {
   DeviceTypeHelper,
   TokenPayloadHelper,
   AdminTypeHelper,
-  RoleHierarchyHelper,
   AuthModesHelper,
   RolesHelper,
   ServiceNameHelper,
@@ -116,6 +118,9 @@ module.exports = {
   ViewScopeHelper,
   ViewActivityTrackerReasonsHelper,
   BlockDeviceReasonHelper,
-  UnblockDeviceReasonHelper
+  UnblockDeviceReasonHelper,
+  AdminCreationReasonHelper,
+  AdminUpdateRoleReasonHelper,
+  FetchAdminDetailsReasonHelper
 };
 

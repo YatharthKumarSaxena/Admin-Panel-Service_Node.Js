@@ -8,6 +8,7 @@ const { fetchEntity } = require("./fetch-entity.util");
  * @param {string|null} userId - Admin's custom userId (adminId)
  * @returns {Promise<Object|null>} - Returns the admin object if found, null otherwise
  */
+
 const fetchAdmin = async (email = null, fullPhoneNumber = null, userId = null) => {
   return await fetchEntity(
     AdminModel,

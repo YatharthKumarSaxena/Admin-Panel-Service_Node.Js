@@ -13,8 +13,8 @@ const { BAD_REQUEST, INTERNAL_ERROR, UNAUTHORIZED, FORBIDDEN, CONFLICT, UNPROCES
 const errorMessage = (err) => {
     logWithTime("🛑 Error occurred:");
     logWithTime("File Name and Line Number where this error occurred is displayed below:- ");
-    console.log(err.stack)
-    logWithTime("Error Message is displayed below:- ")
+    console.log(err.stack);
+    logWithTime("Error Message is displayed below:- ");
     console.error(err.message);
 }
 
@@ -23,7 +23,7 @@ const errorMessage = (err) => {
   Handles cases where required fields are missing in the request.
 */
 
-const throwResourceNotFoundError = (res,resource) =>{
+const throwMissingFieldsError = (res,resource) =>{
     logWithTime("⚠️ Missing required fields in the request:");
     console.log(resource);
     return res.status(BAD_REQUEST).json({
@@ -31,21 +31,6 @@ const throwResourceNotFoundError = (res,resource) =>{
         warning: "The following required field(s) are missing:",
         fields: resource,
         message: "Please provide the required fields to proceed."
-    });
-}
-
-/*
-  ✅ SRP + DRY: 
-  Handles all internal server failure responses.
-*/
-
-const throwInternalServerError = (res,error) => {
-    errorMessage(error);
-    logWithTime("💥 Internal Server Error occurred.");
-    return res.status(INTERNAL_ERROR).json({
-        success: false,
-        response: "An internal server error occurred while processing your request.",
-        message: "We apologize for the inconvenience. Please try again later."
     });
 }
 
@@ -150,9 +135,28 @@ const throwValidationError = (res, errors) => {
     });
 };
 
+/*
+  ✅ SRP + DRY: 
+  Handles all internal server failure responses.
+*/
+
+const throwInternalServerError = (res,error) => {
+    if (error.name === 'ValidationError') {
+      logWithTime(`⚠️ Validation Error: ${error.message}`);
+      return throwBadRequestError(res, error.message);
+    }
+    errorMessage(error);
+    logWithTime("💥 Internal Server Error occurred.");
+    return res.status(INTERNAL_ERROR).json({
+        success: false,
+        response: "An internal server error occurred while processing your request.",
+        message: "We apologize for the inconvenience. Please try again later."
+    });
+}
+
 module.exports = {
     errorMessage,
-    throwResourceNotFoundError,
+    throwMissingFieldsError,
     throwInternalServerError,
     throwInvalidResourceError,
     throwAccessDeniedError,
