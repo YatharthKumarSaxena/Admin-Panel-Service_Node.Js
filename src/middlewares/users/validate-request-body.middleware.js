@@ -7,7 +7,7 @@ const {
   checkAuthLogsRequiredFields
 } = require("@configs/required-fields.config.js");
 
-module.exports = {
+const validateRequestBodyMiddlewares = {
   // User Status Operations
   validateBlockUserRequestBody: validateRequestBodyMiddleware(
     blockUserRequiredFields,
@@ -35,4 +35,8 @@ module.exports = {
     checkAuthLogsRequiredFields,
     "validateCheckAuthLogsRequestBody"
   )
+};
+
+module.exports = {
+  validateRequestBodyMiddlewares
 };
