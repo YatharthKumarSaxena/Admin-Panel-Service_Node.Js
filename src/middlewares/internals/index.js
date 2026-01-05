@@ -1,7 +1,11 @@
-const fieldValidation = require("./field-validation.middleware");
-const requestBodyValidation = require("./validate-request-body.middleware");
+const { validationMiddlewares } = require("./field-validation.middleware");
+const { validateRequestBodyMiddlewares } = require("./validate-request-body.middleware");
+
+const internalMiddlewares = {
+  ...validationMiddlewares,
+  ...validateRequestBodyMiddlewares
+};
 
 module.exports = {
-  ...fieldValidation,
-  ...requestBodyValidation
-};
+    internalMiddlewares
+}

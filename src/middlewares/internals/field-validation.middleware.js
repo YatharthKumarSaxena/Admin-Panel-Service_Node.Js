@@ -6,8 +6,12 @@ const { validationSets } = require("@configs/validation-sets.config.js");
  * Validates enum values, regex patterns, and field lengths
  */
 
-module.exports = {
+const validationMiddlewares = {
   // User Status Operations
   validateBlockDeviceFields: fieldValidationMiddleware("blockDevice", validationSets.blockDevice),
   validateUnblockDeviceFields: fieldValidationMiddleware("unblockDevice", validationSets.unblockDevice)
 };
+
+module.exports = {
+  validationMiddlewares
+}

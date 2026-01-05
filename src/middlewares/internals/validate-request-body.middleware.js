@@ -4,7 +4,7 @@ const {
     unblockDeviceRequiredFields
 } = require("@configs/required-fields.config.js");
 
-module.exports = {
+const validateRequestBodyMiddlewares = {
     // Device Status Operations
     validateBlockDeviceRequestBody: validateRequestBodyMiddleware(
         blockDeviceRequiredFields,
@@ -16,4 +16,8 @@ module.exports = {
         "validateUnblockDeviceRequestBody"
     )
 };
+
+module.exports = {
+    validateRequestBodyMiddlewares
+}
 
