@@ -49,7 +49,22 @@ const smsTemplate = {
   userUnblocked: (user, unblockedBy) =>
     `✅ Account Unblocked\n\nDear User,\n\nYour account has been unblocked.\n\nUser ID: ${user.userId}\nUnblocked By: ${unblockedBy}\n\nYou can now login and access your account.\n\nLogin: ${process.env.FRONTEND_URL}`,
 
+  
+  adminRoleChanged: (admin, oldRole, newRole, changedBy) =>
+    `🔄 Role Updated\n\nDear Admin,\n\nYour role has been changed.\n\nAdmin ID: ${admin.adminId}\nPrevious Role: ${oldRole}\nNew Role: ${newRole}\nChanged By: ${changedBy}\n\nLogin to view your updated permissions.\n\nLogin: ${process.env.ADMIN_PANEL_LINK}`,
   // ========== NEW SMS TEMPLATES ==========
+
+  supervisorOnAdminCreationNotification: (newAdmin, createdBy) =>
+  `👤 New Admin Created by Your Team Member\n\n` +
+  `One of the admins under your supervision has created a new admin account.\n\n` +
+  `New Admin Details:\n` +
+  `Admin ID: ${newAdmin.adminId}\n` +
+  `Admin Role: ${newAdmin.adminType}\n\n` +
+  `Created By:\n` +
+  `${createdBy.name} (${createdBy.role})\n\n` +
+  `This action has been logged for your awareness.\n\n` +
+  `Admin Panel:\n` +
+  `${process.env.ADMIN_PANEL_LINK}`,
 
   // 👤 Supervisor Notification - New Admin
   supervisorNewAdminNotification: (newAdmin, createdBy) =>

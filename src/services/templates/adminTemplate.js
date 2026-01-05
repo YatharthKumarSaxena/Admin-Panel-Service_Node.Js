@@ -37,6 +37,17 @@ const adminTemplate = {
     details: {} // Admin ID, Role, Activated By, Activated At
   },
 
+  supervisorOnAdminCreationNotification: {
+    ...defaultConfig,
+    subject: "👤 New Admin Created by Your Team Member",
+    event_name: "New Admin Added",
+    action: "Admin Created",
+    status: "Success",
+    message_intro: "A new admin has been created by one of your team members.",
+    notes: "Please review the new admin details and provide guidance if needed.",
+    details: {}, // Admin ID, Role, Email, Created By, Created At
+  },
+
   // 🔹 Admin Account Deactivation
   adminDeactivated: {
     ...defaultConfig,
