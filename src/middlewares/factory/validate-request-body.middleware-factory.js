@@ -1,5 +1,5 @@
 const { validateRequestBody } = require("@utils/validate-request-body.util");
-const { throwInternalServerError, logMiddlewareError, throwResourceNotFoundError } = require("@utils/error-handler.util");
+const { throwInternalServerError, logMiddlewareError, throwMissingFieldsError } = require("@utils/error-handler.util");
 const { logWithTime } = require("@utils/time-stamps.util");
 
 const validateRequestBodyMiddleware = (requiredFields, middlewareName) => {
@@ -9,7 +9,7 @@ const validateRequestBodyMiddleware = (requiredFields, middlewareName) => {
             
             if (!result.valid) {
                 logMiddlewareError(middlewareName, "Request body validation failed", req);
-                return throwResourceNotFoundError(res, result.missingFields);
+                return throwMissingFieldsError(res, result.missingFields);
             }
             
             // Apply trimmed body back to request

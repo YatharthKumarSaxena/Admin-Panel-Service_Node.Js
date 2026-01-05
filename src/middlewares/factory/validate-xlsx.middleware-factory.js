@@ -1,5 +1,5 @@
 const { validateXLSXFile } = require("@utils/validate-xlsx.util");
-const { throwInternalServerError, logMiddlewareError, throwResourceNotFoundError } = require("@utils/error-handler.util");
+const { throwInternalServerError, logMiddlewareError, throwMissingFieldsError } = require("@utils/error-handler.util");
 const { logWithTime } = require("@utils/time-stamps.util");
 
 /*
@@ -16,7 +16,7 @@ const validateXLSXMiddleware = (requiredFields, middlewareName) => {
 
       if (!result.valid) {
         logMiddlewareError(middlewareName, "XLSX validation failed", req);
-        return throwResourceNotFoundError(res, result.missingFields);
+        return throwMissingFieldsError(res, result.missingFields);
       }
 
       logWithTime(`✅ [${middlewareName}] XLSX file validated successfully`);
