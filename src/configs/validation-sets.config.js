@@ -9,13 +9,23 @@ const { validationRules } = require("./validation.config");
 const validationSets = {
   // Admin Management
   createAdmin: {
-    'adminType': validationRules.adminType
+    'adminType': validationRules.adminType,
+    'reason': validationRules.adminCreationReason
   },
-  
+
+  fetchAdminDetails: {
+    'reason': validationRules.fetchAdminDetailsReason
+  },
+
   updateAdminDetails: {
     'reason': validationRules.updateAdminDetailsReason
   },
   
+  updateAdminRole: {
+    'newRole': validationRules.adminType,
+    'reason': validationRules.adminUpdateRoleReason
+  },
+
   // Admin Status Operations
   activateAdmin: {
     'reason': validationRules.activationReason

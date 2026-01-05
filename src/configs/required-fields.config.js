@@ -1,10 +1,11 @@
 const adminCreationRequiredFields = [
-  "adminType"
+  "adminType",
+  "reason"
 ];
 const adminCreationInBulkRequiredFields = [
-  ...getAuthFields(),
   "adminType"
 ];
+
 const updateAdminDetailsRequiredFields = ["reason"];
 const activateAdminRequiredFields = ["reason"];
 const deactivateAdminRequiredFields = ["reason"];
@@ -24,6 +25,8 @@ const viewAdminActivityTrackerRequiredFields = ["reason"];
 const listActivityTrackerRequiredFields = ["reason"];
 const blockDeviceRequiredFields = ["reason", "reasonDetails"];
 const unblockDeviceRequiredFields = ["reason"];
+const updateAdminRoleRequiredFields = ["newRole", "reason"];
+const fetchAdminDetailsRequiredFields = ["reason"];
 
 module.exports = {
   adminCreationRequiredFields,
@@ -46,5 +49,7 @@ module.exports = {
   viewAdminActivityTrackerRequiredFields,
   listActivityTrackerRequiredFields,
   blockDeviceRequiredFields,
-  unblockDeviceRequiredFields
+  unblockDeviceRequiredFields,
+  updateAdminRoleRequiredFields,
+  fetchAdminDetailsRequiredFields
 };

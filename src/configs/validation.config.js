@@ -35,7 +35,10 @@ const {
   ChangeSupervisorReasonHelper,
   ViewActivityTrackerReasonsHelper,
   BlockDeviceReasonHelper,
-  UnblockDeviceReasonHelper
+  UnblockDeviceReasonHelper,
+  AdminCreationReasonHelper,
+  AdminUpdateRoleReasonHelper,
+  FetchAdminDetailsReasonHelper
 } = require("@utils/enum-validators.util");
 
 const validationRules = {
@@ -43,6 +46,14 @@ const validationRules = {
   email: {
     length: emailLength,
     regex: emailRegex
+  },
+
+  adminCreationReason: {
+    enum: AdminCreationReasonHelper
+  },
+
+  adminUpdateRoleReason: {
+    enum: AdminUpdateRoleReasonHelper
   },
 
   fullPhoneNumber: {
@@ -160,6 +171,10 @@ const validationRules = {
   
   unblockDeviceReason: {
     enum: UnblockDeviceReasonHelper
+  },
+
+  fetchAdminDetailsReason: {
+    enum: FetchAdminDetailsReasonHelper
   }
 };
 

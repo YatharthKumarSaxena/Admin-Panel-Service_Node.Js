@@ -1,12 +1,31 @@
 // configs/enums.config.js
 
-const AdminActionReasons = Object.freeze({
-  CHECK_USER_ACTIVITY: "ToCheckUserActivity",           // Audit-safe
-  VERIFY_ACCOUNT_STATUS: "ToVerifyAccountStatus",
-  AUDIT_LOG_PURPOSE: "ToAuditUserLogs",
-  RESET_PASSWORD_REQUESTED: "PasswordResetVerification",
-  USER_RAISED_ISSUE: "UserRaisedIssue",
-  ACCOUNT_VERIFICATION: "VerifyUserManually"
+const AdminUpdateRoleReasons = Object.freeze({
+  PROMOTION: "Promotion",                               // Audit-safe
+  DEMOTION: "Demotion",
+  REORGANIZATION: "Reorganization",
+  PERFORMANCE_BASED: "PerformanceBased",
+  ADMIN_REQUEST: "AdminRequest",
+  OTHER: "Other"
+});
+
+const AdminCreationReasons = Object.freeze({
+  NEW_HIRE: "NewHire",                                   // Audit-safe
+  REPLACEMENT: "Replacement",
+  ROLE_EXPANSION: "RoleExpansion",
+  TEMPORARY_ASSIGNMENT: "TemporaryAssignment",
+  PROJECT_REQUIREMENT: "ProjectRequirement",
+  OTHER: "Other"
+});
+
+const FetchAdminDetailsReasons = Object.freeze({
+  SUPPORT_REQUEST: "SupportRequest",                     // Audit-safe
+  SECURITY_INVESTIGATION: "SecurityInvestigation",
+  COMPLIANCE_AUDIT: "ComplianceAudit",
+  USER_COMPLAINT: "UserComplaint",
+  PAYMENT_ISSUE: "PaymentIssue",
+  ADMIN_OVERSIGHT: "AdminOversight",
+  OTHER: "Other"
 });
 
 const BlockReasons = Object.freeze({
@@ -228,7 +247,6 @@ const UnblockDeviceReasons = Object.freeze({
 });
 
 module.exports = {
-  AdminActionReasons,   // PascalCase values → audit logs
   BlockReasons,         // snake_case values → DB/API
   UnblockReasons,
   ActivationReasons,    // For admin activation operations
@@ -254,5 +272,8 @@ module.exports = {
   viewScope,
   ChangeSupervisorReasons,
   BlockDeviceReasons,
-  UnblockDeviceReasons
+  UnblockDeviceReasons,
+  AdminCreationReasons,
+  AdminUpdateRoleReasons,
+  FetchAdminDetailsReasons
 };
