@@ -2,11 +2,11 @@ const express = require("express");
 const internalRoutes = express.Router();
 
 // Controllers
-const internalControllers = require("@controllers/internals");
-
+const { internalControllers } = require("@controllers/internals/index");
+const { commonMiddlewares } = require("@middlewares/common/index"); 
 // Middlewares
-const internalMiddlewares = require("@middlewares/internals");
-
+const { internalMiddlewares } = require("@middlewares/internals/index");
+const { mockAuthMiddleware } = require("@testing/mock-auth.testing.middleware");
 // Routes Config
 const { INTERNAL_ROUTES } = require("@configs/uri.config");
 
@@ -14,6 +14,16 @@ const {
   BLOCK_DEVICE,
   UNBLOCK_DEVICE
 } = INTERNAL_ROUTES;
+
+const baseMiddlerwares = [
+  commonMiddlewares.verifyDeviceField,
+  mockAuthMiddleware,
+//  commonMiddlewares.validateRedisPayloadMiddleware,
+//  commonMiddlewares.validateJwtPayloadMiddleware,
+//  commonMiddlewares.verifyJWTSignature,
+  commonMiddlewares.isAdmin,
+  commonMiddlewares.isAdminAccountActive,
+];
 
 /**
  * 🔒 Block Device - Internal API
@@ -23,8 +33,9 @@ const {
 internalRoutes.post(
   `${BLOCK_DEVICE}`,
   [
+    ...baseMiddlerwares,
+    internalMiddlewares.validateBlockDeviceRequestBody,
     internalMiddlewares.validateBlockDeviceFields,
-    internalMiddlewares.validateBlockDeviceRequestBody
   ],
   internalControllers.blockDevice
 );
@@ -37,8 +48,9 @@ internalRoutes.post(
 internalRoutes.post(
   `${UNBLOCK_DEVICE}`,
   [
-    internalMiddlewares.validateUnblockDeviceFields,
-    internalMiddlewares.validateUnblockDeviceRequestBody
+    ...baseMiddlerwares,
+    internalMiddlewares.validateUnblockDeviceRequestBody,
+    internalMiddlewares.validateUnblockDeviceFields
   ],
   internalControllers.unblockDevice
 );

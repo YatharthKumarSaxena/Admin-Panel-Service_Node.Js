@@ -6,16 +6,11 @@ const adminRoutes = express.Router();
 const { ADMIN_ROUTES } = require("@configs/uri.config");
 
 const {
-  CREATE_ADMIN, ACTIVATE_ADMIN, DEACTIVATE_ADMIN, CHANGE_SUPERVISOR,
-  CREATE_DEACTIVATION_REQUEST, LIST_DEACTIVATION_REQUESTS, 
-  APPROVE_DEACTIVATION_REQUEST, REJECT_DEACTIVATION_REQUEST,
-  CREATE_ACTIVATION_REQUEST, LIST_ACTIVATION_REQUESTS,
-  APPROVE_ACTIVATION_REQUEST, REJECT_ACTIVATION_REQUEST,
-  VIEW_STATUS_REQUEST
-} = ADMIN_ROUTES.ADMINS;
+  CREATE_ADMIN, ACTIVATE_ADMIN, DEACTIVATE_ADMIN, CHANGE_SUPERVISOR, UPDATE_ADMIN_DETAILS, FETCH_ADMIN_DETAILS, FETCH_ADMINS_LIST, UPDATE_MY_DETAILS, VIEW_MY_DETAILS, UPDATE_ADMIN_ROLE
+} = ADMIN_ROUTES;
 
 // Create Admin
-const { adminControllers } = require("@/controllers/admins/index");
+const { adminControllers } = require("@controllers/admins/index");
 const { commonMiddlewares } = require("@middlewares/common/index"); 
 const { adminMiddlewares } = require("@middlewares/admins/index");
 const { mockAuthMiddleware } = require("@testing/mock-auth.testing.middleware");
@@ -33,32 +28,35 @@ const baseMiddlerwares = [
 adminRoutes.post(`${CREATE_ADMIN}`,
   [
     ...baseMiddlerwares,
-    adminMiddlewares.midAdminsAndSuperAdmins,
-    adminMiddlewares.hierarchyGuard, 
+    commonMiddlewares.midAdminsAndSuperAdmins,
+    commonMiddlewares.hierarchyGuard, 
     commonMiddlewares.authModeValidator,
-    adminMiddlewares.validateCreateAdminRequestBody
+    adminMiddlewares.validateCreateAdminRequestBody,
+    adminMiddlewares.validateCreateAdminFields
   ] , 
   adminControllers.createAdmin);
 
 adminRoutes.patch(`${ACTIVATE_ADMIN}`,
   [
     ...baseMiddlerwares,
-    adminMiddlewares.midAdminsAndSuperAdmins,
+    commonMiddlewares.onlySuperAdmins,
     commonMiddlewares.authModeValidator,                  // Validate email/phone/userId
-    ...adminMiddlewares.validateActivateAdminRequestBody, // Validate reason + notes
+    adminMiddlewares.validateActivateAdminRequestBody, // Validate reason + notes
+    adminMiddlewares.validateActivateAdminFields,
     commonMiddlewares.fetchAdminMiddleware,               // Fetch target admin
-    adminMiddlewares.hierarchyGuard                       // Check hierarchy
+    commonMiddlewares.hierarchyGuard                       // Check hierarchy
   ],
   adminControllers.activateAdmin);
 
 adminRoutes.patch(`${DEACTIVATE_ADMIN}`,
   [
     ...baseMiddlerwares,
-    adminMiddlewares.midAdminsAndSuperAdmins,
+    commonMiddlewares.onlySuperAdmins,
     commonMiddlewares.authModeValidator,                    // Validate email/phone/userId
-    ...adminMiddlewares.validateDeactivateAdminRequestBody, // Validate reason + notes
+    adminMiddlewares.validateDeactivateAdminRequestBody, // Validate reason + notes
+    adminMiddlewares.validateDeactivateAdminFields,
     commonMiddlewares.fetchAdminMiddleware,                 // Fetch target admin
-    adminMiddlewares.hierarchyGuard                         // Check hierarchy
+    commonMiddlewares.hierarchyGuard                         // Check hierarchy
   ],
   adminControllers.deactivateAdmin
 );
@@ -69,106 +67,80 @@ adminRoutes.patch(`${DEACTIVATE_ADMIN}`,
 adminRoutes.patch(`${CHANGE_SUPERVISOR}`,
   [
     ...baseMiddlerwares,
-    adminMiddlewares.midAdminsAndSuperAdmins,
-    adminMiddlewares.validateChangeSupervisorRequestBody,  // Validate newSupervisorId + reason
+    commonMiddlewares.midAdminsAndSuperAdmins,
     commonMiddlewares.authModeValidator,                   // Validate email/phone/userId
+    adminMiddlewares.validateChangeSupervisorRequestBody,  // Validate newSupervisorId + reason
+    adminMiddlewares.validateChangeSupervisorFields,
     commonMiddlewares.fetchAdminMiddleware,                // Fetch target admin
-    adminMiddlewares.hierarchyGuard                        // Check hierarchy
+    commonMiddlewares.hierarchyGuard                        // Check hierarchy
   ],
   adminControllers.changeSupervisor
 );
 
-// ========== �🔄 DEACTIVATION REQUEST ROUTES ==========
-
-// Create deactivation request (self)
-adminRoutes.post(`${CREATE_DEACTIVATION_REQUEST}`,
+// Update admin details
+adminRoutes.patch(`${UPDATE_ADMIN_DETAILS}`,
   [
     ...baseMiddlerwares,
-    adminMiddlewares.validateStatusRequestBody
+    commonMiddlewares.midAdminsAndSuperAdmins,
+    commonMiddlewares.authModeValidator,                  // Validate email/phone/userId
+    adminMiddlewares.validateUpdateAdminDetailsRequestBody, // Validate updatable fields + reason
+    adminMiddlewares.validateUpdateAdminDetailsFields,
+    commonMiddlewares.fetchAdminMiddleware,               // Fetch target admin
+    commonMiddlewares.hierarchyGuard                       // Check hierarchy
   ],
-  adminControllers.createDeactivationRequest
+  adminControllers.updateAdminDetails
 );
 
-// List all deactivation requests
-adminRoutes.get(`${LIST_DEACTIVATION_REQUESTS}`,
+// Fetch admin details
+adminRoutes.get(`${FETCH_ADMIN_DETAILS}`,
   [
     ...baseMiddlerwares,
-    adminMiddlewares.midAdminsAndSuperAdmins
+    commonMiddlewares.midAdminsAndSuperAdmins,
+    commonMiddlewares.authModeValidator,        // Validate email/phone/userId
+    adminMiddlewares.validateFetchAdminDetailsRequestBody, // Validate reason
+    adminMiddlewares.validateFetchAdminDetailsFields,
+    commonMiddlewares.fetchAdminMiddleware,     // Fetch target admin
+    commonMiddlewares.hierarchyGuard             // Check hierarchy
   ],
-  adminControllers.listDeactivationRequests
+  adminControllers.viewAdminDetails
 );
 
-// Approve deactivation request
-adminRoutes.post(`${APPROVE_DEACTIVATION_REQUEST}`,
+// List admins
+adminRoutes.get(`${FETCH_ADMINS_LIST}`,
   [
     ...baseMiddlerwares,
-    adminMiddlewares.midAdminsAndSuperAdmins,
-    adminMiddlewares.validateReviewRequestBody
+    commonMiddlewares.midAdminsAndSuperAdmins
   ],
-  adminControllers.approveDeactivationRequest
+  adminControllers.listAdmins
 );
 
-// Reject deactivation request
-adminRoutes.post(`${REJECT_DEACTIVATION_REQUEST}`,
-  [
-    ...baseMiddlerwares,
-    adminMiddlewares.midAdminsAndSuperAdmins,
-    adminMiddlewares.validateReviewRequestBody
-  ],
-  adminControllers.rejectDeactivationRequest
-);
-
-// ========== 🔄 ACTIVATION REQUEST ROUTES ==========
-
-// Create activation request (self)
-adminRoutes.post(`${CREATE_ACTIVATION_REQUEST}`,
-  [
-    commonMiddlewares.verifyDeviceField,
-    mockAuthMiddleware,
-    commonMiddlewares.isAdmin,
-    // Note: isAdminAccountActive removed so inactive admins can request
-    adminMiddlewares.validateStatusRequestBody
-  ],
-  adminControllers.createActivationRequest
-);
-
-// List all activation requests
-adminRoutes.get(`${LIST_ACTIVATION_REQUESTS}`,
-  [
-    ...baseMiddlerwares,
-    adminMiddlewares.midAdminsAndSuperAdmins
-  ],
-  adminControllers.listActivationRequests
-);
-
-// Approve activation request
-adminRoutes.post(`${APPROVE_ACTIVATION_REQUEST}`,
-  [
-    ...baseMiddlerwares,
-    adminMiddlewares.midAdminsAndSuperAdmins,
-    adminMiddlewares.validateReviewRequestBody
-  ],
-  adminControllers.approveActivationRequest
-);
-
-// Reject activation request
-adminRoutes.post(`${REJECT_ACTIVATION_REQUEST}`,
-  [
-    ...baseMiddlerwares,
-    adminMiddlewares.midAdminsAndSuperAdmins,
-    adminMiddlewares.validateReviewRequestBody
-  ],
-  adminControllers.rejectActivationRequest
-);
-
-// ========== 👁️ VIEW STATUS REQUEST (UNIFIED) ==========
-// View any status request (activation or deactivation) by requestId
-adminRoutes.get(`${VIEW_STATUS_REQUEST}`,
+// Update own admin details
+adminRoutes.patch(`${UPDATE_MY_DETAILS}`,
   [
     ...baseMiddlerwares
-    // Hierarchical access control handled inside controller based on request type
   ],
-  adminControllers.viewStatusRequest
+  adminControllers.updateOwnAdminDetails
+);
+
+// View own admin details
+adminRoutes.get(`${VIEW_MY_DETAILS}`,
+  [
+    ...baseMiddlerwares
+  ],
+  adminControllers.viewOwnAdminDetails
+);
+
+adminRoutes.patch(`${UPDATE_ADMIN_ROLE}`,
+  [
+    ...baseMiddlerwares,
+    commonMiddlewares.midAdminsAndSuperAdmins,
+    commonMiddlewares.authModeValidator,                  // Validate email/phone/userId
+    adminMiddlewares.validateUpdateAdminRoleRequestBody, // Validate new role + reason
+    adminMiddlewares.validateUpdateAdminRoleFields,
+    commonMiddlewares.fetchAdminMiddleware,               // Fetch target admin
+    commonMiddlewares.hierarchyGuard                       // Check hierarchy
+  ],
+  adminControllers.updateAdminRole
 );
 
 module.exports = {
