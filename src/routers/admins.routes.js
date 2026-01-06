@@ -6,7 +6,17 @@ const adminRoutes = express.Router();
 const { ADMIN_ROUTES } = require("@configs/uri.config");
 
 const {
-  CREATE_ADMIN, ACTIVATE_ADMIN, DEACTIVATE_ADMIN, CHANGE_SUPERVISOR, UPDATE_ADMIN_DETAILS, FETCH_ADMIN_DETAILS, FETCH_ADMINS_LIST, UPDATE_MY_DETAILS, VIEW_MY_DETAILS, UPDATE_ADMIN_ROLE
+  CREATE_ADMIN, 
+  ACTIVATE_ADMIN, 
+  DEACTIVATE_ADMIN, 
+  CHANGE_SUPERVISOR, 
+  UPDATE_ADMIN_DETAILS, 
+  FETCH_ADMIN_DETAILS, 
+  FETCH_ADMINS_LIST,
+  UPDATE_MY_DETAILS, 
+  VIEW_MY_DETAILS, 
+  UPDATE_ADMIN_ROLE, 
+  GET_ADMIN_DASHBOARD_STATS
 } = ADMIN_ROUTES;
 
 // Create Admin
@@ -141,6 +151,14 @@ adminRoutes.patch(`${UPDATE_ADMIN_ROLE}`,
     commonMiddlewares.hierarchyGuard                       // Check hierarchy
   ],
   adminControllers.updateAdminRole
+);
+
+adminRoutes.get(`${GET_ADMIN_DASHBOARD_STATS}`,
+  [
+    ...baseMiddlerwares,
+    commonMiddlewares.onlySuperAdmins
+  ],
+  adminControllers.getAdminDashboardStats
 );
 
 module.exports = {
