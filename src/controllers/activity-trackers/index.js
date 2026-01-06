@@ -1,11 +1,13 @@
-const { viewAdminActivityTracker } = require("./view-admin-activity-tracker.controller");
-const { listActivityTracker } = require("./list-activity-tracker.controller");
-const { viewOwnActivityTracker } = require("./view-own-activity-tracker.controller");
+const { createControllers } = require("./create/index");
+const { updateControllers } = require("./update/index");
+const { deleteControllers } = require("./delete/index");
+const { getControllers } = require("./get/index");
 
 const activityTrackerControllers = {
-    viewAdminActivityTracker,
-    listActivityTracker,
-    viewOwnActivityTracker
+    ...createControllers,
+    ...getControllers,
+    ...updateControllers,
+    ...deleteControllers
 }
 
 module.exports = {
