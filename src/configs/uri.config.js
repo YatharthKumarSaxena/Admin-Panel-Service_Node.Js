@@ -33,14 +33,14 @@ module.exports = {
         CHANGE_SUPERVISOR: `/change-supervisor`,  // PATCH /admin-panel-service/api/v1/admin/change-supervisor                     
         FETCH_ADMIN_DETAILS: `/fetch-details`,   // GET /admin-panel-service/api/v1/admin/fetch-details
         FETCH_ADMINS_LIST: `/list`,               // GET /admin-panel-service/api/v1/admin/list
-        VIEW_MY_DETAILS: `/view-my-details`  // PATCH /admin-panel-service/api/v1/admin/view-my-details
+        VIEW_MY_DETAILS: `/view-my-details`,  // PATCH /admin-panel-service/api/v1/admin/view-my-details
+        GET_ADMIN_DASHBOARD_STATS: `/dashboard-stats`  // GET /admin-panel-service/api/v1/admin/dashboard-stats
     },
     USER_ROUTES: {
         BLOCK_USER: `/block-user`,              // PATCH /admin-panel-service/api/v1/users/block-user
         UNBLOCK_USER: `/unblock-user`,          // PATCH /admin-panel-service/api/v1/users/unblock-user
         GET_TOTAL_REGISTERED_USERS: `/total-users`,      // GET /admin-panel-service/api/v1/users/total-users
         LIST_USERS: `/list`                     // GET /admin-panel-service/api/v1/users/list
-
     },
     // 🔒 Internal Service Routes (for service-to-service communication)
     INTERNAL_ROUTES: {
