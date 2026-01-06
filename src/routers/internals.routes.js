@@ -12,7 +12,10 @@ const { INTERNAL_ROUTES } = require("@configs/uri.config");
 
 const {
   BLOCK_DEVICE,
-  UNBLOCK_DEVICE
+  UNBLOCK_DEVICE,
+  GET_USER_ACTIVE_SESSIONS,
+  GET_USER_AUTH_LOGS,
+  FETCH_USER_DETAILS
 } = INTERNAL_ROUTES;
 
 const baseMiddlerwares = [
@@ -53,6 +56,36 @@ internalRoutes.post(
     internalMiddlewares.validateUnblockDeviceFields
   ],
   internalControllers.unblockDevice
+);
+
+// Get user's active sessions
+internalRoutes.get(`${GET_USER_ACTIVE_SESSIONS}`,
+    [
+        ...baseMiddlerwares,
+        internalMiddlewares.validateGetUserActiveDevicesRequestBody,
+        internalMiddlewares.validateGetUserActiveDevicesFields
+    ],
+    internalControllers.getUserActiveDevices
+);
+
+// Get user auth logs
+internalRoutes.get(`${GET_USER_AUTH_LOGS}`,
+    [
+        ...baseMiddlerwares,
+        internalMiddlewares.validateCheckAuthLogsRequestBody,
+        internalMiddlewares.validateCheckAuthLogsFields
+    ],
+    internalControllers.checkAuthLogs
+);
+
+// Fetch user details
+internalRoutes.get(`${FETCH_USER_DETAILS}`,
+    [
+        ...baseMiddlerwares,
+        internalMiddlewares.validateProvideUserAccountDetailsRequestBody,
+        internalMiddlewares.validateProvideUserAccountDetailsFields
+    ],
+    internalControllers.provideUserAccountDetails
 );
 
 module.exports = {

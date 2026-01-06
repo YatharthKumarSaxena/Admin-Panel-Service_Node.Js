@@ -3,10 +3,7 @@ const { USER_ROUTES } = require("@configs/uri.config");
 const {  
     BLOCK_USER,
     UNBLOCK_USER,
-    GET_USER_ACTIVE_SESSIONS,
     GET_TOTAL_REGISTERED_USERS,
-    GET_USER_AUTH_LOGS,
-    FETCH_USER_DETAILS,
     LIST_USERS
 } = USER_ROUTES;
 
@@ -47,42 +44,12 @@ userRoutes.patch(`${UNBLOCK_USER}`,
     userControllers.unblockUser
 );
 
-// Get user's active sessions
-userRoutes.get(`${GET_USER_ACTIVE_SESSIONS}`,
-    [
-        ...baseMiddlerwares,
-        userMiddlewares.validateGetUserActiveDevicesRequestBody,
-        userMiddlewares.validateGetUserActiveDevicesFields
-    ],
-    userControllers.getUserActiveDevices
-);
-
 // Get total registered users
 userRoutes.get(`${GET_TOTAL_REGISTERED_USERS}`,
     [
         ...baseMiddlerwares
     ],
     userControllers.getTotalRegisteredUsers
-);
-
-// Get user auth logs
-userRoutes.get(`${GET_USER_AUTH_LOGS}`,
-    [
-        ...baseMiddlerwares,
-        userMiddlewares.validateCheckAuthLogsRequestBody,
-        userMiddlewares.validateCheckAuthLogsFields
-    ],
-    userControllers.checkAuthLogs
-);
-
-// Fetch user details
-userRoutes.get(`${FETCH_USER_DETAILS}`,
-    [
-        ...baseMiddlerwares,
-        userMiddlewares.validateProvideUserAccountDetailsRequestBody,
-        userMiddlewares.validateProvideUserAccountDetailsFields
-    ],
-    userControllers.provideUserAccountDetails
 );
 
 // List users
