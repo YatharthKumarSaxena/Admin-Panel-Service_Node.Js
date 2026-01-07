@@ -22,11 +22,11 @@ const provideUserAccountDetailsRequiredFields = ["reason"];
 const getUserActiveDevicesRequiredFields = ["reason"];
 const checkAuthLogsRequiredFields = ["reason"];
 const viewAdminActivityTrackerRequiredFields = ["reason"];
-const listActivityTrackerRequiredFields = ["reason"];
 const blockDeviceRequiredFields = ["reason", "reasonDetails"];
 const unblockDeviceRequiredFields = ["reason"];
 const updateAdminRoleRequiredFields = ["newRole", "reason"];
 const fetchAdminDetailsRequiredFields = ["reason"];
+const fetchUserDetailsRequiredFields = ["reason"];
 
 module.exports = {
   adminCreationRequiredFields,
@@ -47,9 +47,9 @@ module.exports = {
   getUserActiveDevicesRequiredFields,
   checkAuthLogsRequiredFields,
   viewAdminActivityTrackerRequiredFields,
-  listActivityTrackerRequiredFields,
   blockDeviceRequiredFields,
   unblockDeviceRequiredFields,
   updateAdminRoleRequiredFields,
-  fetchAdminDetailsRequiredFields
+  fetchAdminDetailsRequiredFields,
+  fetchUserDetailsRequiredFields
 };

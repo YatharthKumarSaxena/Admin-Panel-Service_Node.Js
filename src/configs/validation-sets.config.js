@@ -17,6 +17,10 @@ const validationSets = {
     'reason': validationRules.fetchAdminDetailsReason
   },
 
+  fetchUserDetails: {
+    'reason': validationRules.fetchUserDetailsReason
+  },
+
   updateAdminDetails: {
     'reason': validationRules.updateAdminDetailsReason
   },
@@ -92,10 +96,6 @@ const validationSets = {
   },
 
   viewAdminActivityTracker: {
-    'reason': validationRules.activityTrackerReason
-  },
-
-  listActivityTracker: {
     'reason': validationRules.activityTrackerReason
   },
 

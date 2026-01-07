@@ -28,6 +28,16 @@ const FetchAdminDetailsReasons = Object.freeze({
   OTHER: "Other"
 });
 
+const FetchUserDetailsReasons = Object.values({
+  SUPPORT_REQUEST: "support_request",
+  SECURITY_INVESTIGATION: "security_investigation",
+  COMPLIANCE_AUDIT: "compliance_audit",
+  USER_COMPLAINT: "user_complaint",
+  PAYMENT_ISSUE: "payment_issue",
+  ADMIN_OVERSIGHT: "admin_oversight",
+  OTHER: "other"
+});
+
 const BlockReasons = Object.freeze({
   POLICY_VIOLATION: "policy_violation",                 // DB-safe
   SPAM_ACTIVITY: "spam_activity",
@@ -275,5 +285,6 @@ module.exports = {
   UnblockDeviceReasons,
   AdminCreationReasons,
   AdminUpdateRoleReasons,
-  FetchAdminDetailsReasons
+  FetchAdminDetailsReasons,
+  FetchUserDetailsReasons
 };
