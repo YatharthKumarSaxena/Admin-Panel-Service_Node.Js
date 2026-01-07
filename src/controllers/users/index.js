@@ -1,13 +1,15 @@
-const { blockUser } = require("./update/block-user.controller");
-const { unblockUser } = require("./update/unblock-user.controller");
-const { getTotalRegisteredUsers } = require("./get/get-total-registered-users.controller");
-const { listUsers } = require("./get/list-users.controller");
+const { createControllers } = require("./create/index");
+const { updateControllers } = require("./update/index");
+const { deleteControllers } = require("./delete/index");
+const { getControllers } = require("./get/index");
 
 const userControllers = {
-    blockUser,
-    unblockUser,
-    getTotalRegisteredUsers,
-    listUsers
+    ...createControllers,
+    ...getControllers,
+    ...updateControllers,
+    ...deleteControllers
 };
 
-module.exports = { userControllers };
+module.exports = { 
+    userControllers 
+};
