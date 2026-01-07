@@ -83,16 +83,17 @@ userSchema.pre("validate", function (next) {
     next();
 });
 
-userSchema.pre("save", function(next) {
-  if (this.isBlocked && this.isModified("isBlocked")) {
-    this.blockCount += 1;
-    this.blockedAt = new Date();
-  }
-  if (!this.isBlocked && this.isModified("isBlocked")) {
-    this.unblockCount += 1;
-    this.unblockedAt = new Date();
-  }
-  next();
+userSchema.pre("save", function (next) {
+    if (this.isModified("isBlocked")) {
+        if (this.isBlocked) {
+            this.blockCount += 1;
+            this.blockedAt = new Date();
+        } else {
+            this.unblockCount += 1;
+            this.unblockedAt = new Date();
+        }
+    }
+    next();
 });
 
 // Creating a Collection named Users that will Include User Documents / Records
