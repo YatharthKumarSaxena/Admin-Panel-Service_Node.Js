@@ -58,7 +58,7 @@ adminRoutes.patch(`${ACTIVATE_ADMIN}`,
   ],
   adminControllers.activateAdmin);
 
-adminRoutes.patch(`${DEACTIVATE_ADMIN}`,
+adminRoutes.delete(`${DEACTIVATE_ADMIN}`,
   [
     ...baseMiddlerwares,
     commonMiddlewares.onlySuperAdmins,

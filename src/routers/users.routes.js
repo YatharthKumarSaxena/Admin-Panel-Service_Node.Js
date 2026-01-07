@@ -4,7 +4,8 @@ const {
     BLOCK_USER,
     UNBLOCK_USER,
     GET_TOTAL_REGISTERED_USERS,
-    LIST_USERS
+    LIST_USERS,
+    VIEW_USER_DETAILS
 } = USER_ROUTES;
 
 const { userMiddlewares } = require("@middlewares/users/index");
@@ -58,6 +59,15 @@ userRoutes.get(`${LIST_USERS}`,
         ...baseMiddlerwares
     ],
     userControllers.listUsers
+);
+
+userRoutes.get(`${VIEW_USER_DETAILS}`,
+    [
+        ...baseMiddlerwares,
+        userMiddlewares.validateFetchUserDetailsRequestBody,
+        userMiddlewares.validateFetchUserDetailsFields
+    ],
+    userControllers.viewUserDetails
 );
 
 module.exports = {
