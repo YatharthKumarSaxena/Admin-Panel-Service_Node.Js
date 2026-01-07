@@ -1,4 +1,4 @@
-const { listAuthLogs } = require("./list-auth-logs");
+const { listAuthLogs } = require("./list-auth-logs.controller");
 const { checkAuthLogs } = require("./check-auth-logs.controller");
 const { getUserActiveDevices } = require("./get-user-active-devices.controller");
 const { provideUserAccountDetails } = require("./provide-user-account-details.controller");
