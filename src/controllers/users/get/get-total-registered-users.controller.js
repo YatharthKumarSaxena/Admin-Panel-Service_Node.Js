@@ -13,17 +13,12 @@ const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const getTotalRegisteredUsers = async (req, res) => {
   try {
     const admin = req.admin;
-    const { includeInactive = false, includeBlocked = false, startDate, endDate } = req.query;
+    const { includeBlocked = false, startDate, endDate } = req.query;
 
     logWithTime(`📊 Admin ${admin.adminId} requesting total registered users count`);
 
     // Build query
     const query = {};
-
-    // Filter by active status if needed
-    if (!includeInactive) {
-      query.isActive = true;
-    }
 
     // Filter by blocked status if needed
     if (!includeBlocked) {
@@ -47,11 +42,9 @@ const getTotalRegisteredUsers = async (req, res) => {
     // Get additional statistics
     const stats = {
       totalRegistered: totalUsers,
-      activeUsers: await UserModel.countDocuments({ isActive: true, isBlocked: { $ne: true } }),
-      inactiveUsers: await UserModel.countDocuments({ isActive: false }),
       blockedUsers: await UserModel.countDocuments({ isBlocked: true }),
+      unblockedUsers: totalUsers - blockedUsers,
       filters: {
-        includeInactive: includeInactive === 'true',
         includeBlocked: includeBlocked === 'true',
         startDate: startDate || null,
         endDate: endDate || null
@@ -64,7 +57,6 @@ const getTotalRegisteredUsers = async (req, res) => {
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.GET_TOTAL_REGISTERED_USERS, {
       description: `Admin ${admin.adminId} retrieved total registered users count`,
       adminActions: {
-        reason: req.body?.reason || "Statistical analysis",
         filters: stats.filters
       }
     });

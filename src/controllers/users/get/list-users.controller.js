@@ -15,7 +15,6 @@ const listUsers = async (req, res) => {
     const {
       search,           // Search by email, phone, or userId
       isBlocked,        // Filter by blocked status: true/false
-      isActive,         // Filter by active status: true/false
       page = 1,
       limit = 20,
       sortBy = 'createdAt',
@@ -42,8 +41,6 @@ const listUsers = async (req, res) => {
       unblockReason,        // Filter by unblock reason enum
       blockedBy,            // Filter by admin who blocked
       unblockedBy,          // Filter by admin who unblocked
-      blockedVia,           // Filter by block via (ADMIN, SYSTEM)
-      unblockedVia,         // Filter by unblock via
       minBlockCount,        // Minimum block count
       maxBlockCount,        // Maximum block count
       minUnblockCount,      // Minimum unblock count
@@ -68,11 +65,6 @@ const listUsers = async (req, res) => {
     // Blocked status filter
     if (isBlocked !== undefined) {
       query.isBlocked = isBlocked === 'true';
-    }
-
-    // Active status filter
-    if (isActive !== undefined) {
-      query.isActive = isActive === 'true';
     }
 
     // 📅 Date filtering for createdAt
@@ -127,14 +119,6 @@ const listUsers = async (req, res) => {
     }
     if (unblockedBy) {
       query.unblockedBy = unblockedBy;
-    }
-
-    // 📍 Filter by block/unblock via
-    if (blockedVia) {
-      query.blockedVia = blockedVia.toUpperCase();
-    }
-    if (unblockedVia) {
-      query.unblockedVia = unblockedVia.toUpperCase();
     }
 
     // 🔢 Block count range filters
