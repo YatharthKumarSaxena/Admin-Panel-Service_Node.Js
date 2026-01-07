@@ -2,8 +2,7 @@ const { fieldValidationMiddleware } = require("../factory/field-validation.middl
 const { validationSets } = require("@configs/validation-sets.config.js");
 
 const validationMiddlewares = {
-  validateViewAdminActivityTrackerFields: fieldValidationMiddleware("viewAdminActivityTracker", validationSets.viewAdminActivityTracker),
-  validateListActivityTrackerFields: fieldValidationMiddleware("listActivityTracker", validationSets.listActivityTracker)
+  validateViewAdminActivityTrackerFields: fieldValidationMiddleware("viewAdminActivityTracker", validationSets.viewAdminActivityTracker)
 }
 
 module.exports = {

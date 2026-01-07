@@ -5,10 +5,6 @@ const validateRequestBodyMiddlewares = {
   validateViewAdminActivityTrackerRequestBody: validateRequestBodyMiddleware(
     viewAdminActivityTrackerRequiredFields,
     "validateViewAdminActivityTrackerRequestBody"
-  ),
-  validateListActivityTrackerRequestBody: validateRequestBodyMiddleware(
-    listActivityTrackerRequiredFields,
-    "validateListActivityTrackerRequestBody"
   )
 };
 
