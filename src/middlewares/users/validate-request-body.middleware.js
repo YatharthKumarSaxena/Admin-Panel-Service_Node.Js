@@ -1,7 +1,8 @@
 const { validateRequestBodyMiddleware } = require("../factory/validate-request-body.middleware-factory");
 const {
   blockUserRequiredFields,
-  unblockUserRequiredFields
+  unblockUserRequiredFields,
+  fetchUserDetailsRequiredFields
 } = require("@configs/required-fields.config.js");
 
 const validateRequestBodyMiddlewares = {
@@ -14,6 +15,11 @@ const validateRequestBodyMiddlewares = {
   validateUnblockUserRequestBody: validateRequestBodyMiddleware(
     unblockUserRequiredFields,
     "validateUnblockUserRequestBody"
+  ),
+
+  validateFetchUserDetailsRequestBody: validateRequestBodyMiddleware(
+    fetchUserDetailsRequiredFields,
+    "validateFetchUserDetailsRequestBody"
   )
 };
 

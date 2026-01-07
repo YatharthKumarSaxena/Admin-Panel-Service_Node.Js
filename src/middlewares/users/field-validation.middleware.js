@@ -9,7 +9,8 @@ const { validationSets } = require("@configs/validation-sets.config.js");
 const validationMiddlewares = {
   // User Status Operations
   validateBlockUserFields: fieldValidationMiddleware("blockUser", validationSets.blockUser),
-  validateUnblockUserFields: fieldValidationMiddleware("unblockUser", validationSets.unblockUser)
+  validateUnblockUserFields: fieldValidationMiddleware("unblockUser", validationSets.unblockUser),
+  validateFetchUserDetailsFields: fieldValidationMiddleware("fetchUserDetails", validationSets.fetchUserDetails)
 };
 
 module.exports = {
