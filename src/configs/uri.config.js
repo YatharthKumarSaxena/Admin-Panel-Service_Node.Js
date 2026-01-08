@@ -13,6 +13,7 @@ const USER_BASE = `${API_PREFIX}/users`;                        // /admin-panel-
 const INTERNAL_BASE = `${API_PREFIX}/internals`;                 // /admin-panel-service/api/v1/internals
 const REQUEST_BASE = `${API_PREFIX}/requests`;                  // /admin-panel-service/api/v1/requests
 const ACTIVITY_TRACKING_BASE = `${API_PREFIX}/activity-tracking`; // /admin-panel-service/api/v1/activity-tracking
+const DEVICE_BASE = `${API_PREFIX}/devices`;                  // /admin-panel-service/api/v1/devices
 
 // 🔁 Exporting all route constants, grouped by modules (Auth, User, Admin, Category)
 module.exports = {
@@ -21,6 +22,7 @@ module.exports = {
     INTERNAL_BASE: INTERNAL_BASE,
     REQUEST_BASE: REQUEST_BASE,
     ACTIVITY_TRACKING_BASE: ACTIVITY_TRACKING_BASE,
+    DEVICE_BASE: DEVICE_BASE,
 
     // 🛠️ Admin-specific routes (e.g. category creation, update, delete)
     ADMIN_ROUTES: {
@@ -50,9 +52,8 @@ module.exports = {
     // 🔒 Internal Service Routes (for service-to-service communication)
 
     INTERNAL_ROUTES: {
-        SYNC_USER_DATA: `/sync-user-data`,
-        BLOCK_DEVICE: `/block-device`,
-        UNBLOCK_DEVICE: `/unblock-device`,
+        SYNC_USER_DATA: `/sync-user-data`,          // POST /admin-panel-service/api/v1/internals/sync-user-data
+        SYNC_DEVICE_DATA: `/sync-device-data`,      // POST /admin-panel-service/api/v1/internals/sync-device-data
         GET_USER_ACTIVE_SESSIONS: `/active-sessions`,   // GET /admin-panel-service/api/v1/users/active-sessions
         FETCH_USER_DETAILS: `/fetch-user-details`,       // GET /admin-panel-service/api/v1/users/fetch-user-details
         GET_USER_AUTH_LOGS: `/auth-logs`,  // GET /admin-panel-service/api/v1/users/auth-logs
@@ -67,6 +68,13 @@ module.exports = {
         CREATE_ACTIVATION_REQUEST: `/activation-request`,               // POST /admin-panel-service/api/v1/admin/activation-request
         APPROVE_ACTIVATION_REQUEST: `/activation-request/:requestId/approve`,      // POST /admin-panel-service/api/v1/admin/activation-request/:requestId/approve
         REJECT_ACTIVATION_REQUEST: `/activation-request/:requestId/reject`,        // POST /admin-panel-service/api/v1/admin/activation-request/:requestId/reject
+    },
+
+    DEVICE_ROUTES: {
+        VIEW_DEVICE_DETAILS: `/device-details/:deviceId/:reason`,       // GET /admin-panel-service/api/v1/devices/device-details/:deviceId/:reason
+        LIST_DEVICES: `/list`,                     // GET /admin-panel-service/api/v1/devices/list
+        BLOCK_DEVICE: `/block-device/:deviceId`,          // PATCH /admin-panel-service/api/v1/devices/block-device/:deviceId
+        UNBLOCK_DEVICE: `/unblock-device/:deviceId`       // PATCH /admin-panel-service/api/v1/devices/unblock-device/:deviceId
     },
 
     ACTIVITY_TRACKING_ROUTES: {

@@ -39,7 +39,8 @@ const {
   AdminCreationReasonHelper,
   AdminUpdateRoleReasonHelper,
   FetchAdminDetailsReasonHelper,
-  FetchUserDetailsReasonHelper
+  FetchUserDetailsReasonHelper,
+  FetchDeviceDetailsReasonHelper
 } = require("@utils/enum-validators.util");
 
 const validationRules = {
@@ -180,6 +181,10 @@ const validationRules = {
 
   fetchUserDetailsReason: {
     enum: FetchUserDetailsReasonHelper
+  },
+
+  fetchDeviceDetailsReason: {
+    enum: FetchDeviceDetailsReasonHelper
   }
 };
 

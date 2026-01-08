@@ -18,6 +18,16 @@ const AdminCreationReasons = Object.freeze({
   OTHER: "Other"
 });
 
+const FetchDeviceDetailsReasons = Object.freeze({
+  SECURITY_AUDIT: "SecurityAudit",                     // Audit-safe
+  COMPLIANCE_CHECK: "ComplianceCheck",
+  SUSPICIOUS_ACTIVITY_INVESTIGATION: "SuspiciousActivityInvestigation",
+  USER_SUPPORT_REQUEST: "UserSupportRequest",
+  INCIDENT_INVESTIGATION: "IncidentInvestigation",
+  ADMIN_OVERSIGHT: "AdminOversight",
+  OTHER: "Other"
+});
+
 const FetchAdminDetailsReasons = Object.freeze({
   SUPPORT_REQUEST: "SupportRequest",                     // Audit-safe
   SECURITY_INVESTIGATION: "SecurityInvestigation",
@@ -286,5 +296,6 @@ module.exports = {
   AdminCreationReasons,
   AdminUpdateRoleReasons,
   FetchAdminDetailsReasons,
-  FetchUserDetailsReasons
+  FetchUserDetailsReasons,
+  FetchDeviceDetailsReasons
 };

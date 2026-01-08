@@ -100,15 +100,17 @@ const validationSets = {
   },
 
   blockDevice: {
-    'deviceId': validationRules.deviceId,
     'reason': validationRules.blockDeviceReason,
     'reasonDetails': validationRules.notes
   },
 
   unblockDevice: {
-    'deviceId': validationRules.deviceId,
     'reason': validationRules.unblockDeviceReason,
     'reasonDetails': validationRules.notes
+  },
+
+  fetchDeviceDetails: {
+    'reason': validationRules.fetchDeviceDetailsReason
   }
 };
 
