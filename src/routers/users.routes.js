@@ -9,26 +9,15 @@ const {
 } = USER_ROUTES;
 
 const { userMiddlewares } = require("@middlewares/users/index");
-const { commonMiddlewares } = require("@middlewares/common/index");
-const { mockAuthMiddleware } = require("@testing/mock-auth.testing.middleware");
+const { baseMiddlewares } = require("./middleware.gateway");
 const { userControllers } = require("@controllers/users/index");
 
 const userRoutes = require("express").Router();
 
-const baseMiddlerwares = [
-    commonMiddlewares.verifyDeviceField,
-    mockAuthMiddleware,
-//  commonMiddlewares.validateRedisPayloadMiddleware,
-//  commonMiddlewares.validateJwtPayloadMiddleware,
-//  commonMiddlewares.verifyJWTSignature,
-    commonMiddlewares.isAdmin,
-    commonMiddlewares.isAdminAccountActive
-];
-
 // Block user
 userRoutes.patch(`${BLOCK_USER}`,
     [
-        ...baseMiddlerwares,
+        ...baseMiddlewares,
         userMiddlewares.validateBlockUserRequestBody,
         userMiddlewares.validateBlockUserFields
     ],
@@ -38,7 +27,7 @@ userRoutes.patch(`${BLOCK_USER}`,
 // Unblock user
 userRoutes.patch(`${UNBLOCK_USER}`,
     [
-        ...baseMiddlerwares,
+        ...baseMiddlewares,
         userMiddlewares.validateUnblockUserRequestBody,
         userMiddlewares.validateUnblockUserFields
     ],
@@ -48,7 +37,7 @@ userRoutes.patch(`${UNBLOCK_USER}`,
 // Get total registered users
 userRoutes.get(`${GET_TOTAL_REGISTERED_USERS}`,
     [
-        ...baseMiddlerwares
+        ...baseMiddlewares
     ],
     userControllers.getTotalRegisteredUsers
 );
@@ -56,14 +45,14 @@ userRoutes.get(`${GET_TOTAL_REGISTERED_USERS}`,
 // List users
 userRoutes.get(`${LIST_USERS}`,
     [
-        ...baseMiddlerwares
+        ...baseMiddlewares
     ],
     userControllers.listUsers
 );
 
 userRoutes.get(`${VIEW_USER_DETAILS}`,
     [
-        ...baseMiddlerwares,
+        ...baseMiddlewares,
         userMiddlewares.validateFetchUserDetailsRequestBody,
         userMiddlewares.validateFetchUserDetailsFields
     ],

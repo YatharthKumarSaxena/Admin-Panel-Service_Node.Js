@@ -11,27 +11,17 @@ const {
 
 const { requestMiddlewares } = require("@middlewares/requests/index");
 const { commonMiddlewares } = require("@middlewares/common/index");
-const { mockAuthMiddleware } = require("@testing/mock-auth.testing.middleware");
 const { requestControllers } = require("@controllers/requests/index");
+const { baseMiddlewares } = require("./middleware.gateway");
 
 const requestRoutes = require("express").Router();
-
-const baseMiddlerwares = [
-  commonMiddlewares.verifyDeviceField,
-  mockAuthMiddleware,
-//  commonMiddlewares.validateRedisPayloadMiddleware,
-//  commonMiddlewares.validateJwtPayloadMiddleware,
-//  commonMiddlewares.verifyJWTSignature,
-  commonMiddlewares.isAdmin,
-  commonMiddlewares.isAdminAccountActive
-];
 
 // ========== 🔄 DEACTIVATION REQUEST ROUTES ==========
 
 // Create deactivation request (self)
 requestRoutes.post(`${CREATE_DEACTIVATION_REQUEST}`,
   [
-    ...baseMiddlerwares,
+    ...baseMiddlewares,
     requestMiddlewares.validateCreateDeactivationRequestBody,
     requestMiddlewares.validateCreateDeactivationRequestFields
   ],
@@ -41,7 +31,7 @@ requestRoutes.post(`${CREATE_DEACTIVATION_REQUEST}`,
 // List all deactivation requests
 requestRoutes.get(`${LIST_ALL_STATUS_REQUESTS}`,
   [
-    ...baseMiddlerwares
+    ...baseMiddlewares
   ],
   requestControllers.listAllStatusRequests
 );
@@ -49,7 +39,7 @@ requestRoutes.get(`${LIST_ALL_STATUS_REQUESTS}`,
 // Approve deactivation request
 requestRoutes.post(`${APPROVE_DEACTIVATION_REQUEST}`,
   [
-    ...baseMiddlerwares,
+    ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     requestMiddlewares.validateApproveDeactivationRequestBody,
     requestMiddlewares.validateApproveDeactivationRequestFields
@@ -60,7 +50,7 @@ requestRoutes.post(`${APPROVE_DEACTIVATION_REQUEST}`,
 // Reject deactivation request
 requestRoutes.post(`${REJECT_DEACTIVATION_REQUEST}`,
   [
-    ...baseMiddlerwares,
+    ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     requestMiddlewares.validateRejectDeactivationRequestBody,
     requestMiddlewares.validateRejectDeactivationRequestFields
@@ -71,7 +61,7 @@ requestRoutes.post(`${REJECT_DEACTIVATION_REQUEST}`,
 // ========== 🔄 ACTIVATION REQUEST ROUTES =========
 requestRoutes.post(`${CREATE_ACTIVATION_REQUEST}`,
   [
-    ...baseMiddlerwares,
+    ...baseMiddlewares,
     commonMiddlewares.authModeValidator,
     requestMiddlewares.validateCreateActivationRequestBody,
     requestMiddlewares.validateCreateActivationRequestFields,
@@ -84,7 +74,7 @@ requestRoutes.post(`${CREATE_ACTIVATION_REQUEST}`,
 // Approve activation request
 requestRoutes.post(`${APPROVE_ACTIVATION_REQUEST}`,
   [
-    ...baseMiddlerwares,
+    ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     requestMiddlewares.validateApproveActivationRequestBody,
     requestMiddlewares.validateApproveActivationRequestFields
@@ -95,7 +85,7 @@ requestRoutes.post(`${APPROVE_ACTIVATION_REQUEST}`,
 // Reject activation request
 requestRoutes.post(`${REJECT_ACTIVATION_REQUEST}`,
   [
-    ...baseMiddlerwares,
+    ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     requestMiddlewares.validateRejectActivationRequestBody,
     requestMiddlewares.validateRejectActivationRequestFields
@@ -106,7 +96,7 @@ requestRoutes.post(`${REJECT_ACTIVATION_REQUEST}`,
 // View specific status request (activation or deactivation)
 requestRoutes.get(`${VIEW_STATUS_REQUEST}`,
   [
-    ...baseMiddlerwares
+    ...baseMiddlewares
   ],
   requestControllers.viewStatusRequest
 );

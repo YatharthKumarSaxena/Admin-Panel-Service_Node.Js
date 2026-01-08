@@ -15,24 +15,13 @@ const {
 const { activityTrackerControllers } = require("@controllers/activity-trackers/index");
 
 // Middlewares
-const { commonMiddlewares } = require("@middlewares/common/index");
 const { activityTrackerMiddlewares } = require("@middlewares/activity-trackers/index");
-const { mockAuthMiddleware } = require("@testing/mock-auth.testing.middleware");
-
-const baseMiddlerwares = [
-    commonMiddlewares.verifyDeviceField,
-    mockAuthMiddleware,
-//    commonMiddlewares.validateRedisPayloadMiddleware,
-//    commonMiddlewares.validateJwtPayloadMiddleware,
-//    commonMiddlewares.verifyJWTSignature,
-    commonMiddlewares.isAdmin,
-    commonMiddlewares.isAdminAccountActive,
-];
+const { baseMiddlewares } = require("./middleware.gateway");
 
 // Fetch Activity Logs - Admins
 activityTrackerRoutes.get(`${FETCH_ACTIVITY_LOGS}`,
     [
-        ...baseMiddlerwares,
+        ...baseMiddlewares,
         activityTrackerMiddlewares.validateViewAdminActivityTrackerRequestBody,
         activityTrackerMiddlewares.validateViewAdminActivityTrackerFields
     ],
@@ -41,14 +30,14 @@ activityTrackerRoutes.get(`${FETCH_ACTIVITY_LOGS}`,
 // List Activity Tracks - Admins
 activityTrackerRoutes.get(`${LIST_ACTIVITY_TRACKS}`,
     [
-        ...baseMiddlerwares,
+        ...baseMiddlewares,
     ],
     activityTrackerControllers.listActivityTracker);
 
 // Fetch My Activity Logs - Admins
 activityTrackerRoutes.get(`${FETCH_MY_ACTIVITY_LOGS}`,
     [
-        ...baseMiddlerwares
+        ...baseMiddlewares
     ],
     activityTrackerControllers.viewOwnActivityTracker);
 

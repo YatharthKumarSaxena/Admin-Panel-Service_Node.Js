@@ -23,21 +23,11 @@ const {
 const { adminControllers } = require("@controllers/admins/index");
 const { commonMiddlewares } = require("@middlewares/common/index"); 
 const { adminMiddlewares } = require("@middlewares/admins/index");
-const { mockAuthMiddleware } = require("@testing/mock-auth.testing.middleware");
-
-const baseMiddlerwares = [
-  commonMiddlewares.verifyDeviceField,
-  mockAuthMiddleware,
-//  commonMiddlewares.validateRedisPayloadMiddleware,
-//  commonMiddlewares.validateJwtPayloadMiddleware,
-//  commonMiddlewares.verifyJWTSignature,
-  commonMiddlewares.isAdmin,
-  commonMiddlewares.isAdminAccountActive,
-];
+const { baseMiddlewares } = require("./middleware.gateway");
 
 adminRoutes.post(`${CREATE_ADMIN}`,
   [
-    ...baseMiddlerwares,
+    ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     commonMiddlewares.hierarchyGuard, 
     commonMiddlewares.authModeValidator,
@@ -48,7 +38,7 @@ adminRoutes.post(`${CREATE_ADMIN}`,
 
 adminRoutes.patch(`${ACTIVATE_ADMIN}`,
   [
-    ...baseMiddlerwares,
+    ...baseMiddlewares,
     commonMiddlewares.onlySuperAdmins,
     commonMiddlewares.authModeValidator,                  // Validate email/phone/userId
     adminMiddlewares.validateActivateAdminRequestBody, // Validate reason + notes
@@ -60,7 +50,7 @@ adminRoutes.patch(`${ACTIVATE_ADMIN}`,
 
 adminRoutes.delete(`${DEACTIVATE_ADMIN}`,
   [
-    ...baseMiddlerwares,
+    ...baseMiddlewares,
     commonMiddlewares.onlySuperAdmins,
     commonMiddlewares.authModeValidator,                    // Validate email/phone/userId
     adminMiddlewares.validateDeactivateAdminRequestBody, // Validate reason + notes
@@ -76,7 +66,7 @@ adminRoutes.delete(`${DEACTIVATE_ADMIN}`,
 // Change supervisor of an admin
 adminRoutes.patch(`${CHANGE_SUPERVISOR}`,
   [
-    ...baseMiddlerwares,
+    ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     commonMiddlewares.authModeValidator,                   // Validate email/phone/userId
     adminMiddlewares.validateChangeSupervisorRequestBody,  // Validate newSupervisorId + reason
@@ -90,7 +80,7 @@ adminRoutes.patch(`${CHANGE_SUPERVISOR}`,
 // Update admin details
 adminRoutes.patch(`${UPDATE_ADMIN_DETAILS}`,
   [
-    ...baseMiddlerwares,
+    ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     commonMiddlewares.authModeValidator,                  // Validate email/phone/userId
     adminMiddlewares.validateUpdateAdminDetailsRequestBody, // Validate updatable fields + reason
@@ -104,7 +94,7 @@ adminRoutes.patch(`${UPDATE_ADMIN_DETAILS}`,
 // Fetch admin details
 adminRoutes.get(`${FETCH_ADMIN_DETAILS}`,
   [
-    ...baseMiddlerwares,
+    ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     commonMiddlewares.authModeValidator,        // Validate email/phone/userId
     adminMiddlewares.validateFetchAdminDetailsRequestBody, // Validate reason
@@ -118,7 +108,7 @@ adminRoutes.get(`${FETCH_ADMIN_DETAILS}`,
 // List admins
 adminRoutes.get(`${FETCH_ADMINS_LIST}`,
   [
-    ...baseMiddlerwares,
+    ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins
   ],
   adminControllers.listAdmins
@@ -127,7 +117,7 @@ adminRoutes.get(`${FETCH_ADMINS_LIST}`,
 // Update own admin details
 adminRoutes.patch(`${UPDATE_MY_DETAILS}`,
   [
-    ...baseMiddlerwares
+    ...baseMiddlewares
   ],
   adminControllers.updateOwnAdminDetails
 );
@@ -135,14 +125,14 @@ adminRoutes.patch(`${UPDATE_MY_DETAILS}`,
 // View own admin details
 adminRoutes.get(`${VIEW_MY_DETAILS}`,
   [
-    ...baseMiddlerwares
+    ...baseMiddlewares
   ],
   adminControllers.viewOwnAdminDetails
 );
 
 adminRoutes.patch(`${UPDATE_ADMIN_ROLE}`,
   [
-    ...baseMiddlerwares,
+    ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     commonMiddlewares.authModeValidator,                  // Validate email/phone/userId
     adminMiddlewares.validateUpdateAdminRoleRequestBody, // Validate new role + reason
@@ -155,7 +145,7 @@ adminRoutes.patch(`${UPDATE_ADMIN_ROLE}`,
 
 adminRoutes.get(`${GET_ADMIN_DASHBOARD_STATS}`,
   [
-    ...baseMiddlerwares,
+    ...baseMiddlewares,
     commonMiddlewares.onlySuperAdmins
   ],
   adminControllers.getAdminDashboardStats
