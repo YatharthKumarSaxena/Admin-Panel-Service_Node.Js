@@ -5,6 +5,7 @@ const { handlers } = require("./handlers/index");
 const { userMiddlewares } = require("./users/index");
 const { requestMiddlewares } = require("./requests/index");
 const { internalMiddlewares } = require("./internals/index");
+const { deviceMiddlewares } = require("./devices/index");
 
 const middlewares = {
     factoryMiddlewares,
@@ -13,7 +14,8 @@ const middlewares = {
     adminMiddlewares,
     userMiddlewares,
     requestMiddlewares,
-    internalMiddlewares
+    internalMiddlewares,
+    deviceMiddlewares
 }
 
 module.exports = {

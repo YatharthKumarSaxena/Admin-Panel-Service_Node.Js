@@ -8,16 +8,6 @@ const {
 } = require("@configs/required-fields.config.js");
 
 const validateRequestBodyMiddlewares = {
-    // Device Status Operations
-    validateBlockDeviceRequestBody: validateRequestBodyMiddleware(
-        blockDeviceRequiredFields,
-        "validateBlockDeviceRequestBody"
-    ),
-
-    validateUnblockDeviceRequestBody: validateRequestBodyMiddleware(
-        unblockDeviceRequiredFields,
-        "validateUnblockDeviceRequestBody"
-    ),
 
     // User Details Operations
     validateProvideUserAccountDetailsRequestBody: validateRequestBodyMiddleware(
