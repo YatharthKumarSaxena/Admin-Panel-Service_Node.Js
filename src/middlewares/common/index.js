@@ -9,6 +9,7 @@ const { fetchAdminMiddleware } = require("./fetch-admin.middleware");
 const { fetchUserMiddleware } = require("./fetch-user.middleware");
 const { RoleMiddlewares } = require("./verify-admin-type.middleware");
 const { hierarchyGuard } = require("./role-hierarchy.middleware");
+const { isDeviceBlocked } = require("./is-device-blocked.middleware");
 
 const commonMiddlewares = {
     isAdminAccountActive,
@@ -21,7 +22,8 @@ const commonMiddlewares = {
     fetchAdminMiddleware,
     fetchUserMiddleware,
     ...RoleMiddlewares,
-    hierarchyGuard
+    hierarchyGuard,
+    isDeviceBlocked
 };
 
 module.exports = {

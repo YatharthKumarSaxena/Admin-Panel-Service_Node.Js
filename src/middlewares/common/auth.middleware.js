@@ -24,7 +24,7 @@ const authModeValidator = async (req, res, next) => {
                 logMiddlewareError("authModeValidator", "Invalid email provided", req);
             }
 
-            if (!isValidRegex(emailRegex, email)) {
+            if (!isValidRegex(email, emailRegex)) {
                 error.push("Check Email Format");
                 logMiddlewareError("authModeValidator", "Invalid email format", req);
             }
@@ -52,7 +52,7 @@ const authModeValidator = async (req, res, next) => {
                 logMiddlewareError("authModeValidator", "Invalid fullPhoneNumber provided", req);
             }
 
-            if (!isValidRegex(fullPhoneNumberRegex, fullPhoneNumber)) {
+            if (!isValidRegex(fullPhoneNumber, fullPhoneNumberRegex)) {
                 error.push("Check fullPhoneNumber Format");
                 logMiddlewareError("authModeValidator", "Invalid fullPhoneNumber format", req);
             }
@@ -74,13 +74,13 @@ const authModeValidator = async (req, res, next) => {
             }
 
             // Validate Email if Provided
-            if(!validateLength(email,emailLength.min,emailLength.max) || !isValidRegex(emailRegex, email)){
+            if(!validateLength(email,emailLength.min,emailLength.max) || !isValidRegex(email, emailRegex)){
                 logMiddlewareError("authModeValidator", "Invalid email provided", req);
                 error.push("Check Email Length/Format");
             }
 
             // Validate Phone if Provided
-            if((!validateLength(fullPhoneNumber, fullPhoneNumberLength.min, fullPhoneNumberLength.max) || !isValidRegex(fullPhoneNumberRegex, fullPhoneNumber))){
+            if((!validateLength(fullPhoneNumber, fullPhoneNumberLength.min, fullPhoneNumberLength.max) || !isValidRegex(fullPhoneNumber, fullPhoneNumberRegex))){
                 logMiddlewareError("authModeValidator", "Invalid fullPhoneNumber provided", req);
                 error.push("Check fullPhoneNumber Length/Format");
             }
@@ -101,12 +101,12 @@ const authModeValidator = async (req, res, next) => {
                 return throwBadRequestError(res, "Provide either email or fullPhoneNumber, not both.");
             }
             // Validate Email if Provided
-            if(email && (!validateLength(email,emailLength.min,emailLength.max) || !isValidRegex(emailRegex, email))){
+            if(email && (!validateLength(email,emailLength.min,emailLength.max) || !isValidRegex(email, emailRegex))){
                 logMiddlewareError("authModeValidator", "Invalid email provided", req);
                 return throwValidationError(res, "Invalid email provided");
             }
             // Validate Phone if Provided
-            if(fullPhoneNumber && (!validateLength(fullPhoneNumber, fullPhoneNumberLength.min, fullPhoneNumberLength.max) || !isValidRegex(fullPhoneNumberRegex, fullPhoneNumber))){
+            if(fullPhoneNumber && (!validateLength(fullPhoneNumber, fullPhoneNumberLength.min, fullPhoneNumberLength.max) || !isValidRegex(fullPhoneNumber, fullPhoneNumberRegex))){
                 logMiddlewareError("authModeValidator", "Invalid fullPhoneNumber provided", req);
                 return throwValidationError(res, "Invalid fullPhoneNumber provided");
             }
