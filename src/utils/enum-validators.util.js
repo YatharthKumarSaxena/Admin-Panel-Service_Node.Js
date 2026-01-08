@@ -31,7 +31,8 @@ const {
   AdminCreationReasons,
   AdminUpdateRoleReasons,
   FetchAdminDetailsReasons,
-  FetchUserDetailsReasons
+  FetchUserDetailsReasons,
+  FetchDeviceDetailsReasons
 } = require("@configs/enums.config");
 
 const { tokenPayloads } = require("@configs/token.config");
@@ -93,6 +94,7 @@ const AdminCreationReasonHelper = createEnumHelper(AdminCreationReasons, "AdminC
 const AdminUpdateRoleReasonHelper = createEnumHelper(AdminUpdateRoleReasons, "AdminUpdateRoleReasons");
 const FetchAdminDetailsReasonHelper = createEnumHelper(FetchAdminDetailsReasons, "FetchAdminDetailsReasons");
 const FetchUserDetailsReasonHelper = createEnumHelper(FetchUserDetailsReasons, "FetchUserDetailsReasons");
+const FetchDeviceDetailsReasonHelper = createEnumHelper(FetchDeviceDetailsReasons, "FetchDeviceDetailsReasons");
 
 module.exports = {
   BlockReasonHelper,
@@ -124,6 +126,7 @@ module.exports = {
   AdminCreationReasonHelper,
   AdminUpdateRoleReasonHelper,
   FetchAdminDetailsReasonHelper,
-  FetchUserDetailsReasonHelper
+  FetchUserDetailsReasonHelper,
+  FetchDeviceDetailsReasonHelper
 };
 

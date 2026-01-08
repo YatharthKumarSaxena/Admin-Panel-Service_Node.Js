@@ -10,7 +10,7 @@ const {
   mongoIdRegex, 
   adminIdRegex 
 } = require("@configs/regex.config");
-const { deviceFieldsLength } = require("@configs/fields-length.config");
+const { deviceNameLength } = require("@configs/fields-length.config");
 
 // UUID v4 validation
 const isValidUUID = (value) => {
@@ -29,7 +29,7 @@ const isValidAdminId = (value) => {
 
 // Device name length validation
 const isValidDeviceNameLength = (value) => {
-  const { min, max } = deviceFieldsLength.deviceName;
+  const { min, max } = deviceNameLength;
   return validateLength(value, min, max);
 };
 
