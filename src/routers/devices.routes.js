@@ -18,11 +18,20 @@ const { deviceControllers } = require("@controllers/devices/index");
 // Device Middlewares
 const { deviceMiddlewares } = require("@middlewares/devices/index");
 
+// Rate Limiters
+const { 
+    getDeviceDetailsLimiter,
+    listDevicesLimiter,
+    blockDeviceLimiter,
+    unblockDeviceLimiter
+} = require("@/rate-limiters/index");
+
 const { baseMiddlewares } = require("./middleware.gateway");
 
 // View Device Details
 deviceRoutes.get(`${VIEW_DEVICE_DETAILS}`,
     [
+        getDeviceDetailsLimiter,
         ...baseMiddlewares,
         deviceMiddlewares.validateFetchDeviceDetailsRequestBody,
         deviceMiddlewares.validateFetchDeviceDetailsFields
@@ -32,6 +41,7 @@ deviceRoutes.get(`${VIEW_DEVICE_DETAILS}`,
 // List Devices
 deviceRoutes.get(`${LIST_DEVICES}`,
     [
+        listDevicesLimiter,
         ...baseMiddlewares
     ],
     deviceControllers.listDevices);
@@ -39,6 +49,7 @@ deviceRoutes.get(`${LIST_DEVICES}`,
 // Block Device
 deviceRoutes.patch(`${BLOCK_DEVICE}`,
     [
+        blockDeviceLimiter,
         ...baseMiddlewares,
         deviceMiddlewares.validateBlockDeviceRequestBody,
         deviceMiddlewares.validateBlockDeviceFields
@@ -48,6 +59,7 @@ deviceRoutes.patch(`${BLOCK_DEVICE}`,
 // Unblock Device
 deviceRoutes.patch(`${UNBLOCK_DEVICE}`,
     [
+        unblockDeviceLimiter,
         ...baseMiddlewares,
         deviceMiddlewares.validateUnblockDeviceRequestBody,
         deviceMiddlewares.validateUnblockDeviceFields

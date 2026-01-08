@@ -1,7 +1,10 @@
 const { OK } = require("@/configs/http-status.config");
 const { logWithTime } = require("@/utils/time-stamps.util");
 const { DeviceModel } = require("@models/device.model");
+const { AdminModel } = require("@models/admin.model");
 const { throwDBResourceNotFoundError, throwConflictError, throwInternalServerError } = require("@utils/error-handler.util");
+const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { notifyUserDeviceBlockedToSupervisor } = require("@utils/admin-notifications.util");
 
 /* 🚫 Block Device */
 const blockDevice = async (req, res) => {
@@ -39,6 +42,40 @@ const blockDevice = async (req, res) => {
         await device.save();
 
         logWithTime(`✅ Device ${deviceId} blocked by admin ${adminId}`);
+
+        // Activity Tracking
+        await logActivity(req, "DEVICE_BLOCKED", {
+            adminActions: {
+                targetId: deviceId,
+                reason: reason,
+            },
+            description: `Admin ${adminId} blocked device ${deviceId}`,
+            oldData: { isBlocked: false },
+            newData: { isBlocked: true, blockReason: reason, blockedBy: adminId }
+        });
+
+        // Notify Supervisor
+        try {
+            const admin = req.admin;
+            if (admin.supervisor) {
+                const supervisor = await AdminModel.findOne({ adminId: admin.supervisor });
+                if (supervisor) {
+                    // Get device owner if exists
+                    const deviceOwner = device.owner ? await require("@models/user.model").UserModel.findById(device.owner) : null;
+                    
+                    await notifyUserDeviceBlockedToSupervisor(
+                        supervisor,
+                        deviceOwner || { userId: 'N/A', email: 'N/A', fullPhoneNumber: 'N/A' },
+                        deviceId,
+                        admin,
+                        reason,
+                        reasonDetails
+                    );
+                }
+            }
+        } catch (notifyError) {
+            logWithTime(`⚠️ Failed to notify supervisor about device block: ${notifyError.message}`);
+        }
 
         return res.status(OK).json({
             success: true,
