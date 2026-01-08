@@ -14,6 +14,18 @@ const { commonMiddlewares } = require("@middlewares/common/index");
 const { requestControllers } = require("@controllers/requests/index");
 const { baseMiddlewares } = require("./middleware.gateway");
 
+// Rate Limiters
+const {
+  listAllStatusRequestsLimiter,
+  viewStatusRequestLimiter,
+  createDeactivationRequestLimiter,
+  approveDeactivationRequestLimiter,
+  rejectDeactivationRequestLimiter,
+  createActivationRequestLimiter,
+  approveActivationRequestLimiter,
+  rejectActivationRequestLimiter
+} = require("@/rate-limiters/index");
+
 const requestRoutes = require("express").Router();
 
 // ========== 🔄 DEACTIVATION REQUEST ROUTES ==========
@@ -21,6 +33,7 @@ const requestRoutes = require("express").Router();
 // Create deactivation request (self)
 requestRoutes.post(`${CREATE_DEACTIVATION_REQUEST}`,
   [
+    createDeactivationRequestLimiter,
     ...baseMiddlewares,
     requestMiddlewares.validateCreateDeactivationRequestBody,
     requestMiddlewares.validateCreateDeactivationRequestFields
@@ -31,6 +44,7 @@ requestRoutes.post(`${CREATE_DEACTIVATION_REQUEST}`,
 // List all deactivation requests
 requestRoutes.get(`${LIST_ALL_STATUS_REQUESTS}`,
   [
+    listAllStatusRequestsLimiter,
     ...baseMiddlewares
   ],
   requestControllers.listAllStatusRequests
@@ -39,6 +53,7 @@ requestRoutes.get(`${LIST_ALL_STATUS_REQUESTS}`,
 // Approve deactivation request
 requestRoutes.post(`${APPROVE_DEACTIVATION_REQUEST}`,
   [
+    approveDeactivationRequestLimiter,
     ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     requestMiddlewares.validateApproveDeactivationRequestBody,
@@ -50,6 +65,7 @@ requestRoutes.post(`${APPROVE_DEACTIVATION_REQUEST}`,
 // Reject deactivation request
 requestRoutes.post(`${REJECT_DEACTIVATION_REQUEST}`,
   [
+    rejectDeactivationRequestLimiter,
     ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     requestMiddlewares.validateRejectDeactivationRequestBody,
@@ -61,6 +77,7 @@ requestRoutes.post(`${REJECT_DEACTIVATION_REQUEST}`,
 // ========== 🔄 ACTIVATION REQUEST ROUTES =========
 requestRoutes.post(`${CREATE_ACTIVATION_REQUEST}`,
   [
+    createActivationRequestLimiter,
     ...baseMiddlewares,
     commonMiddlewares.authModeValidator,
     requestMiddlewares.validateCreateActivationRequestBody,
@@ -74,6 +91,7 @@ requestRoutes.post(`${CREATE_ACTIVATION_REQUEST}`,
 // Approve activation request
 requestRoutes.post(`${APPROVE_ACTIVATION_REQUEST}`,
   [
+    approveActivationRequestLimiter,
     ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     requestMiddlewares.validateApproveActivationRequestBody,
@@ -85,6 +103,7 @@ requestRoutes.post(`${APPROVE_ACTIVATION_REQUEST}`,
 // Reject activation request
 requestRoutes.post(`${REJECT_ACTIVATION_REQUEST}`,
   [
+    rejectActivationRequestLimiter,
     ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     requestMiddlewares.validateRejectActivationRequestBody,
@@ -96,6 +115,7 @@ requestRoutes.post(`${REJECT_ACTIVATION_REQUEST}`,
 // View specific status request (activation or deactivation)
 requestRoutes.get(`${VIEW_STATUS_REQUEST}`,
   [
+    viewStatusRequestLimiter,
     ...baseMiddlewares
   ],
   requestControllers.viewStatusRequest

@@ -9,6 +9,13 @@ const { internalMiddlewares } = require("@middlewares/internals/index");
 // Routes Config
 const { INTERNAL_ROUTES } = require("@configs/uri.config");
 
+// Rate Limiters
+const {
+  getUserActiveSessionsLimiter,
+  getUserAuthLogsByInternalLimiter,
+  fetchUserDetailsByInternalLimiter
+} = require("@/rate-limiters/index");
+
 const {
   GET_USER_ACTIVE_SESSIONS,
   GET_USER_AUTH_LOGS,
@@ -18,6 +25,7 @@ const {
 // Get user's active sessions
 internalRoutes.get(`${GET_USER_ACTIVE_SESSIONS}`,
     [
+        getUserActiveSessionsLimiter,
         ...baseMiddlewares,
         internalMiddlewares.validateGetUserActiveDevicesRequestBody,
         internalMiddlewares.validateGetUserActiveDevicesFields
@@ -28,6 +36,7 @@ internalRoutes.get(`${GET_USER_ACTIVE_SESSIONS}`,
 // Get user auth logs
 internalRoutes.get(`${GET_USER_AUTH_LOGS}`,
     [
+        getUserAuthLogsByInternalLimiter,
         ...baseMiddlewares,
         internalMiddlewares.validateCheckAuthLogsRequestBody,
         internalMiddlewares.validateCheckAuthLogsFields
@@ -38,6 +47,7 @@ internalRoutes.get(`${GET_USER_AUTH_LOGS}`,
 // Fetch user details
 internalRoutes.get(`${FETCH_USER_DETAILS}`,
     [
+        fetchUserDetailsByInternalLimiter,
         ...baseMiddlewares,
         internalMiddlewares.validateProvideUserAccountDetailsRequestBody,
         internalMiddlewares.validateProvideUserAccountDetailsFields

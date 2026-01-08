@@ -18,9 +18,17 @@ const { activityTrackerControllers } = require("@controllers/activity-trackers/i
 const { activityTrackerMiddlewares } = require("@middlewares/activity-trackers/index");
 const { baseMiddlewares } = require("./middleware.gateway");
 
+// Rate Limiters
+const {
+    fetchActivityLogsLimiter,
+    listActivityTracksLimiter,
+    fetchMyActivityLogsLimiter
+} = require("@/rate-limiters/index");
+
 // Fetch Activity Logs - Admins
 activityTrackerRoutes.get(`${FETCH_ACTIVITY_LOGS}`,
     [
+        fetchActivityLogsLimiter,
         ...baseMiddlewares,
         activityTrackerMiddlewares.validateViewAdminActivityTrackerRequestBody,
         activityTrackerMiddlewares.validateViewAdminActivityTrackerFields
@@ -30,6 +38,7 @@ activityTrackerRoutes.get(`${FETCH_ACTIVITY_LOGS}`,
 // List Activity Tracks - Admins
 activityTrackerRoutes.get(`${LIST_ACTIVITY_TRACKS}`,
     [
+        listActivityTracksLimiter,
         ...baseMiddlewares,
     ],
     activityTrackerControllers.listActivityTracker);
@@ -37,6 +46,7 @@ activityTrackerRoutes.get(`${LIST_ACTIVITY_TRACKS}`,
 // Fetch My Activity Logs - Admins
 activityTrackerRoutes.get(`${FETCH_MY_ACTIVITY_LOGS}`,
     [
+        fetchMyActivityLogsLimiter,
         ...baseMiddlewares
     ],
     activityTrackerControllers.viewOwnActivityTracker);

@@ -25,8 +25,24 @@ const { commonMiddlewares } = require("@middlewares/common/index");
 const { adminMiddlewares } = require("@middlewares/admins/index");
 const { baseMiddlewares } = require("./middleware.gateway");
 
+// Rate Limiters
+const {
+  createAdminLimiter,
+  activateAdminLimiter,
+  deactivateAdminLimiter,
+  changeSupervisorLimiter,
+  updateAdminDetailsLimiter,
+  fetchAdminDetailsLimiter,
+  fetchAdminsListLimiter,
+  updateMyDetailsLimiter,
+  viewMyDetailsLimiter,
+  updateAdminRoleLimiter,
+  getAdminDashboardStatsLimiter
+} = require("@/rate-limiters/index");
+
 adminRoutes.post(`${CREATE_ADMIN}`,
   [
+    createAdminLimiter,
     ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     commonMiddlewares.hierarchyGuard, 
@@ -38,6 +54,7 @@ adminRoutes.post(`${CREATE_ADMIN}`,
 
 adminRoutes.patch(`${ACTIVATE_ADMIN}`,
   [
+    activateAdminLimiter,
     ...baseMiddlewares,
     commonMiddlewares.onlySuperAdmins,
     commonMiddlewares.authModeValidator,                  // Validate email/phone/userId
@@ -50,6 +67,7 @@ adminRoutes.patch(`${ACTIVATE_ADMIN}`,
 
 adminRoutes.delete(`${DEACTIVATE_ADMIN}`,
   [
+    deactivateAdminLimiter,
     ...baseMiddlewares,
     commonMiddlewares.onlySuperAdmins,
     commonMiddlewares.authModeValidator,                    // Validate email/phone/userId
@@ -66,6 +84,7 @@ adminRoutes.delete(`${DEACTIVATE_ADMIN}`,
 // Change supervisor of an admin
 adminRoutes.patch(`${CHANGE_SUPERVISOR}`,
   [
+    changeSupervisorLimiter,
     ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     commonMiddlewares.authModeValidator,                   // Validate email/phone/userId
@@ -80,6 +99,7 @@ adminRoutes.patch(`${CHANGE_SUPERVISOR}`,
 // Update admin details
 adminRoutes.patch(`${UPDATE_ADMIN_DETAILS}`,
   [
+    updateAdminDetailsLimiter,
     ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     commonMiddlewares.authModeValidator,                  // Validate email/phone/userId
@@ -94,6 +114,7 @@ adminRoutes.patch(`${UPDATE_ADMIN_DETAILS}`,
 // Fetch admin details
 adminRoutes.get(`${FETCH_ADMIN_DETAILS}`,
   [
+    fetchAdminDetailsLimiter,
     ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     commonMiddlewares.authModeValidator,        // Validate email/phone/userId
@@ -108,6 +129,7 @@ adminRoutes.get(`${FETCH_ADMIN_DETAILS}`,
 // List admins
 adminRoutes.get(`${FETCH_ADMINS_LIST}`,
   [
+    fetchAdminsListLimiter,
     ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins
   ],
@@ -117,6 +139,7 @@ adminRoutes.get(`${FETCH_ADMINS_LIST}`,
 // Update own admin details
 adminRoutes.patch(`${UPDATE_MY_DETAILS}`,
   [
+    updateMyDetailsLimiter,
     ...baseMiddlewares
   ],
   adminControllers.updateOwnAdminDetails
@@ -125,6 +148,7 @@ adminRoutes.patch(`${UPDATE_MY_DETAILS}`,
 // View own admin details
 adminRoutes.get(`${VIEW_MY_DETAILS}`,
   [
+    viewMyDetailsLimiter,
     ...baseMiddlewares
   ],
   adminControllers.viewOwnAdminDetails
@@ -132,6 +156,7 @@ adminRoutes.get(`${VIEW_MY_DETAILS}`,
 
 adminRoutes.patch(`${UPDATE_ADMIN_ROLE}`,
   [
+    updateAdminRoleLimiter,
     ...baseMiddlewares,
     commonMiddlewares.midAdminsAndSuperAdmins,
     commonMiddlewares.authModeValidator,                  // Validate email/phone/userId
@@ -145,6 +170,7 @@ adminRoutes.patch(`${UPDATE_ADMIN_ROLE}`,
 
 adminRoutes.get(`${GET_ADMIN_DASHBOARD_STATS}`,
   [
+    getAdminDashboardStatsLimiter,
     ...baseMiddlewares,
     commonMiddlewares.onlySuperAdmins
   ],
