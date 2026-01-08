@@ -3,8 +3,9 @@ const { logWithTime } = require("@/utils/time-stamps.util");
 const { DeviceModel } = require("@models/device.model");
 const { AdminModel } = require("@models/admin.model");
 const { throwDBResourceNotFoundError, throwConflictError, throwInternalServerError } = require("@utils/error-handler.util");
-const { logActivity } = require("@utils/activity-tracker.util");
+const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { notifyUserDeviceUnblockedToSupervisor } = require("@utils/admin-notifications.util");
+const { ACTIVITY_TRACKER_EVENTS } = require("@/configs/tracker.config");
 
 /* ✅ Unblock Device */
 const unblockDevice = async (req, res) => {
@@ -44,7 +45,7 @@ const unblockDevice = async (req, res) => {
         logWithTime(`✅ Device ${deviceId} unblocked by admin ${adminId}`);
 
         // Activity Tracking
-        await logActivity(req, "DEVICE_UNBLOCKED", {
+        logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.DEVICE_UNBLOCKED, {
             adminActions: {
                 targetId: deviceId,
                 reason: reason,

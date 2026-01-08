@@ -1,41 +1,111 @@
 const { malformedAndWrongRequestRateLimiter, unknownRouteLimiter } = require("./global.rate-limiter");
 const { 
+  // User Limiters
   blockUserLimiter, 
   unblockUserLimiter, 
-  checkUserDeviceSessionsLimiter, 
-  fetchUserDetailsByAdminLimiter, 
-  getUserAuthLogsLimiter,
-  // Device Rate Limiters
-  getDeviceDetailsLimiter,
+  getTotalRegisteredUsersLimiter,
+  listUsersLimiter,
+  viewUserDetailsLimiter,
+  
+  // Admin Limiters
+  getAdminAuthLogsLimiter,
+  updateAdminRoleLimiter,
+  updateAdminDetailsLimiter,
+  updateMyDetailsLimiter,
+  createAdminLimiter,
+  createAdminInBulkLimiter,
+  activateAdminLimiter,
+  deactivateAdminLimiter,
+  changeSupervisorLimiter,
+  fetchAdminDetailsLimiter,
+  fetchAdminsListLimiter,
+  viewMyDetailsLimiter,
+  getAdminDashboardStatsLimiter,
+
+  // Internal Limiters
+  syncUserDataLimiter,
+  syncDeviceDataLimiter,
+  getUserActiveSessionsLimiter,
+  fetchUserDetailsByInternalLimiter,
+  getUserAuthLogsByInternalLimiter,
+
+  // Request Limiters
+  listAllStatusRequestsLimiter,
+  viewStatusRequestLimiter,
+  createDeactivationRequestLimiter,
+  approveDeactivationRequestLimiter,
+  rejectDeactivationRequestLimiter,
+  createActivationRequestLimiter,
+  approveActivationRequestLimiter,
+  rejectActivationRequestLimiter,
+
+  // Device Limiters
+  viewDeviceDetailsLimiter,
   listDevicesLimiter,
   blockDeviceLimiter,
   unblockDeviceLimiter,
-  createDeviceLimiter,
-  updateDeviceLimiter,
-  deleteDeviceLimiter,
-  deactivateDeviceLimiter
+
+  // Activity Tracking Limiters
+  fetchActivityLogsLimiter,
+  listActivityTracksLimiter,
+  fetchMyActivityLogsLimiter
 } = require("./api.rate-limiter");
 const { globalLimiter } = require("./global.rate-limiter");
 
 module.exports = {
+  // Global Limiters
   malformedAndWrongRequestRateLimiter,
   unknownRouteLimiter,
+  globalLimiter,
+
   // User Limiters
   blockUserLimiter,
   unblockUserLimiter,
-  checkUserDeviceSessionsLimiter,
-  fetchUserDetailsByAdminLimiter,
-  getUserAuthLogsLimiter,
+  getTotalRegisteredUsersLimiter,
+  listUsersLimiter,
+  viewUserDetailsLimiter,
+
+  // Admin Limiters
+  getAdminAuthLogsLimiter,
+  updateAdminRoleLimiter,
+  updateAdminDetailsLimiter,
+  updateMyDetailsLimiter,
+  createAdminLimiter,
+  createAdminInBulkLimiter,
+  activateAdminLimiter,
+  deactivateAdminLimiter,
+  changeSupervisorLimiter,
+  fetchAdminDetailsLimiter,
+  fetchAdminsListLimiter,
+  viewMyDetailsLimiter,
+  getAdminDashboardStatsLimiter,
+
+  // Internal Limiters
+  syncUserDataLimiter,
+  syncDeviceDataLimiter,
+  getUserActiveSessionsLimiter,
+  fetchUserDetailsByInternalLimiter,
+  getUserAuthLogsByInternalLimiter,
+
+  // Request Limiters
+  listAllStatusRequestsLimiter,
+  viewStatusRequestLimiter,
+  createDeactivationRequestLimiter,
+  approveDeactivationRequestLimiter,
+  rejectDeactivationRequestLimiter,
+  createActivationRequestLimiter,
+  approveActivationRequestLimiter,
+  rejectActivationRequestLimiter,
+
   // Device Limiters
-  getDeviceDetailsLimiter,
+  viewDeviceDetailsLimiter,
   listDevicesLimiter,
   blockDeviceLimiter,
   unblockDeviceLimiter,
-  createDeviceLimiter,
-  updateDeviceLimiter,
-  deleteDeviceLimiter,
-  deactivateDeviceLimiter,
-  // Global Limiters
-  globalLimiter
+
+  // Activity Tracking Limiters
+  fetchActivityLogsLimiter,
+  listActivityTracksLimiter,
+  fetchMyActivityLogsLimiter
 };
 

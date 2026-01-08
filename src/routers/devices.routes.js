@@ -20,7 +20,7 @@ const { deviceMiddlewares } = require("@middlewares/devices/index");
 
 // Rate Limiters
 const { 
-    getDeviceDetailsLimiter,
+    viewDeviceDetailsLimiter,
     listDevicesLimiter,
     blockDeviceLimiter,
     unblockDeviceLimiter
@@ -31,7 +31,7 @@ const { baseMiddlewares } = require("./middleware.gateway");
 // View Device Details
 deviceRoutes.get(`${VIEW_DEVICE_DETAILS}`,
     [
-        getDeviceDetailsLimiter,
+        viewDeviceDetailsLimiter,
         ...baseMiddlewares,
         deviceMiddlewares.validateFetchDeviceDetailsRequestBody,
         deviceMiddlewares.validateFetchDeviceDetailsFields

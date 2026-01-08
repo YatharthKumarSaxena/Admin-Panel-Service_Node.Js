@@ -5,6 +5,7 @@ const { AdminModel } = require("@models/admin.model");
 const { throwDBResourceNotFoundError, throwConflictError, throwInternalServerError } = require("@utils/error-handler.util");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { notifyUserDeviceBlockedToSupervisor } = require("@utils/admin-notifications.util");
+const { ACTIVITY_TRACKER_EVENTS } = require("@/configs/tracker.config");
 
 /* 🚫 Block Device */
 const blockDevice = async (req, res) => {
@@ -44,7 +45,7 @@ const blockDevice = async (req, res) => {
         logWithTime(`✅ Device ${deviceId} blocked by admin ${adminId}`);
 
         // Activity Tracking
-        await logActivity(req, "DEVICE_BLOCKED", {
+        logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.DEVICE_BLOCKED, {
             adminActions: {
                 targetId: deviceId,
                 reason: reason,
