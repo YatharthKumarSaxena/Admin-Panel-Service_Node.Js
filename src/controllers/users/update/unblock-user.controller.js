@@ -59,7 +59,7 @@ const unblockUser = async (req, res) => {
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.UNBLOCK_USER, {
       description: `User ${userId} unblocked for reason: ${reason}`,
       adminActions: {
-        targetUserId: userId,
+        targetId: userId,
         reason: reasonDetails
       }
     });

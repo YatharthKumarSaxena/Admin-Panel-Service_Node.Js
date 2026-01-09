@@ -98,17 +98,11 @@ const changeSupervisor = async (req, res) => {
     // Log activity with audit data
         logActivityTrackerEvent(req, eventType, {
             description: `Supervisor changed for Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) by ${actor.adminId}`,
+            oldData,
+            newData,
             adminActions: {
-                targetAdminId: targetAdmin.adminId,
-                targetAdminDetails: {
-                    adminId: targetAdmin.adminId,
-                    email: targetAdmin.email,
-                    fullPhoneNumber: targetAdmin.fullPhoneNumber,
-                    adminType: targetAdmin.adminType
-                },
-                reason: reason,
-                oldData,
-                newData
+                targetId: targetAdmin.adminId,
+                reason: reason
             }
         });
 

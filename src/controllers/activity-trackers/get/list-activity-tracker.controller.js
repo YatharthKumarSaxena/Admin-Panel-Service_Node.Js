@@ -29,11 +29,8 @@ const listActivityTracker = async (req, res) => {
       'adminDetails.email': adminEmail,
       'adminDetails.fullPhoneNumber': adminPhone,
       // Nested adminActions filters
-      'adminActions.targetUserId': targetUserId,
+      'adminActions.targetId': targetUserId,
       'adminActions.reason': actionReason,
-      // Nested targetUserDetails filters
-      'adminActions.targetUserDetails.email': targetUserEmail,
-      'adminActions.targetUserDetails.fullPhoneNumber': targetUserPhone,
       // Description search
       description,        // Full-text search in description
       // Sorting
@@ -99,20 +96,11 @@ const listActivityTracker = async (req, res) => {
 
     // Nested adminActions filters
     if (targetUserId) {
-      query['adminActions.targetUserId'] = targetUserId;
+      query['adminActions.targetId'] = targetUserId;
     }
 
     if (actionReason) {
       query['adminActions.reason'] = { $regex: actionReason, $options: 'i' };
-    }
-
-    // Nested targetUserDetails filters
-    if (targetUserEmail) {
-      query['adminActions.targetUserDetails.email'] = { $regex: targetUserEmail, $options: 'i' };
-    }
-
-    if (targetUserPhone) {
-      query['adminActions.targetUserDetails.fullPhoneNumber'] = { $regex: targetUserPhone, $options: 'i' };
     }
 
     // Description search
@@ -177,8 +165,7 @@ const listActivityTracker = async (req, res) => {
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.LIST_ACTIVITY_TRACKER, {
       description: `Admin ${actor.adminId} listed activity tracker logs`,
       adminActions: {
-        reason: reason,
-        filter: [query]
+        reason: reason
       }
     });
 
@@ -211,12 +198,8 @@ const listActivityTracker = async (req, res) => {
             fullPhoneNumber: adminPhone || null
           },
           adminActions: {
-            targetUserId: targetUserId || null,
-            reason: actionReason || null,
-            targetUserDetails: {
-              email: targetUserEmail || null,
-              fullPhoneNumber: targetUserPhone || null
-            }
+            targetId: targetUserId || null,
+            reason: actionReason || null
           }
         },
         search: {

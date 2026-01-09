@@ -25,7 +25,7 @@ const viewOwnActivityTracker = async (req, res) => {
       dateFrom,           // createdAt >= this date
       dateTo,             // createdAt <= this date
       // Nested search filters
-      'adminActions.targetUserId': targetUserId,  // Search by target user
+      'adminActions.targetId': targetUserId,  // Search by target user
       description,        // Search in description
       deviceId            // Filter by specific device
     } = req.query;
@@ -54,7 +54,7 @@ const viewOwnActivityTracker = async (req, res) => {
 
     // Nested field filters
     if (targetUserId) {
-      query['adminActions.targetUserId'] = targetUserId;
+      query['adminActions.targetId'] = targetUserId;
     }
 
     if (description && description.trim()) {
@@ -122,7 +122,7 @@ const viewOwnActivityTracker = async (req, res) => {
         performedBy: performedBy || null,
         deviceType: deviceType || null,
         deviceId: deviceId || null,
-        targetUserId: targetUserId || null,
+        targetId: targetUserId || null,
         description: description || null,
         dateRange: {
           from: dateFrom || null,

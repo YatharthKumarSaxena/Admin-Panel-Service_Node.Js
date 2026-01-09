@@ -64,7 +64,7 @@ const rejectActivationRequest = async (req, res) => {
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.REJECT_ACTIVATION_REQUEST, {
       description: `Activation request ${requestId} rejected by ${actor.adminId}`,
       adminActions: {
-        targetUserId: request.targetAdminId,
+        targetId: request.targetAdminId,
         reason: request.reason
       }
     });

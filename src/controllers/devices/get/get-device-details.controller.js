@@ -48,7 +48,7 @@ const viewDeviceDetails = async (req, res) => {
         logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.VIEW_DEVICE_DETAILS, {
             description: `Admin ${actor.adminId} viewed details of device ${deviceId}`,
             adminActions: {
-                targetUserId: deviceId,
+                targetId: deviceId,
                 reason: reason
             }
         });

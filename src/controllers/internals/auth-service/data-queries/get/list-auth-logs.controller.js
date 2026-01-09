@@ -47,8 +47,7 @@ const listAuthLogs = async (req, res) => {
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.LIST_AUTH_LOGS, {
       description: `Admin ${actor.adminId} viewed auth logs dashboard`,
       adminActions: {
-        reason: reason,
-        filters: { page, limit, status, actionType, dateFrom, dateTo }
+        reason: reason
       }
     });
 

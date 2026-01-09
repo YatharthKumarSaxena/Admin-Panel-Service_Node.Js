@@ -100,11 +100,7 @@ const createAdmin = async (req, res) => {
     logActivityTrackerEvent(req, eventType, {
       description: `New ${adminType} (${newAdmin.adminId}) created by ${creator.adminId}`,
       adminActions: {
-        targetUserId: newAdmin.adminId,
-        targetUserDetails: {
-          email: newAdmin.email,
-          fullPhoneNumber: newAdmin.fullPhoneNumber
-        },
+        targetId: newAdmin.adminId,
         reason: req.body?.reason?.trim() || "New admin account creation"
       }
     });

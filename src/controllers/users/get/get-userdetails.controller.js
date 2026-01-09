@@ -41,7 +41,7 @@ const viewUserDetails = async (req, res) => {
         logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.VIEW_USER_DETAILS, {
             description: `Admin ${actor.adminId} viewed details of ${targetUser.userId}`,
             adminActions: {
-                targetUserId: targetUser.userId,
+                targetId: targetUser.userId,
                 reason: reason
             }
         });

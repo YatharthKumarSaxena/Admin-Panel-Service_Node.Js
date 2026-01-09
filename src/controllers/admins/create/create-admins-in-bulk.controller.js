@@ -137,10 +137,9 @@ const bulkAdminCreate = async (req, res) => {
         logActivityTrackerEvent(req, eventType, {
           description: `Bulk: ${adminType} (${newAdmin.adminId}) created by ${creator.adminId} during bulk upload`,
           adminActions: {
-            targetUserId: newAdmin.adminId,
-            targetUserDetails: { email: newAdmin.email, fullPhoneNumber: newAdmin.fullPhoneNumber },
-            reason: "Bulk Upload",
-          },
+            targetId: newAdmin.adminId,
+            reason: "Bulk Upload"
+          }
         });
 
       } catch (rowError) {

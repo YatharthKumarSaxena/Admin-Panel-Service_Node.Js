@@ -98,7 +98,7 @@ const viewStatusRequest = async (req, res) => {
       logActivityTrackerEvent(req, eventType, {
         description: `Admin ${actor.adminId} viewed ${request.requestType.toLowerCase()} request ${requestId}`,
         adminActions: {
-          targetAdminId: request.targetAdminId
+          targetId: request.targetAdminId
         }
       });
     }

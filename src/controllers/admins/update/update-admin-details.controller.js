@@ -62,12 +62,7 @@ const updateAdminDetails = async (req, res) => {
     logActivityTrackerEvent(req, eventType, {
       description: `Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) details updated by ${actor.adminId}`,
       adminActions: {
-        targetUserId: targetAdmin.adminId,
-        targetUserDetails: {
-          email: targetAdmin.email,
-          fullPhoneNumber: targetAdmin.fullPhoneNumber,
-          adminType: targetAdmin.adminType
-        },
+        targetId: targetAdmin.adminId,
         reason: reason
       }
     });

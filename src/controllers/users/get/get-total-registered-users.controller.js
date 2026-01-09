@@ -55,10 +55,7 @@ const getTotalRegisteredUsers = async (req, res) => {
 
     // Log activity
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.GET_TOTAL_REGISTERED_USERS, {
-      description: `Admin ${admin.adminId} retrieved total registered users count`,
-      adminActions: {
-        filters: stats.filters
-      }
+      description: `Admin ${admin.adminId} retrieved total registered users count`
     });
 
     return res.status(OK).json({

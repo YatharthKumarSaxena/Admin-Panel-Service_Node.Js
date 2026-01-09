@@ -71,7 +71,7 @@ const createDeactivationRequest = async (req, res) => {
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.CREATE_DEACTIVATION_REQUEST, {
       description: `Admin ${actor.adminId} requested account deactivation`,
       adminActions: {
-        targetUserId: actor.adminId,
+        targetId: actor.adminId,
         reason: reason
       }
     });

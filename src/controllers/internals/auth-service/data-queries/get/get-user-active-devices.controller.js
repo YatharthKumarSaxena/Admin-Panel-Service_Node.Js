@@ -36,7 +36,7 @@ const getUserActiveDevices = async (req, res) => {
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.GET_USER_ACTIVE_DEVICES, {
       description: `Admin ${admin.adminId} retrieved active devices for user ${userId}`,
       adminActions: {
-        targetUserId: userId,
+        targetId: userId,
         reason: reason
       }
     });

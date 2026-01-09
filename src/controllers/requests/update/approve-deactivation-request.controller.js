@@ -89,12 +89,7 @@ const approveDeactivationRequest = async (req, res) => {
       oldData,
       newData,
       adminActions: {
-        targetUserId: targetAdmin.adminId,
-        targetUserDetails: {
-          email: targetAdmin.email,
-          fullPhoneNumber: targetAdmin.fullPhoneNumber,
-          adminType: targetAdmin.adminType
-        },
+        targetId: targetAdmin.adminId,
         reason: request.reason
       }
     });

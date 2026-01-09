@@ -82,12 +82,7 @@ const createActivationRequest = async (req, res) => {
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.CREATE_ACTIVATION_REQUEST, {
       description: `Admin ${actor.adminId} requested activation for ${targetAdminId}. Request ID: ${requestId}`,
       adminActions: {
-        targetUserId: targetAdminId,
-        targetUserDetails: {
-          email: targetAdmin.email,
-          fullPhoneNumber: targetAdmin.fullPhoneNumber,
-          adminType: targetAdmin.adminType
-        },
+        targetId: targetAdminId,
         reason: reason
       }
     });

@@ -31,7 +31,7 @@ const viewAdminActivityTracker = async (req, res) => {
       // Nested search filters
       'adminDetails.email': adminEmail,           // Search by admin email
       'adminDetails.fullPhoneNumber': adminPhone, // Search by admin phone
-      'adminActions.targetUserId': targetUserId,  // Search by target user
+      'adminActions.targetId': targetUserId,  // Search by target user
       description,        // Search in description
       deviceId            // Filter by specific device
     } = req.query;
@@ -80,7 +80,7 @@ const viewAdminActivityTracker = async (req, res) => {
     }
 
     if (targetUserId) {
-      query['adminActions.targetUserId'] = targetUserId;
+      query['adminActions.targetId'] = targetUserId;
     }
 
     if (description && description.trim()) {
@@ -120,6 +120,7 @@ const viewAdminActivityTracker = async (req, res) => {
       logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.VIEW_ADMIN_ACTIVITY_TRACKER, {
         description: `Admin ${actor.adminId} viewed activity tracker of admin ${targetAdminId}`,
         adminActions: {
+          targetId: targetAdminId,
           reason: reason
         }
       });
@@ -144,7 +145,7 @@ const viewAdminActivityTracker = async (req, res) => {
         deviceId: deviceId || null,
         adminEmail: adminEmail || null,
         adminPhone: adminPhone || null,
-        targetUserId: targetUserId || null,
+        targetId: targetUserId || null,
         description: description || null,
         dateRange: {
           from: dateFrom || null,

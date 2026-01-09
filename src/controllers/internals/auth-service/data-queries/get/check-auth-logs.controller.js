@@ -54,7 +54,6 @@ const checkAuthLogs = async (req, res) => {
       description: `Admin ${actor.adminId} checked auth logs for ${targetId}`,
       adminActions: {
         targetId: targetId,
-        filters: { limit, offset, startDate, endDate },
         reason: reason
       }
     });

@@ -60,7 +60,7 @@ const rejectDeactivationRequest = async (req, res) => {
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.REJECT_DEACTIVATION_REQUEST, {
       description: `Deactivation request ${requestId} rejected by ${actor.adminId}`,
       adminActions: {
-        targetUserId: request.targetAdminId,
+        targetId: request.targetAdminId,
         reason: request.reason
       }
     });

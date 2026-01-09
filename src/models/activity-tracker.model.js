@@ -1,25 +1,7 @@
 const mongoose = require("mongoose");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { AuthModes, DeviceType, PerformedBy } = require("@configs/enums.config");
-const { emailRegex, fullPhoneNumberRegex, adminIdRegex, UUID_V4_REGEX , userIdRegex} = require("@configs/regex.config");
-const { fullPhoneNumberLength, emailLength } = require("@configs/fields-length.config");
-
-// ✅ Validator Function (Reusable)
-// Yeh function check karega ki AuthMode ke hisaab se email/phone hai ya nahi
-const authModeValidator = function (v) {
-  if (!v) return true; // Agar value null hai to pass hone dein (handle required elsewhere)
-  
-  const mode = process.env.AUTH_MODE;
-  const hasEmail = !!v.email;
-  const hasPhone = !!v.fullPhoneNumber;
-
-  if (mode === AuthModes.EMAIL) return hasEmail;
-  if (mode === AuthModes.PHONE) return hasPhone;
-  if (mode === AuthModes.BOTH) return hasEmail && hasPhone;
-  if (mode === AuthModes.EITHER) return (hasEmail && !hasPhone) || (!hasEmail && hasPhone); // XOR
-
-  return true;
-};
+const { DeviceType, PerformedBy } = require("@configs/enums.config");
+const { adminIdRegex, UUID_V4_REGEX, userIdRegex } = require("@configs/regex.config");
 
 const activityTrackerSchema = new mongoose.Schema({
   adminId: {
@@ -29,38 +11,15 @@ const activityTrackerSchema = new mongoose.Schema({
     index: true
   },
 
-  // ✅ FIX 1: adminDetails ko SubSchema banaya aur validator yahin laga diya
   adminDetails: {
     type: new mongoose.Schema({
       adminId: {
         type: String,
         required: true,
-        match: adminIdRegex,
-        index: true
-      },
-      email: {
-        type: String,
-        lowercase: true,
-        trim: true,
-        index: true,
-        minlength: emailLength.min,
-        maxlength: emailLength.max,
-        match: emailRegex
-      },
-      fullPhoneNumber: {
-        type: String,
-        trim: true,
-        index: true,
-        minlength: fullPhoneNumberLength.min,
-        maxlength: fullPhoneNumberLength.max,
-        match: fullPhoneNumberRegex
+        match: adminIdRegex
       }
-    }, { _id: false }), // _id: false taaki extra ID na bane
-    required: true,
-    validate: {
-      validator: authModeValidator,
-      message: "adminDetails must include required fields based on DEFAULT_AUTH_MODE"
-    }
+    }, { _id: false }),
+    required: true
   },
 
   eventType: {
@@ -109,37 +68,9 @@ const activityTrackerSchema = new mongoose.Schema({
 
   adminActions: {
     type: new mongoose.Schema({
-      targetUserId: {
+      targetId: {
         type: String,
-        match: userIdRegex,
         default: null
-      },
-      // ✅ FIX 2: targetUserDetails ko bhi SubSchema banaya validation ke liye
-      targetUserDetails: {
-        type: new mongoose.Schema({
-          email: {
-            type: String,
-            lowercase: true,
-            trim: true,
-            minlength: emailLength.min,
-            maxlength: emailLength.max,
-            match: emailRegex,
-            default: null
-          },
-          fullPhoneNumber: {
-            type: String,
-            trim: true,
-            minlength: fullPhoneNumberLength.min,
-            maxlength: fullPhoneNumberLength.max,
-            match: fullPhoneNumberRegex,
-            default: null
-          }
-        }, { _id: false }),
-        default: null,
-        validate: {
-          validator: authModeValidator,
-          message: "targetUserDetails must include required fields based on DEFAULT_AUTH_MODE"
-        }
       },
       reason: {
         type: String,

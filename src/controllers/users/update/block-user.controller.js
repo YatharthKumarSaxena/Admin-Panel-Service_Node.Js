@@ -59,7 +59,7 @@ const blockUser = async (req, res) => {
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.BLOCK_USER, {
       description: `User ${userId} blocked for reason: ${reason}`,
       adminActions: {
-        targetUserId: userId,
+        targetId: userId,
         reason: reasonDetails
       }
     });

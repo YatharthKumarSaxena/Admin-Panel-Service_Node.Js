@@ -1,11 +1,8 @@
 const { ActivityTrackerModel } = require("@models/activity-tracker.model");
 const { logWithTime } = require("./time-stamps.util");
 const { errorMessage } = require("@utils/error-handler.util");
-const { validateLength, isValidRegex } = require("./validators-factory.util");
-const { emailRegex, fullPhoneNumberRegex } = require("@configs/regex.config");
-const { emailLength, fullPhoneNumberLength } = require("@configs/fields-length.config");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { AuthModes, PerformedBy } = require("@configs/enums.config");
+const { PerformedBy } = require("@configs/enums.config");
 
 /**
  * 🔐 Logs an activity tracker event (fire-and-forget)
@@ -25,102 +22,16 @@ const logActivityTrackerEvent = async (req, eventType, logOptions = {}) => {
         return;
       }
 
-      // 2. Prepare Admin Details based on Auth Mode
-      const AuthMode = process.env.DEFAULT_AUTH_MODE || AuthModes.BOTH;
+      // 2. Prepare Admin Details
       const adminDetails = {
-        adminId: admin.adminId  // ✅ Always include adminId in adminDetails
+        adminId: admin.adminId
       };
-      
-      // Data Cleaning
-      const rawEmail = admin.email ? admin.email.trim().toLowerCase() : null;
-      const rawPhone = admin.fullPhoneNumber ? admin.fullPhoneNumber.trim() : null;
 
-      // Validation Helper to avoid repetitive code
-      const isEmailValid = (e) => e && validateLength(e, emailLength.min, emailLength.max) && isValidRegex(e, emailRegex);
-      const isPhoneValid = (p) => p && validateLength(p, fullPhoneNumberLength.min, fullPhoneNumberLength.max) && isValidRegex(p, fullPhoneNumberRegex);
-
-      // --- Admin Details Validation Logic ---
-      if (AuthMode === AuthModes.EMAIL) {
-        if (!isEmailValid(rawEmail)) {
-          logWithTime("⚠️ Invalid email (EMAIL mode). Skipping.");
-          return;
-        }
-        adminDetails.email = rawEmail;
-      } 
-      else if (AuthMode === AuthModes.PHONE) {
-        if (!isPhoneValid(rawPhone)) {
-          logWithTime("⚠️ Invalid phone (PHONE mode). Skipping.");
-          return;
-        }
-        adminDetails.fullPhoneNumber = rawPhone;
-      } 
-      else if (AuthMode === AuthModes.BOTH) {
-        if (!isEmailValid(rawEmail) || !isPhoneValid(rawPhone)) {
-          logWithTime("⚠️ Invalid email/phone (BOTH mode). Skipping.");
-          return;
-        }
-        adminDetails.email = rawEmail;
-        adminDetails.fullPhoneNumber = rawPhone;
-      } 
-      else if (AuthMode === AuthModes.EITHER) {
-        // Schema logic says (hasEmail ^ hasPhone) -> XOR. One must exist, not both.
-        // Priority: If valid email exists, use it. Else if valid phone, use it.
-        if (isEmailValid(rawEmail)) {
-          adminDetails.email = rawEmail;
-        } else if (isPhoneValid(rawPhone)) {
-          adminDetails.fullPhoneNumber = rawPhone;
-        } else {
-          logWithTime("⚠️ No valid email or phone (EITHER mode). Skipping.");
-          return;
-        }
-      }
-
-      // 3. Prepare Target User Details (if present)
-      // Fix: Previous code forced BOTH email and phone. Now we follow AuthMode.
-      let targetUserDetails = null;
-      const targetDetailsRaw = logOptions.adminActions?.targetUserDetails || logOptions.performedOn?.details;
-
-      if (targetDetailsRaw) {
-        const tEmail = targetDetailsRaw.email;
-        const tPhone = targetDetailsRaw.fullPhoneNumber;
-        const tDetails = {};
-        let isValidTarget = false;
-
-        // Apply same validation logic as Admin
-        if (AuthMode === AuthModes.EMAIL) {
-          if (isEmailValid(tEmail)) { tDetails.email = tEmail; isValidTarget = true; }
-        } 
-        else if (AuthMode === AuthModes.PHONE) {
-          if (isPhoneValid(tPhone)) { tDetails.fullPhoneNumber = tPhone; isValidTarget = true; }
-        } 
-        else if (AuthMode === AuthModes.BOTH) {
-          if (isEmailValid(tEmail) && isPhoneValid(tPhone)) {
-             tDetails.email = tEmail; 
-             tDetails.fullPhoneNumber = tPhone; 
-             isValidTarget = true; 
-          }
-        } 
-        else if (AuthMode === AuthModes.EITHER) {
-            // Priority to Email, prevent sending both to satisfy XOR schema validation
-            if (isEmailValid(tEmail)) {
-                tDetails.email = tEmail; 
-                isValidTarget = true;
-            } else if (isPhoneValid(tPhone)) {
-                tDetails.fullPhoneNumber = tPhone;
-                isValidTarget = true;
-            }
-        }
-
-        if (isValidTarget) targetUserDetails = tDetails;
-      }
-
-      // 4. Construct Admin Actions Object
+      // 3. Construct Admin Actions Object
       const adminActions = {};
       
-      const targetUserId = logOptions.adminActions?.targetUserId || logOptions.performedOn?.userId;
-      if (targetUserId) adminActions.targetUserId = targetUserId;
-      
-      if (targetUserDetails) adminActions.targetUserDetails = targetUserDetails;
+      const targetId = logOptions.adminActions?.targetId || logOptions.performedOn?.id || logOptions.performedOn?.userId;
+      if (targetId) adminActions.targetId = targetId;
 
       const reason = logOptions.adminActions?.reason?.trim() || req.body?.reason?.trim() || req.query?.reason?.trim();
       if (reason) adminActions.reason = reason;

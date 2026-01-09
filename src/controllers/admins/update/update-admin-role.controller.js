@@ -85,10 +85,10 @@ const updateAdminRole = async (req, res) => {
         
         logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.UPDATE_ADMIN_ROLE, {
             description: `Admin ${targetAdmin.adminId} role changed from ${oldState.adminType} to ${newRole} by ${actor.adminId}`,
+            oldData: { adminType: oldState.adminType },
+            newData: { adminType: newRole },
             adminActions: {
-                targetAdminId: targetAdmin.adminId,
-                oldRole: oldState.adminType,
-                newRole: newRole,
+                targetId: targetAdmin.adminId,
                 reason
             }
         });

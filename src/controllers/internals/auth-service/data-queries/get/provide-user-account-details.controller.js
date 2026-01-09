@@ -40,7 +40,7 @@ const provideUserAccountDetails = async (req, res) => {
     logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.PROVIDE_USER_ACCOUNT_DETAILS, {
       description: `Admin ${admin.adminId} viewed account details for user ${userId}`,
       adminActions: {
-        targetUserId: userId,
+        targetId: userId,
         reason: reason
       }
     });
