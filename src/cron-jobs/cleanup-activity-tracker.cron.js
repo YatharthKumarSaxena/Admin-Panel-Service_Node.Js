@@ -2,7 +2,7 @@ const cron = require("node-cron");
 const { ActivityTrackerModel } = require("@models/activity-tracker.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { activityTrackerCleanup } = require("@configs/cron.config");
-const { errorMessage } = require("@utils/error-handler.util");
+const { errorMessage } = require("@/responses/common/error-handler.response");
 
 const cleanActivityLogs = async () => {
   try {

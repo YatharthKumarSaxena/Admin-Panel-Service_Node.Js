@@ -1,7 +1,7 @@
 const { AdminStatusRequestModel } = require("@models/admin-status-request.model");
 const { AdminModel } = require("@models/admin.model");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
+const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
 const { OK } = require("@configs/http-status.config");
 const { AdminType, requestStatus, requestType, viewScope } = require("@configs/enums.config");
 

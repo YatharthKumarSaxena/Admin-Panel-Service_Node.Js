@@ -1,4 +1,7 @@
 const { DeviceModel } = require("@models/device.model");
+const { logWithTime } = require("@utils/time-stamps.util");
+const { throwInternalServerError } = require("@/responses/common/error-handler.response");
+const { listDevicesSuccessResponse } = require("@/responses/success/index");
 
 /**
  * LIST DEVICES
@@ -101,19 +104,11 @@ const listDevices = async (req, res, next) => {
             DeviceModel.countDocuments(filter)
         ]);
 
-        res.status(200).json({
-            success: true,
-            data: devices,
-            meta: {
-                total,
-                page: Number(page),
-                limit: Number(limit),
-                totalPages: Math.ceil(total / limit)
-            }
-        });
+        return listDevicesSuccessResponse(res, devices, total, page, limit);
 
     } catch (error) {
-        next(error);
+        logWithTime(`❌ Error in listDevices controller: ${error.message}`);
+        return throwInternalServerError(res, error);
     }
 };
 

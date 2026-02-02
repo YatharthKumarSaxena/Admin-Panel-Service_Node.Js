@@ -2,7 +2,7 @@ const cron = require("node-cron");
 const { AdminModel } = require("@models/admin.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { adminCleanup } = require("@configs/cron.config");
-const { errorMessage } = require("@utils/error-handler.util");
+const { errorMessage } = require("@/responses/common/error-handler.response");
 
 const cleanDeactivatedAdmins = async () => {
 	try {

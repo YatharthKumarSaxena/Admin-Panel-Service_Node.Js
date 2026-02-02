@@ -2,7 +2,7 @@ const { AdminModel } = require("@models/admin.model");
 const { OK } = require("@configs/http-status.config");
 const { AdminType } = require("@configs/enums.config");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
+const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
 
 const getAdminDashboardStats = async (req, res) => {
     try {

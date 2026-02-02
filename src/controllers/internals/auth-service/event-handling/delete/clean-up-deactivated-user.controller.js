@@ -1,6 +1,6 @@
 const { UserModel } = require("@models/user.model");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { errorMessage, throwInternalServerError } = require("@utils/error-handler.util");
+const { errorMessage, throwInternalServerError } = require("@/responses/common/error-handler.response");
 
 const cleanDeactivatedUsers = (req,res) => {
 	try {

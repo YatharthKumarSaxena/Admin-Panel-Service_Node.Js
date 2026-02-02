@@ -1,121 +1,66 @@
-const { AdminModel } = require("@models/admin.model");
+const { createAdminService } = require("@services/admins/create/create-admin.service");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwConflictError } = require("@utils/error-handler.util");
-const { CREATED } = require("@configs/http-status.config");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
-const { AdminType } = require("@configs/enums.config");
-const { makeAdminId } = require("@services/user-id.service");
+const { 
+  throwBadRequestError, 
+  throwInternalServerError, 
+  getLogIdentifiers, 
+  throwConflictError,
+  throwDBResourceNotFoundError 
+} = require("@/responses/common/error-handler.response");
+const { createAdminSuccessResponse } = require("@/responses/success/index");
+const { AdminType, AdminErrorTypes } = require("@configs/enums.config");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
-const { rollbackAdminCounter } = require("@services/counter-rollback.service");
 const { canActOnRole } = require("@/utils/role.util");
-const { notifySupervisorNewAdmin, notifySupervisorOnAdminCreation } = require("@utils/admin-notifications.util");
 
 const createAdmin = async (req, res) => {
   try {
     const creator = req.admin; // Injected by middleware
-    const { fullPhoneNumber, email, adminType, supervisorId } = req.body;
+    const { firstName, adminType, supervisorId: requestedSupervisorId, creationReason } = req.body;
 
-    const adminExists = await fetchAdmin(email, fullPhoneNumber);
-
-    if (adminExists) {
-      logWithTime(`❌ Duplicate admin creation attempt detected by ${creator.adminId} ${getLogIdentifiers(req)}`);
-      return throwConflictError(res, "Admin with provided email/phone already exists", "Please enter unique email/phone number");
-    }
-
+    // Determine supervisor
+    let supervisorId = requestedSupervisorId;
     let supervisor = null;
 
-    if(supervisorId){
-      supervisor =  await fetchAdmin(null, null, supervisorId);
-      if(!supervisor){
-        logWithTime(`❌ Supervisor not found: ${supervisorId} while creating admin by ${creator.adminId} ${getLogIdentifiers(req)}`);
-        return throwBadRequestError(res, "Supervisor not found with provided supervisorId");
+    if (requestedSupervisorId) {
+      supervisor = await fetchAdmin(requestedSupervisorId);
+      
+      if (!supervisor) {
+        logWithTime(`❌ Supervisor not found: ${requestedSupervisorId} while creating admin by ${creator.adminId} ${getLogIdentifiers(req)}`);
+        return throwDBResourceNotFoundError(res, "Supervisor", requestedSupervisorId);
       }
-      if(canActOnRole(supervisor.adminType, adminType) === false){
-        logWithTime(`❌ Supervisor cannot oversee an admin of equal or higher role: ${supervisorId} while creating admin by ${creator.adminId} ${getLogIdentifiers(req)}`);
+      
+      if (canActOnRole(supervisor.adminType, adminType) === false) {
+        logWithTime(`❌ Supervisor cannot oversee an admin of equal or higher role: ${requestedSupervisorId} by ${creator.adminId} ${getLogIdentifiers(req)}`);
         return throwBadRequestError(res, "Supervisor cannot oversee an admin of equal or higher role");
       }
-    }else{
-      supervisorId = creator.adminId;
-    }
-
-    // 🔧 Generate adminId
-    const adminId = await makeAdminId();
-
-    if (adminId === "") {
-      logWithTime(`❌ Failed to generate adminId for new admin by ${creator.adminId} ${getLogIdentifiers(req)}`);
-      return throwInternalServerError(res, "Failed to generate Admin ID. Please try again later.");
-    }
-
-    if(adminId === "0"){
-      logWithTime(`⚠️ Admin Data Capacity full. Cannot create new admin by ${creator.adminId} ${getLogIdentifiers(req)}`);
-      return throwBadRequestError(res, "Admin Data Capacity full. Cannot create new admin.");
-    }
-
-    // Internal API call to Create Admin in Authentication Service can be placed here
-    // If Yes we can proceed to create Admin in our DB
-
-    // If Auth Service call fails, handle the error accordingly
-    // First decrease the adminId counter to avoid gaps (if needed)
-
-    // 🧩 Create admin document
-    const newAdmin = new AdminModel({
-      fullPhoneNumber,
-      email,
-      adminId,
-      adminType,
-      supervisorId,
-      createdBy: creator.adminId
-    });
-
-    await newAdmin.save();
-
-    logWithTime(`✅ New admin created: ${newAdmin.adminId} (${adminType}) by ${creator.adminId}`);
-
-    if(supervisorId !== creator.adminId){
-      logWithTime(`👔 Admin ${newAdmin.adminId} assigned to supervisor ${supervisorId} upon creation by ${creator.adminId}`);
-      // Send notification to supervisor about new admin assignment
-      await notifySupervisorNewAdmin(supervisor, newAdmin, creator);
-    }else{
-      logWithTime(`👔 Admin ${newAdmin.adminId} assigned to self as supervisor upon creation by ${creator.adminId}`);
-    }
-
-    // Inform Creator Supervisor about new admin creation
-    if(creator.adminType !== AdminType.SUPER_ADMIN){
-      const creatorSupervisor = await fetchAdmin(null, null, creator.supervisorId);
-      if(creatorSupervisor){
-        await notifySupervisorOnAdminCreation(creatorSupervisor, newAdmin, creator);
-      }
-    }
-
-    // ⚙️ Determine event type based on role
-    let eventType;
-    if (adminType === AdminType.ADMIN) {
-      eventType = ACTIVITY_TRACKER_EVENTS.CREATE_ADMIN;
     } else {
-      eventType = ACTIVITY_TRACKER_EVENTS.CREATE_MID_ADMIN;
+      supervisorId = creator.adminId;
+      supervisor = creator;
     }
 
-    // 🚀 Fire-and-Forget Activity Log
-    logActivityTrackerEvent(req, eventType, {
-      description: `New ${adminType} (${newAdmin.adminId}) created by ${creator.adminId}`,
-      adminActions: {
-        targetId: newAdmin.adminId,
-        reason: req.body?.reason?.trim() || "New admin account creation"
+    // Call service
+    const result = await createAdminService(
+      creator,
+      { firstName, adminType, supervisorId, creationReason },
+      supervisor
+    );
+
+    // Handle service errors
+    if (!result.success) {
+      if (result.type === AdminErrorTypes.CONFLICT) {
+        return throwConflictError(res, result.message);
       }
-    });
-
-    return res.status(CREATED).json({
-      message: `${adminType} created successfully`,
-      adminId: newAdmin.adminId,
-      createdBy: creator.adminId
-    });
-  } catch (err) {
-    if (err.name === 'ValidationError') {
-      logWithTime(`⚠️ Validation Error: ${err.message}`);
-      return throwBadRequestError(res, err.message);
+      if (result.type === AdminErrorTypes.INVALID_DATA) {
+        return throwBadRequestError(res, result.message);
+      }
+      return throwInternalServerError(res, result.message);
     }
-    logWithTime(`❌ Internal Error occurred in creating new admin ${getLogIdentifiers(req)}`);
+
+    // Success response
+    return createAdminSuccessResponse(res, result.data);
+
+  } catch (err) {
+    logWithTime(`❌ Internal Error in createAdmin controller ${getLogIdentifiers(req)}: ${err.message}`);
     return throwInternalServerError(res, err);
   }
 };

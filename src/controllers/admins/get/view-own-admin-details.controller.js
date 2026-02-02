@@ -1,6 +1,6 @@
 const { logWithTime } = require("@utils/time-stamps.util");
 const { OK } = require("@configs/http-status.config");
-const { throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
+const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
 
 /**
  * View Own Admin Details Controller

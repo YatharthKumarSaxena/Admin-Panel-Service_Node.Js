@@ -2,7 +2,7 @@ const cron = require("node-cron");
 const { AdminStatusRequestModel } = require("@models/admin-status-request.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { requestCleanup } = require("@configs/cron.config");
-const { errorMessage } = require("@utils/error-handler.util");
+const { errorMessage } = require("@/responses/common/error-handler.response");
 const { requestStatus } = require("@configs/enums.config");
 
 /**

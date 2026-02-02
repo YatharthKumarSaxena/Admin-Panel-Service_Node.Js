@@ -1,6 +1,6 @@
 const { ActivityTrackerModel } = require("@models/activity-tracker.model");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { throwInternalServerError, getLogIdentifiers, throwAccessDeniedError } = require("@utils/error-handler.util");
+const { throwInternalServerError, getLogIdentifiers, throwAccessDeniedError } = require("@/responses/common/error-handler.response");
 const { OK } = require("@configs/http-status.config");
 const { AdminType } = require("@configs/enums.config");
 const { canActOnRole } = require("@/utils/role.util");

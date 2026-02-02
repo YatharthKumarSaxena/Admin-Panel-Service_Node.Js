@@ -1,7 +1,7 @@
 const { UserModel } = require("@models/user.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
+const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
 const { OK } = require("@configs/http-status.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 

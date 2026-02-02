@@ -6,7 +6,7 @@ const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { canActOnRole } = require("@/utils/role.util");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { throwBadRequestError, throwAccessDeniedError, throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
+const { throwBadRequestError, throwAccessDeniedError, throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
 const { notifyAdminDetailsUpdated, notifyDetailsUpdateToSupervisor } = require("@utils/admin-notifications.util");
 
 /**

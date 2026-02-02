@@ -1,7 +1,7 @@
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
-const { OK } = require("@configs/http-status.config");
+const { throwInternalServerError, throwBadRequestError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
+const { checkAuthLogsSuccessResponse } = require("@/responses/success/index");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 
 /**
@@ -25,9 +25,7 @@ const checkAuthLogs = async (req, res) => {
     } = req.query;
 
     if (!targetId) {
-      return res.status(400).json({
-        message: "targetId is required"
-      });
+      return throwBadRequestError(res, "targetId is required");
     }
 
     logWithTime(`🔍 Admin ${actor.adminId} (${actor.adminType}) requesting auth logs for: ${targetId}`);
@@ -58,12 +56,7 @@ const checkAuthLogs = async (req, res) => {
       }
     });
 
-    return res.status(OK).json({
-      message: "Auth logs retrieved successfully",
-      data: authLogs,
-      checkedBy: actor.adminId,
-      checkedByType: actor.adminType
-    });
+    return checkAuthLogsSuccessResponse(res, authLogs.logs);
 
   } catch (err) {
     logWithTime(`❌ Internal Error in checking auth logs ${getLogIdentifiers(req)}`);

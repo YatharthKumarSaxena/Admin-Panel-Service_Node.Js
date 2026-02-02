@@ -1,6 +1,6 @@
 const { ActivityTrackerModel } = require("@models/activity-tracker.model");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { throwInternalServerError, getLogIdentifiers } = require("@utils/error-handler.util");
+const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
 const { OK } = require("@configs/http-status.config");
 const { viewScope } = require("@configs/enums.config");
 
