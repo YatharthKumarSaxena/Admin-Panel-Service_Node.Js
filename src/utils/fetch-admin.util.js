@@ -1,23 +1,23 @@
 const { AdminModel } = require("@models/admin.model");
-const { fetchEntity } = require("./fetch-entity.util");
 
 /**
- * 🔍 Fetches an admin from the database based on auth mode or userId
- * @param {string|null} email - Admin's email address
- * @param {string|null} fullPhoneNumber - Admin's full phone number
- * @param {string|null} userId - Admin's custom userId (adminId)
+ * 🔍 Fetches an admin from the database based on adminId
+ * @param {string} adminId - Admin's custom ID (e.g., ADM0000001)
  * @returns {Promise<Object|null>} - Returns the admin object if found, null otherwise
  */
 
-const fetchAdmin = async (email = null, fullPhoneNumber = null, userId = null) => {
-  return await fetchEntity(
-    AdminModel,
-    email,
-    fullPhoneNumber,
-    userId,
-    "Admin",
-    "adminId"
-  );
+const fetchAdmin = async (adminId) => {
+  if (!adminId) {
+    return null;
+  }
+
+  try {
+    const admin = await AdminModel.findOne({ adminId }).lean();
+    return admin;
+  } catch (error) {
+    console.error(`Error fetching admin ${adminId}:`, error);
+    return null;
+  }
 };
 
 module.exports = {

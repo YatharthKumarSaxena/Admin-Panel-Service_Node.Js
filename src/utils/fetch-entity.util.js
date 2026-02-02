@@ -1,5 +1,5 @@
 const { logWithTime } = require("./time-stamps.util");
-const { errorMessage } = require("./error-handler.util");
+const { errorMessage } = require("../responses/common/error-handler.response");
 
 /**
  * 🏭 Factory function to fetch any entity (Admin/User) from database

@@ -1,6 +1,6 @@
 // utils/redis-client.util.js
 const Redis = require("ioredis");
-const { errorMessage } = require("@utils/error-handler.util");
+const { errorMessage } = require("@/responses/common/error-handler.response");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { redis } = require("@configs/redis.config");
 
@@ -27,4 +27,19 @@ redisClient.on("error", (error) => {
   errorMessage(error);
 });
 
-module.exports = { redisClient };
+/**
+ * Get Redis client instance
+ * @returns {Redis} Redis client instance
+ * @throws {Error} If Redis client is not initialized
+ */
+const getRedisClient = () => {
+  if (!redisClient) {
+    throw new Error("Redis client not initialized");
+  }
+  return redisClient;
+};
+
+module.exports = { 
+  redisClient,
+  getRedisClient 
+};

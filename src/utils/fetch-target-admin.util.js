@@ -2,7 +2,7 @@
 const { 
   errorMessage, 
   getLogIdentifiers 
-} = require("@utils/error-handler.util");
+} = require("@/responses/common/error-handler.response");
 
 const { logWithTime } = require("./time-stamps.util");
 

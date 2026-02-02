@@ -1,6 +1,6 @@
 const { ActivityTrackerModel } = require("@models/activity-tracker.model");
 const { logWithTime } = require("./time-stamps.util");
-const { errorMessage } = require("@utils/error-handler.util");
+const { errorMessage } = require("@/responses/common/error-handler.response");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { PerformedBy } = require("@configs/enums.config");
 
