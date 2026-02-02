@@ -1,5 +1,5 @@
 const { logWithTime } = require("@/utils/time-stamps.util");
-const { throwInternalServerError, logMiddlewareError, throwAccessDeniedError } = require("@utils/error-handler.util");
+const { throwInternalServerError, logMiddlewareError, throwAccessDeniedError } = require("@/responses/common/error-handler.response");
 
 const isDeviceBlocked = async (req, res, next) => {
     try {

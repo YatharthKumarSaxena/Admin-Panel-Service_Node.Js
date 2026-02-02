@@ -2,7 +2,7 @@
 const rateLimit = require("express-rate-limit");
 const { RedisStore } = require("rate-limit-redis");
 const { redisClient } = require("@utils/redis-client.util");
-const { errorMessage, throwInternalServerError } = require("@utils/error-handler.util");
+const { errorMessage, throwInternalServerError } = require("@/responses/common/error-handler.response");
 const { logWithTime } = require("@utils/time-stamps.util");
 
 function createGlobalLimiter() {

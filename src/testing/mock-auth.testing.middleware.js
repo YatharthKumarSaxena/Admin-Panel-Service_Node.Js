@@ -2,7 +2,7 @@ const { AdminModel } = require("@models/admin.model");
 const { extractAccessToken } = require("@utils/access-token.util");
 const { isValidMongoID } = require("@utils/id-validators.util");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { throwResourceNotFoundError, throwInternalServerError, logMiddlewareError, throwAccessDeniedError } = require("@utils/error-handler.util");
+const { throwResourceNotFoundError, throwInternalServerError, logMiddlewareError, throwAccessDeniedError } = require("@/responses/common/error-handler.response");
 
 /**
  * 🧪 TESTING MIDDLEWARE - Mock Authentication

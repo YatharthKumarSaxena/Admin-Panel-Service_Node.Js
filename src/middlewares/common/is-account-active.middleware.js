@@ -1,5 +1,5 @@
 const { logWithTime } = require("@utils/time-stamps.util");
-const { throwInternalServerError, logMiddlewareError } = require("@utils/error-handler.util");
+const { throwInternalServerError, logMiddlewareError } = require("@/responses/common/error-handler.response");
 const { FORBIDDEN } = require("@configs/http-status.config");
 const { AdminType } = require("@configs/enums.config");
 

@@ -1,6 +1,6 @@
 const { RoleHierarchy } = require("@configs/enums.config");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { throwAccessDeniedError, throwInternalServerError, logMiddlewareError } = require("@utils/error-handler.util");
+const { throwAccessDeniedError, throwInternalServerError, logMiddlewareError } = require("@/responses/common/error-handler.response");
 const { canActOnRole } = require("@utils/role.util");
 
 /**

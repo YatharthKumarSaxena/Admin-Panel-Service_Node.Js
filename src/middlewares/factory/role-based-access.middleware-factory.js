@@ -3,7 +3,7 @@ const {
   throwAccessDeniedError,
   throwInternalServerError,
   logMiddlewareError
-} = require("@utils/error-handler.util");
+} = require("@/responses/common/error-handler.response");
 const { logWithTime } = require("@utils/time-stamps.util");
 
 /**

@@ -4,7 +4,7 @@ const {
   throwDBResourceNotFoundError, 
   throwInternalServerError, 
   logMiddlewareError
-} = require("@utils/error-handler.util");
+} = require("@/responses/common/error-handler.response");
 
 /**
  * 🏭 Factory middleware to fetch any entity based on provided fetch function

@@ -1,5 +1,5 @@
 const { logWithTime } = require("@utils/time-stamps.util");
-const { throwInternalServerError, throwMissingFieldsError, logMiddlewareError, throwBadRequestError, throwValidationError } = require("@utils/error-handler.util");
+const { throwInternalServerError, throwMissingFieldsError, logMiddlewareError, throwBadRequestError, throwValidationError } = require("@/responses/common/error-handler.response");
 const { isValidUUID, isValidDeviceNameLength } = require("@utils/id-validators.util");
 const { DeviceTypeHelper } = require("@utils/enum-validators.util");
 const { deviceNameLength } = require("@configs/fields-length.config");

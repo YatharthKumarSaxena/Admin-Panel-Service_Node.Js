@@ -2,7 +2,7 @@ const {
   throwAccessDeniedError,
   logMiddlewareError,
   throwInternalServerError
-} = require("@utils/error-handler.util");
+} = require("@/responses/common/error-handler.response");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { tokenPayloads } = require("@configs/token.config");
 const { isValidUUID, isValidadminId, isValidMongoID } = require("@utils/id-validators.util");
