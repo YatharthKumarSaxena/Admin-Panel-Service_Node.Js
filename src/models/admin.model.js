@@ -1,21 +1,11 @@
 const mongoose = require("mongoose");
-const { fullPhoneNumberLength, emailLength } = require("@configs/fields-length.config");
-const { AuthModes, AdminType, ActivationReasons, DeactivationReasons } = require("@configs/enums.config");
-const { emailRegex, fullPhoneNumberRegex, adminIdRegex } = require("@configs/regex.config");
+const { firstNameLength } = require("@configs/fields-length.config");
+const { AdminType, ActivationReasons, DeactivationReasons, FirstNameFieldSetting } = require("@configs/enums.config");
+const { firstNameRegex, adminIdRegex } = require("@configs/regex.config");
+const { FIRST_NAME_SETTING } = require("@configs/security.config");
 
 /* Admin Schema */
 const adminSchema = new mongoose.Schema({
-    fullPhoneNumber: {
-        type: String,
-        trim: true,
-        match: fullPhoneNumberRegex,
-        minlength: fullPhoneNumberLength.min,
-        maxlength: fullPhoneNumberLength.max,
-        default: null,
-        index: true,
-        unique: true,
-        sparse: true
-    },
     adminId: {
         type: String,
         unique: true,
@@ -23,17 +13,12 @@ const adminSchema = new mongoose.Schema({
         match: adminIdRegex,
         index: true
     },
-    email: {
+    firstName: {
         type: String,
-        lowercase: true,
         trim: true,
-        minlength: emailLength.min,
-        maxlength: emailLength.max,
-        match: emailRegex,
-        default: null,
-        index: true,
-        unique: true,
-        sparse: true
+        minlength: firstNameLength.min,
+        maxlength: firstNameLength.max,
+        match: firstNameRegex
     },
     isActive: {
         type: Boolean,
@@ -83,27 +68,21 @@ const adminSchema = new mongoose.Schema({
 
 /* 🔐 Centralized Validation Hook */
 adminSchema.pre("validate", function (next) {
-    const mode = process.env.AUTH_MODE;
 
-    // 1. Auth Mode Validation
-    const hasEmail = this.email && this.email.length > 0;
-    const hasPhone = this.fullPhoneNumber && this.fullPhoneNumber.length > 0;
+    // 1. FirstName Field Validation
+    if (
+        FIRST_NAME_SETTING === FirstNameFieldSetting.DISABLED &&
+        this.firstName != null
+    ) {
+        this.invalidate(
+            "firstName",
+            "First Name field is disabled and must not be provided."
+        );
+    }
 
-    if (mode === AuthModes.EMAIL && !hasEmail) {
-        return next(new Error("Email is required in EMAIL mode."));
-    }
-    if (mode === AuthModes.PHONE && !hasPhone) {
-        return next(new Error("Phone number is required in PHONE mode."));
-    }
-    if (mode === AuthModes.BOTH && (!hasEmail || !hasPhone)) {
-        return next(new Error("Both email and phone are required in BOTH mode."));
-    }
-    if (mode === AuthModes.EITHER) {
-        if (!hasEmail && !hasPhone) {
-            return next(new Error("Either email or phone is required in EITHER mode."));
-        }
-        if (hasEmail && hasPhone) {
-            return next(new Error("Provide only one identifier (email OR phone) in EITHER mode."));
+    else if (FIRST_NAME_SETTING === FirstNameFieldSetting.MANDATORY) {
+        if (!this.firstName || (typeof this.firstName === 'string' && this.firstName.trim().length === 0)) {
+            this.invalidate("firstName", "First Name is required as per configuration.");
         }
     }
 

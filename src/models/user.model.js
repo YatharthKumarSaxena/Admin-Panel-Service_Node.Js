@@ -1,21 +1,11 @@
 const mongoose = require("mongoose");
-const { fullPhoneNumberLength, emailLength, reasonFieldLength } = require("@configs/fields-length.config");
-const { AuthModes, BlockReasons, UnblockReasons } = require("@configs/enums.config");
-const { emailRegex, fullPhoneNumberRegex, userIdRegex, adminIdRegex } = require("@configs/regex.config");
+const { firstNameLength, reasonFieldLength } = require("@configs/fields-length.config");
+const { BlockReasons, UnblockReasons, FirstNameFieldSetting } = require("@configs/enums.config");
+const { firstNameRegex, userIdRegex, adminIdRegex } = require("@configs/regex.config");
+const { FIRST_NAME_SETTING } = require("@configs/security.config");
 
 /* User Schema */
 const userSchema = new mongoose.Schema({
-    fullPhoneNumber: {
-        type: String,
-        trim: true,
-        match: fullPhoneNumberRegex,
-        minlength: fullPhoneNumberLength.min,
-        maxlength: fullPhoneNumberLength.max,
-        index: true,
-        unique: true,
-        sparse: true,
-        default: null
-    },
     userId: {
         type: String,
         unique: true,
@@ -23,17 +13,12 @@ const userSchema = new mongoose.Schema({
         match: userIdRegex,
         index: true
     },
-    email: {
+    firstName: {
         type: String,
-        lowercase: true,
         trim: true,
-        minlength: emailLength.min,
-        maxlength: emailLength.max,
-        match: emailRegex,
-        index: true,
-        unique: true,
-        sparse: true,
-        default: null
+        minlength: firstNameLength.min,
+        maxlength: firstNameLength.max,
+        match: firstNameRegex
     },
     isBlocked: { type: Boolean, default: false },
     blockReason: { type: String, enum: Object.values(BlockReasons), default: null },
@@ -48,29 +33,27 @@ const userSchema = new mongoose.Schema({
     unblockedAt: { type: Date, default: null }
 }, { timestamps: true, versionKey: false });
 
-/* 🔐 Conditional AuthMode Validator */
+/* 🔐 Conditional Validator */
 userSchema.pre("validate", function (next) {
-    const mode = process.env.AUTH_MODE;
-    const hasEmail = !!this.email;
-    const hasPhone = !!this.fullPhoneNumber;
 
-    if (mode === AuthModes.EMAIL && !hasEmail) {
-        return next(new Error("Email is required in EMAIL mode."));
+    // 1. FirstName Field Validation
+    if (
+        FIRST_NAME_SETTING === FirstNameFieldSetting.DISABLED &&
+        this.firstName != null
+    ) {
+        this.invalidate(
+            "firstName",
+            "First Name field is disabled and must not be provided."
+        );
     }
-    if (mode === AuthModes.PHONE && !hasPhone) {
-        return next(new Error("Phone number is required in PHONE mode."));
-    }
-    if (mode === AuthModes.BOTH && (!hasEmail || !hasPhone)) {
-        return next(new Error("Both email and phone are required in BOTH mode."));
-    }
-    if (mode === AuthModes.EITHER) {
-        if (!hasEmail && !hasPhone) {
-            return next(new Error("Either email or phone is required in EITHER mode."));
+
+    else if (FIRST_NAME_SETTING === FirstNameFieldSetting.MANDATORY) {
+        if (!this.firstName || (typeof this.firstName === 'string' && this.firstName.trim().length === 0)) {
+            this.invalidate("firstName", "First Name is required as per configuration.");
         }
-        if (hasEmail && hasPhone) {
-            return next(new Error("Provide only one identifier (email OR phone) in EITHER mode."));
-        }
     }
+
+    // 2. Block/Unblock Validation
     if (this.isBlocked) {
         if (!this.blockReason || !this.blockedBy) {
             return next(new Error("Blocked users must have blockReason and blockedBy."));
