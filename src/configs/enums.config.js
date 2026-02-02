@@ -149,6 +149,27 @@ const RoleHierarchy = Object.freeze({
   [AdminType.ADMIN]: 1
 });
 
+const FirstNameFieldSetting = Object.freeze({
+  DISABLED: "disabled",
+  OPTIONAL: "optional",
+  MANDATORY: "mandatory"
+});
+
+const AdminErrorTypes = Object.freeze({
+  CONFLICT: "CONFLICT",
+  NOT_FOUND: "NOT_FOUND",
+  UNAUTHORIZED: "UNAUTHORIZED",
+  INVALID_DATA: "INVALID_DATA",
+  ALREADY_EXISTS: "ALREADY_EXISTS",
+  ALREADY_ACTIVE: "ALREADY_ACTIVE",
+  ALREADY_INACTIVE: "ALREADY_INACTIVE",
+  ALREADY_BLOCKED: "ALREADY_BLOCKED",
+  ALREADY_UNBLOCKED: "ALREADY_UNBLOCKED",
+  INVALID_ROLE: "INVALID_ROLE",
+  INVALID_SUPERVISOR: "INVALID_SUPERVISOR",
+  CANNOT_MODIFY_SELF: "CANNOT_MODIFY_SELF"
+});
+
 const DeviceType = Object.freeze({
   MOBILE: "mobile",
   TABLET: "tablet",
@@ -297,5 +318,7 @@ module.exports = {
   AdminUpdateRoleReasons,
   FetchAdminDetailsReasons,
   FetchUserDetailsReasons,
-  FetchDeviceDetailsReasons
+  FetchDeviceDetailsReasons,
+  FirstNameFieldSetting,
+  AdminErrorTypes
 };

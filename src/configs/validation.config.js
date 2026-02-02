@@ -1,20 +1,18 @@
 const { 
-  fullPhoneNumberRegex, 
-  emailRegex, 
   UUID_V4_REGEX, 
   mongoIdRegex, 
-  adminIdRegex 
+  adminIdRegex,
+  firstNameRegex
 } = require("./regex.config");
 
 const { 
-  emailLength, 
-  fullPhoneNumberLength,
   deviceNameLength,
   reasonFieldLength,
   notesFieldLength,
   adminIdLength,
   mongoIdLength,
-  uuidV4Length
+  uuidV4Length,
+  firstNameLength
 } = require("./fields-length.config");
 
 const {
@@ -45,9 +43,9 @@ const {
 
 const validationRules = {
 
-  email: {
-    length: emailLength,
-    regex: emailRegex
+  firstName: {
+    length: firstNameLength,
+    regex: firstNameRegex
   },
 
   adminCreationReason: {
@@ -56,11 +54,6 @@ const validationRules = {
 
   adminUpdateRoleReason: {
     enum: AdminUpdateRoleReasonHelper
-  },
-
-  fullPhoneNumber: {
-    length: fullPhoneNumberLength,
-    regex: fullPhoneNumberRegex
   },
   
   deviceId: {

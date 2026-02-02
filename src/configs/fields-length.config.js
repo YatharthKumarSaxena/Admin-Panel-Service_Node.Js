@@ -9,6 +9,10 @@ module.exports = {
     min: 5,
     max: 254
   },
+  firstNameLength: {
+    min: 2,
+    max: 50
+  },
   deviceNameLength: {
     min: 3,
     max: 64
