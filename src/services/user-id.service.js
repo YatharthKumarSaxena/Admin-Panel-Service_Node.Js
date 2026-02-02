@@ -4,7 +4,7 @@ const {
     adminIDPrefix, 
     IP_Address_Code
 } = require("@configs/system.config");
-const { errorMessage } = require("@utils/error-handler.util");
+const { errorMessage } = require("@/responses/common/error-handler.response");
 const { logWithTime } = require("@utils/time-stamps.util");
 
 

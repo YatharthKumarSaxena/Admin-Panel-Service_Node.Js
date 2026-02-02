@@ -1,62 +1,51 @@
 const nodemailer = require("nodemailer");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { generateMasterTemplate } = require("./templates");
 
 /**
- * 📧 Core Mail Service using SMTP
- * Handles SMTP configuration and core email sending logic
+ * Core Mail Service
  */
-
-// Create reusable transporter
 const createTransporter = () => {
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp.gmail.com",
-    port: parseInt(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_SECURE === 'true',
+    service: "gmail", // 'host' aur 'port' ki jagah simple 'service' use karo Gmail ke liye
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
+      pass: process.env.SMTP_PASS, // Note: .env mein check karna ye SMTP_PASS hai ya SMTP_PASSWORD
     },
   });
 };
 
+const transporter = createTransporter();
+
 /**
- * 🚀 Generic Fire-and-Forget Email Sender
+ * Email Sender with Await Support
  * @param {string} to - Recipient email
- * @param {Object} templateConfig - Template configuration object
+ * @param {string} subject - Email Subject
+ * @param {string} htmlContent - Final HTML String
  */
-const sendEmail = async (to, templateConfig) => {
+const sendEmail = async (to, subject, htmlContent) => {
+  if (!to) {
+    logWithTime(`⚠️ Email skipped: No recipient.`);
+    return false;
+  }
+
+  const emailConfig = {
+    from: process.env.EMAIL_FROM || `"${process.env.APP_NAME || 'Admin'}" <${process.env.SMTP_USER}>`,
+    to: to,
+    subject: subject,
+    html: htmlContent,
+  };
+
   try {
-    if (!to) {
-      logWithTime(`⚠️ Email not sent - recipient email is empty`);
-      return;
-    }
-
-    const config = { ...templateConfig };
-    const htmlContent = generateMasterTemplate(config);
-    const transporter = createTransporter();
+    // Yahan hum AWAIT kar rahe hain taaki process kill na ho jaye
+    const info = await transporter.sendMail(emailConfig);
     
-    const emailConfig = {
-      from: process.env.EMAIL_FROM || `"${process.env.EMAIL_FROM_NAME || 'Admin Panel'}" <${process.env.SMTP_USER}>`,
-      to: to,
-      subject: config.subject,
-      html: htmlContent,
-    };
-
-    transporter.sendMail(emailConfig, (error, info) => {
-      if (error) {
-        logWithTime(`❌ Email send failed to ${to}: ${error.message}`);
-      } else {
-        logWithTime(`✅ Email sent to ${to}: ${info.messageId}`);
-      }
-    });
+    logWithTime(`✅ [Email Sent] Message ID: ${info.messageId} to ${to}`);
+    return true;
 
   } catch (error) {
-    logWithTime(`❌ Email service error: ${error.message}`);
+    logWithTime(`❌ [Email Failed] Error: ${error.message}`);
+    return false;
   }
 };
 
-module.exports = {
-  sendEmail,
-  createTransporter
-};
+module.exports = { sendEmail };
