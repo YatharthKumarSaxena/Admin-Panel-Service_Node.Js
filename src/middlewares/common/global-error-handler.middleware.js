@@ -2,8 +2,8 @@ const { throwInternalServerError } = require("@/responses/common/error-handler.r
 const { logWithTime } = require("@utils/time-stamps.util");
 
 /**
- * 🔥 Catches all uncaught errors thrown anywhere in the route chain.
- * ✅ Logs detailed message and prevents server crash
+ * Catches all uncaught errors thrown anywhere in the route chain.
+ * Logs detailed message and prevents server crash
  */
 
 const globalErrorHandler = (err, req, res, next) => {

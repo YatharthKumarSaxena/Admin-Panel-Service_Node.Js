@@ -1,17 +1,23 @@
-const { logWithTime } = require("@/utils/time-stamps.util");
+const { logWithTime } = require("@utils/time-stamps.util");
 const { throwInternalServerError, logMiddlewareError, throwAccessDeniedError } = require("@/responses/common/error-handler.response");
+const { DeviceModel } = require("@models/device.model");
 
 const isDeviceBlocked = async (req, res, next) => {
     try {
-        const device = req.device;
-        if (device.isBlocked === true) {
+        let device = req.device;
+        const dbDevice = await DeviceModel.findOne({ deviceUUID: req.device.deviceUUID }).lean();
+        if (dbDevice) {
+            device = dbDevice;
+            req.device = device;
+        }
+        if (dbDevice && device.isBlocked === true) {
             logMiddlewareError("isDeviceBlocked", "Device is blocked", req);
             return throwAccessDeniedError(
                 res, 
                 "Your Device is currently blocked. Please contact support for assistance if you believe this is an error."
             );
         }
-        logWithTime(`✅ Device (${device.deviceId}) is not blocked`);
+        logWithTime(`✅ Device (${device.deviceUUID}) is not blocked`);
 
         return next();
     } catch (err) {

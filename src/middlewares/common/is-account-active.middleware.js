@@ -3,7 +3,7 @@ const { throwInternalServerError, logMiddlewareError } = require("@/responses/co
 const { FORBIDDEN } = require("@configs/http-status.config");
 const { AdminType } = require("@configs/enums.config");
 
-// ✅ Checking if admin Account is Active
+// Checking if admin Account is Active
 const isAdminAccountActive = async (req, res, next) => {
     try {
         const admin = req.admin;

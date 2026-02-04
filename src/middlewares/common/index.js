@@ -10,6 +10,8 @@ const { fetchUserMiddleware } = require("./fetch-user.middleware");
 const { RoleMiddlewares } = require("./verify-admin-type.middleware");
 const { hierarchyGuard } = require("./role-hierarchy.middleware");
 const { isDeviceBlocked } = require("./is-device-blocked.middleware");
+const { requestIdMiddleware } = require("./check-request-id.middleware");
+const { firstNameValidator } = require("./first-name.middleware");
 
 const commonMiddlewares = {
     isAdminAccountActive,
@@ -19,11 +21,12 @@ const commonMiddlewares = {
     validateRedisPayloadMiddleware,
     verifyDeviceField,
     authModeValidator,
-    fetchAdminMiddleware,
     fetchUserMiddleware,
     ...RoleMiddlewares,
     hierarchyGuard,
-    isDeviceBlocked
+    isDeviceBlocked,
+    requestIdMiddleware,
+    firstNameValidator
 };
 
 module.exports = {
