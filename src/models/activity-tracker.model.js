@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { DeviceType, PerformedBy } = require("@configs/enums.config");
 const { adminIdRegex, UUID_V4_REGEX, userIdRegex } = require("@configs/regex.config");
+const { DB_COLLECTIONS } = require("@/configs/db-collections.config");
 
 const activityTrackerSchema = new mongoose.Schema({
   adminId: {
@@ -95,5 +96,5 @@ const activityTrackerSchema = new mongoose.Schema({
 });
 
 module.exports = {
-  ActivityTrackerModel: mongoose.model("ActivityTracker", activityTrackerSchema)
+  ActivityTrackerModel: mongoose.model(DB_COLLECTIONS.ACTIVITY_TRACKERS, activityTrackerSchema)
 };

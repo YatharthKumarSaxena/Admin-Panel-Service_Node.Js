@@ -3,6 +3,7 @@ const { firstNameLength, reasonFieldLength } = require("@configs/fields-length.c
 const { BlockReasons, UnblockReasons, FirstNameFieldSetting } = require("@configs/enums.config");
 const { firstNameRegex, userIdRegex, adminIdRegex } = require("@configs/regex.config");
 const { FIRST_NAME_SETTING } = require("@configs/security.config");
+const { DB_COLLECTIONS } = require("@/configs/db-collections.config");
 
 /* User Schema */
 const userSchema = new mongoose.Schema({
@@ -82,6 +83,6 @@ userSchema.pre("save", function (next) {
 // Creating a Collection named Users that will Include User Documents / Records
 // module.exports convert the whole file into a Module
 module.exports = {
-    UserModel: mongoose.model("User", userSchema)
+    UserModel: mongoose.model(DB_COLLECTIONS.USERS, userSchema)
 };
 // By Default Mongoose Convert User into Plural Form i.e Users

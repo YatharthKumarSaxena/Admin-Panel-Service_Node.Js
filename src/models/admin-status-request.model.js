@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const { adminIdRegex } = require("@configs/regex.config");
 const { requestType, requestStatus } = require("@configs/enums.config");
 const { reasonFieldLength, notesFieldLength } = require("@/configs/fields-length.config");
+const { DB_COLLECTIONS } = require("@/configs/db-collections.config");
 
 /**
  * Admin Status Request Schema
@@ -92,6 +93,6 @@ adminStatusRequestSchema.index(
   }
 );
 
-const AdminStatusRequestModel = mongoose.model("AdminStatusRequest", adminStatusRequestSchema);
+const AdminStatusRequestModel = mongoose.model(DB_COLLECTIONS.ADMIN_STATUS_REQUESTS, adminStatusRequestSchema);
 
 module.exports = { AdminStatusRequestModel };

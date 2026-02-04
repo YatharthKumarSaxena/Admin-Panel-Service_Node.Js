@@ -1,4 +1,5 @@
 // Extracting the Required Modules for the working of this file
+const { DB_COLLECTIONS } = require("@/configs/db-collections.config");
 const mongoose = require("mongoose");
 
 /* Making the Counter Collection in admin_database_db, this Colection is Responsible for 
@@ -20,5 +21,5 @@ const counterSchema = mongoose.Schema({
 // Defined Collection Counter in ecommerce_db Database
 module.exports = 
 {
-    CounterModel: mongoose.model("Counters",counterSchema)
+    CounterModel: mongoose.model(DB_COLLECTIONS.COUNTERS,counterSchema)
 }

@@ -2,10 +2,11 @@ const mongoose = require("mongoose");
 const { reasonFieldLength, deviceNameLength } = require("@configs/fields-length.config");
 const { BlockDeviceReasons, UnblockDeviceReasons, DeviceType } = require("@configs/enums.config");
 const { adminIdRegex, deviceIdRegex } = require("@configs/regex.config");
+const { DB_COLLECTIONS } = require("@/configs/db-collections.config");
 
 /* Device Tracker Schema */
 const deviceSchema = new mongoose.Schema({
-    deviceId: {
+    deviceUUID: {
         type: String,
         required: true,
         unique: true,
@@ -110,5 +111,5 @@ deviceSchema.pre("save", function (next) {
 });
 
 module.exports = {
-    DeviceModel: mongoose.model("Device", deviceSchema)
+    DeviceModel: mongoose.model(DB_COLLECTIONS.DEVICES, deviceSchema)
 };

@@ -3,6 +3,7 @@ const { firstNameLength } = require("@configs/fields-length.config");
 const { AdminType, ActivationReasons, DeactivationReasons, FirstNameFieldSetting } = require("@configs/enums.config");
 const { firstNameRegex, adminIdRegex } = require("@configs/regex.config");
 const { FIRST_NAME_SETTING } = require("@configs/security.config");
+const { DB_COLLECTIONS } = require("@/configs/db-collections.config");
 
 /* Admin Schema */
 const adminSchema = new mongoose.Schema({
@@ -107,5 +108,5 @@ adminSchema.pre("validate", function (next) {
 });
 
 module.exports = {
-    AdminModel: mongoose.model("Admin", adminSchema)
+    AdminModel: mongoose.model(DB_COLLECTIONS.ADMINS, adminSchema)
 };
