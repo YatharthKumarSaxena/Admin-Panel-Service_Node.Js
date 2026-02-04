@@ -29,8 +29,6 @@ const viewAdminActivityTracker = async (req, res) => {
       dateFrom,           // createdAt >= this date
       dateTo,             // createdAt <= this date
       // Nested search filters
-      'adminDetails.email': adminEmail,           // Search by admin email
-      'adminDetails.fullPhoneNumber': adminPhone, // Search by admin phone
       'adminActions.targetId': targetUserId,  // Search by target user
       description,        // Search in description
       deviceId            // Filter by specific device
@@ -68,15 +66,6 @@ const viewAdminActivityTracker = async (req, res) => {
 
     if (deviceId) {
       query.deviceId = deviceId;
-    }
-
-    // Nested field filters
-    if (adminEmail) {
-      query['adminDetails.email'] = { $regex: adminEmail, $options: 'i' };
-    }
-
-    if (adminPhone) {
-      query['adminDetails.fullPhoneNumber'] = { $regex: adminPhone, $options: 'i' };
     }
 
     if (targetUserId) {
@@ -143,8 +132,6 @@ const viewAdminActivityTracker = async (req, res) => {
         performedBy: performedBy || null,
         deviceType: deviceType || null,
         deviceId: deviceId || null,
-        adminEmail: adminEmail || null,
-        adminPhone: adminPhone || null,
         targetId: targetUserId || null,
         description: description || null,
         dateRange: {

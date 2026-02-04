@@ -26,8 +26,6 @@ const listActivityTracker = async (req, res) => {
       deviceId,           // Filter by specific device UUID
       // Nested adminDetails filters
       'adminDetails.adminId': adminDetailsId,
-      'adminDetails.email': adminEmail,
-      'adminDetails.fullPhoneNumber': adminPhone,
       // Nested adminActions filters
       'adminActions.targetId': targetUserId,
       'adminActions.reason': actionReason,
@@ -84,14 +82,6 @@ const listActivityTracker = async (req, res) => {
     // Nested adminDetails filters
     if (adminDetailsId) {
       query['adminDetails.adminId'] = adminDetailsId;
-    }
-
-    if (adminEmail) {
-      query['adminDetails.email'] = { $regex: adminEmail, $options: 'i' };
-    }
-
-    if (adminPhone) {
-      query['adminDetails.fullPhoneNumber'] = { $regex: adminPhone, $options: 'i' };
     }
 
     // Nested adminActions filters
@@ -193,9 +183,7 @@ const listActivityTracker = async (req, res) => {
         },
         nested: {
           adminDetails: {
-            adminId: adminDetailsId || null,
-            email: adminEmail || null,
-            fullPhoneNumber: adminPhone || null
+            adminId: adminDetailsId || null
           },
           adminActions: {
             targetId: targetUserId || null,
