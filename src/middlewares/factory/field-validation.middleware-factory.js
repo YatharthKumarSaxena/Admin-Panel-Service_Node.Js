@@ -1,94 +1,118 @@
 const { isValidRegex, validateLength } = require("@utils/validators-factory.util");
 const { throwInternalServerError, logMiddlewareError, throwValidationError } = require("@/responses/common/error-handler.response");
-const { logWithTime } = require("@utils/time-stamps.util");
+const { RequestLocation } = require("@configs/enums.config"); // Ensure Enums have 'body', 'query', 'params' values
 
 /**
- * Factory Validation Middleware
- * Dynamically validates request body fields based on validation sets
- * Supports enum, regex, and length validations
- * 
- * @param {string} controllerName - Name of controller in validationSets
- * @returns {Function} Express middleware function
+ * Core Logic (Internal Use mostly)
  */
 
-const fieldValidationMiddleware = (controllerName, validationSet) => {
+const _genericValidation = (controllerName, validationSet, requestLocation) => {
   return (req, res, next) => {
     try {
       const fieldsToValidate = validationSet;
+      
+      // Safety check: Agar galti se requestLocation galat pass hua
+      if (!req[requestLocation]) {
+        logMiddlewareError(controllerName, `Invalid request location: ${requestLocation}`, req);
+        return throwInternalServerError(res, new Error("Invalid validation location"));
+      }
 
-      if(!fieldsToValidate){
-        logMiddlewareError(controllerName, "No validation set provided to field validation middleware", req);
+      const data = req[requestLocation]; 
+
+      if (!fieldsToValidate) {
+        logMiddlewareError(controllerName, "No validation set provided", req);
         return throwInternalServerError(res, new Error("Validation set is required"));
       }
 
       const errors = [];
 
-      // Iterate over each field defined in validationSets
       Object.entries(fieldsToValidate).forEach(([field, rules]) => {
-        const value = req.body[field];
+        const value = data[field];
 
-        // ✅ Enum validation (highest priority)
+        // 1. Optional Field Handling
+        // Agar value undefined/null hai, toh skip karo (unless required logic add karna ho)
+        if (value === undefined || value === null) return;
+
+        // 2. Enum Validation
         if (rules.enum) {
+          // Assuming enum object has generic reverseLookup method
           const isValid = rules.enum.reverseLookup(value);
           if (!isValid) {
             const validValues = rules.enum.getValidValues().join(", ");
             errors.push({
-              field: field,
+              field,
               message: `${field} must be one of: ${validValues}`,
               received: value
             });
           }
-          return; // Enum validation mein regex/length skip
+          return; // Enum check fail hua ya pass, aage regex check ki zaroorat nahi hoti usually
         }
 
-        // ✅ Regex validation
-        if (rules.regex) {
-          const isValid = isValidRegex(rules.regex, value);
+        // 3. Regex Validation
+        if (rules.regex && !isValidRegex(value, rules.regex)) {
+          errors.push({ 
+            field, 
+            message: `${field} format is invalid`, 
+            received: value 
+          });
+        }
+
+        // 4. Length Validation
+        if (rules.length) {
+          const isValid = validateLength(value, rules.length.min, rules.length.max);
           if (!isValid) {
-            errors.push({
-              field: field,
-              message: `${field} format is invalid`,
-              received: value
+            const msg = rules.length.min === rules.length.max
+              ? `Length must be exactly ${rules.length.min} characters.`
+              : `Length must be between ${rules.length.min} and ${rules.length.max} characters.`;
+            errors.push({ 
+              field, 
+              message: msg, 
+              received: value 
             });
           }
         }
-
-        // ✅ Length validation
-        if (rules.length) {
-            const isValid = validateLength(value, rules.length.min, rules.length.max);
-            if(!isValid){
-              let msg;
-              if(rules.length.min === rules.length.max){
-                msg = `Invalid length for ${field}. Length must be exactly ${rules.length.min} characters.`;
-              }
-              else{
-                msg = `Invalid length for ${field}. Length must be between ${rules.length.min} and ${rules.length.max} characters.`;
-              }
-              errors.push({
-                field: field,
-                message: msg,
-                received: value
-              });
-            }
-          }
       });
 
-      // If validation errors exist, return 422
       if (errors.length > 0) {
-        logMiddlewareError(controllerName, `Field validation failed: ${errors.map(e => e.field).join(', ')}`, req);
+        logMiddlewareError(controllerName, `Validation failed in ${requestLocation}`, req);
         return throwValidationError(res, errors);
       }
 
-      logWithTime(`✅ [${controllerName}Middleware] All fields validated successfully`);
+      // Success Log (Optional: Production mein disable kar sakte ho agar zyada logs ho rahe hain)
+      // logWithTime(`✅ [${controllerName}] ${requestLocation} validated.`);
+      
       return next();
 
     } catch (error) {
-      logMiddlewareError(controllerName, "Field validation middleware error", req);
+      logMiddlewareError(controllerName, `Middleware error in ${requestLocation}`, req);
       return throwInternalServerError(res, error);
     }
   };
 };
 
-module.exports = {
-  fieldValidationMiddleware
+/**
+ * 1. Validate Body Wrapper
+ */
+const validateBody = (controllerName, validationSet) => {
+    return _genericValidation(controllerName, validationSet, RequestLocation.BODY);
+};
+
+/**
+ * 2. Validate Query Wrapper (URL Params like ?page=1&limit=10)
+ */
+const validateQuery = (controllerName, validationSet) => {
+    return _genericValidation(controllerName, validationSet, RequestLocation.QUERY);
+};
+
+/**
+ * 3. Validate Route Params Wrapper (URL Path like /users/:userId)
+ */
+const validateParams = (controllerName, validationSet) => {
+    return _genericValidation(controllerName, validationSet, RequestLocation.PARAMS);
+};
+
+module.exports = { 
+    validateBody, 
+    validateQuery, 
+    validateParams 
 };

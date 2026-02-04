@@ -16,7 +16,7 @@ const { logWithTime } = require("@utils/time-stamps.util");
 function createRoleMiddleware(allowedRoles, label) {
   return function (req, res, next) {
     try {
-      const role = req.admin?.adminType;
+      const role = req.admin.adminType;
       if (!checkRole(role, allowedRoles)) {
         logMiddlewareError(label, `Access denied for role: ${role}`, req);
         return throwAccessDeniedError(res, `Access denied for role: ${role}`);

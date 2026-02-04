@@ -1,15 +1,23 @@
 const { createRoleMiddleware } = require("./role-based-access.middleware-factory");
-const { validateRequestBodyMiddleware } = require("./validate-request-body.middleware-factory");
+const { checkBodyPresence, checkParamsPresence, checkQueryPresence } = require("./validate-request-body.middleware-factory");
 const { validateXLSXMiddleware } = require("./validate-xlsx.middleware-factory");
 const { fetchEntityFactory } = require("./fetch-entity.middleware-factory");
-const { fieldValidationMiddleware } = require("./field-validation.middleware-factory");
+const { validateBody, validateParams, validateQuery } = require("./field-validation.middleware-factory");
+const { createAuthValidator } = require("./auth-mode-middleware.factory");
+const { sanitizeAuthPayload } = require("./sanitize-auth-payload.middleware.factory");
 
 const factoryMiddlewares = {
     createRoleMiddleware,
-    validateRequestBodyMiddleware,
     validateXLSXMiddleware,
     fetchEntityFactory,
-    fieldValidationMiddleware  
+    validateBody,
+    validateParams,
+    validateQuery,
+    checkBodyPresence,
+    checkParamsPresence,
+    checkQueryPresence,
+    createAuthValidator,
+    sanitizeAuthPayload
 };
 
 module.exports = { factoryMiddlewares };
