@@ -1,4 +1,4 @@
-const { fieldValidationMiddleware } = require("../factory/field-validation.middleware-factory");
+const { validateBody, validateQuery } = require("../factory/field-validation.middleware-factory");
 const { validationSets } = require("@configs/validation-sets.config.js");
 
 /**
@@ -8,14 +8,14 @@ const { validationSets } = require("@configs/validation-sets.config.js");
 
 const validationMiddlewares = {
   // Admin Management
-  validateCreateAdminFields: fieldValidationMiddleware("createAdmin", validationSets.createAdmin),
-  validateUpdateAdminDetailsFields: fieldValidationMiddleware("updateAdminDetails", validationSets.updateAdminDetails),
-  validateUpdateAdminRoleFields: fieldValidationMiddleware("updateAdminRole", validationSets.updateAdminRole),
-  validateFetchAdminDetailsFields: fieldValidationMiddleware("fetchAdminDetails", validationSets.fetchAdminDetails),
+  validateCreateAdminFields: validateBody("createAdmin", validationSets.createAdmin),
+  validateUpdateAdminDetailsFields: validateBody("updateAdminDetails", validationSets.updateAdminDetails),
+  validateUpdateAdminRoleFields: validateBody("updateAdminRole", validationSets.updateAdminRole),
+  validateFetchAdminDetailsFields: validateQuery("fetchAdminDetails", validationSets.fetchAdminDetails),
   // Admin Status Operations
-  validateActivateAdminFields: fieldValidationMiddleware("activateAdmin", validationSets.activateAdmin),
-  validateDeactivateAdminFields: fieldValidationMiddleware("deactivateAdmin", validationSets.deactivateAdmin),
-  validateChangeSupervisorFields: fieldValidationMiddleware("changeSupervisor", validationSets.changeSupervisor)
+  validateActivateAdminFields: validateBody("activateAdmin", validationSets.activateAdmin),
+  validateDeactivateAdminFields: validateBody("deactivateAdmin", validationSets.deactivateAdmin),
+  validateChangeSupervisorFields: validateBody("changeSupervisor", validationSets.changeSupervisor)
 
 }
 

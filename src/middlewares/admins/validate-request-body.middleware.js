@@ -1,4 +1,4 @@
-const { validateRequestBodyMiddleware } = require("../factory/validate-request-body.middleware-factory");
+const { checkBodyPresence, checkQueryPresence } = require("../factory/validate-request-body.middleware-factory");
 const {
   adminCreationRequiredFields,
   updateAdminDetailsRequiredFields,
@@ -11,41 +11,41 @@ const {
 
 const validateRequestBodyMiddlewares = {
   // Admin Management
-  validateCreateAdminRequestBody: validateRequestBodyMiddleware(
-    adminCreationRequiredFields,
-    "validateCreateAdminRequestBody"
+  validateCreateAdminRequestBody: checkBodyPresence(
+    "validateCreateAdminRequestBody",
+    adminCreationRequiredFields
   ),
   
-  validateUpdateAdminDetailsRequestBody: validateRequestBodyMiddleware(
-    updateAdminDetailsRequiredFields,
-    "validateUpdateAdminDetailsRequestBody"
+  validateUpdateAdminDetailsRequestBody: checkBodyPresence(
+    "validateUpdateAdminDetailsRequestBody",
+    updateAdminDetailsRequiredFields
   ),
 
   // Admin Status Operations
-  validateActivateAdminRequestBody: validateRequestBodyMiddleware(
-    activateAdminRequiredFields,
-    "validateActivateAdminRequestBody"
+  validateActivateAdminRequestBody: checkBodyPresence(
+    "validateActivateAdminRequestBody",
+    activateAdminRequiredFields
   ),
 
-  validateDeactivateAdminRequestBody: validateRequestBodyMiddleware(
-    deactivateAdminRequiredFields,
-    "validateDeactivateAdminRequestBody"
+  validateDeactivateAdminRequestBody: checkBodyPresence(
+    "validateDeactivateAdminRequestBody",
+    deactivateAdminRequiredFields
   ),
 
   // Supervisor Management
-  validateChangeSupervisorRequestBody: validateRequestBodyMiddleware(
-    changeSupervisorRequiredFields,
-    "validateChangeSupervisorRequestBody"
+  validateChangeSupervisorRequestBody: checkBodyPresence(
+    "validateChangeSupervisorRequestBody",
+    changeSupervisorRequiredFields
   ),
 
-  validateUpdateAdminRoleRequestBody: validateRequestBodyMiddleware(
-    updateAdminRoleRequiredFields,
-    "validateUpdateAdminRoleRequestBody"
+  validateUpdateAdminRoleRequestBody: checkBodyPresence(
+    "validateUpdateAdminRoleRequestBody",
+    updateAdminRoleRequiredFields
   ),
 
-  validateFetchAdminDetailsRequestBody: validateRequestBodyMiddleware(
-    fetchAdminDetailsRequiredFields,
-    "validateFetchAdminDetailsRequestBody"
+  validateFetchAdminDetailsRequestBody: checkQueryPresence(
+    "validateFetchAdminDetailsRequestBody",
+    fetchAdminDetailsRequiredFields
   )
 }
 
