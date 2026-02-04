@@ -1,7 +1,5 @@
-const { validateRequestBodyMiddleware } = require("../factory/validate-request-body.middleware-factory");
+const { checkQueryPresence } = require("../factory/validate-request-body.middleware-factory");
 const {
-    blockDeviceRequiredFields,
-    unblockDeviceRequiredFields,
     provideUserAccountDetailsRequiredFields,
     getUserActiveDevicesRequiredFields,
     checkAuthLogsRequiredFields
@@ -10,20 +8,20 @@ const {
 const validateRequestBodyMiddlewares = {
 
     // User Details Operations
-    validateProvideUserAccountDetailsRequestBody: validateRequestBodyMiddleware(
-        provideUserAccountDetailsRequiredFields,
-        "validateProvideUserAccountDetailsRequestBody"
+    validateProvideUserAccountDetailsRequestBody: checkQueryPresence(
+        "validateProvideUserAccountDetailsRequestBody",
+        provideUserAccountDetailsRequiredFields
     ),
 
-    validateGetUserActiveDevicesRequestBody: validateRequestBodyMiddleware(
-        getUserActiveDevicesRequiredFields,
-        "validateGetUserActiveDevicesRequestBody"
+    validateGetUserActiveDevicesRequestBody: checkQueryPresence(
+        "validateGetUserActiveDevicesRequestBody",
+        getUserActiveDevicesRequiredFields
     ),
 
     // Auth Logs Operations
-    validateCheckAuthLogsRequestBody: validateRequestBodyMiddleware(
-        checkAuthLogsRequiredFields,
-        "validateCheckAuthLogsRequestBody"
+    validateCheckAuthLogsRequestBody: checkQueryPresence(
+        "validateCheckAuthLogsRequestBody",
+        checkAuthLogsRequiredFields
     )
 };
 

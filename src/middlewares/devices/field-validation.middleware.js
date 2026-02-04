@@ -1,17 +1,17 @@
-const { fieldValidationMiddleware } = require("../factory/field-validation.middleware-factory");
+const { validateBody, validateQuery } = require("../factory/field-validation.middleware-factory");
 const { validationSets } = require("@configs/validation-sets.config.js");
 
 const validationMiddlewares = {
   // Device Operations
-  validateFetchDeviceDetailsFields: fieldValidationMiddleware(
+  validateFetchDeviceDetailsFields: validateQuery(
     "fetchDeviceDetails",
     validationSets.fetchDeviceDetails
   ),
-  validateBlockDeviceFields: fieldValidationMiddleware(
+  validateBlockDeviceFields: validateBody(
     "blockDevice",
     validationSets.blockDevice
   ),
-  validateUnblockDeviceFields: fieldValidationMiddleware(
+  validateUnblockDeviceFields: validateBody(
     "unblockDevice",
     validationSets.unblockDevice
   )

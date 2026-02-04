@@ -1,4 +1,4 @@
-const { validateRequestBodyMiddleware } = require("../factory/validate-request-body.middleware-factory");
+const { checkBodyPresence, checkQueryPresence } = require("../factory/validate-request-body.middleware-factory");
 const {
     blockDeviceRequiredFields,
     unblockDeviceRequiredFields,
@@ -7,17 +7,17 @@ const {
 
 const validateRequestBodyMiddlewares = {
     // Device Operations
-    validateBlockDeviceRequestBody: validateRequestBodyMiddleware(
+    validateBlockDeviceRequestBody: checkBodyPresence(
         blockDeviceRequiredFields,
         "validateBlockDeviceRequestBody"
     ),
 
-    validateUnblockDeviceRequestBody: validateRequestBodyMiddleware(
+    validateUnblockDeviceRequestBody: checkBodyPresence(
         unblockDeviceRequiredFields,
         "validateUnblockDeviceRequestBody"
     ),
 
-    validateFetchDeviceDetailsRequestBody: validateRequestBodyMiddleware(
+    validateFetchDeviceDetailsRequestBody: checkQueryPresence(
         fetchDeviceDetailsRequiredFields,
         "validateFetchDeviceDetailsRequestBody"
     )

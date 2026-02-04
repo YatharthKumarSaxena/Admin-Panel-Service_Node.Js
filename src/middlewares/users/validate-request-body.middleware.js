@@ -1,25 +1,25 @@
-const { validateRequestBodyMiddleware } = require("../factory/validate-request-body.middleware-factory");
+const { checkBodyPresence, checkQueryPresence } = require("../factory/validate-request-body.middleware-factory");
 const {
   blockUserRequiredFields,
   unblockUserRequiredFields,
-  fetchUserDetailsRequiredFields
+  fetchUserBlockDetailsRequiredFields
 } = require("@configs/required-fields.config.js");
 
 const validateRequestBodyMiddlewares = {
   // User Status Operations
-  validateBlockUserRequestBody: validateRequestBodyMiddleware(
+  validateBlockUserRequestBody: checkBodyPresence(
     blockUserRequiredFields,
     "validateBlockUserRequestBody"
   ),
 
-  validateUnblockUserRequestBody: validateRequestBodyMiddleware(
+  validateUnblockUserRequestBody: checkBodyPresence(
     unblockUserRequiredFields,
     "validateUnblockUserRequestBody"
   ),
 
-  validateFetchUserDetailsRequestBody: validateRequestBodyMiddleware(
-    fetchUserDetailsRequiredFields,
-    "validateFetchUserDetailsRequestBody"
+  validateFetchUserBlockDetailsRequestBody: checkQueryPresence(
+    fetchUserBlockDetailsRequiredFields,
+    "validateFetchUserBlockDetailsRequestBody"
   )
 };
 

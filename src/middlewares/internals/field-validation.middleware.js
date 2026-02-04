@@ -1,4 +1,4 @@
-const { fieldValidationMiddleware } = require("../factory/field-validation.middleware-factory");
+const { validateBody, validateQuery } = require("../factory/field-validation.middleware-factory");
 const { validationSets } = require("@configs/validation-sets.config.js");
 
 /**
@@ -8,11 +8,11 @@ const { validationSets } = require("@configs/validation-sets.config.js");
 
 const validationMiddlewares = {
   // User Details Operations
-  validateProvideUserAccountDetailsFields: fieldValidationMiddleware("provideUserAccountDetails", validationSets.provideUserAccountDetails),
-  validateGetUserActiveDevicesFields: fieldValidationMiddleware("getUserActiveDevices", validationSets.getUserActiveDevices),
+  validateProvideUserAccountDetailsFields: validateQuery("provideUserAccountDetails", validationSets.provideUserAccountDetails),
+  validateGetUserActiveDevicesFields: validateQuery("getUserActiveDevices", validationSets.getUserActiveDevices),
 
   // Auth Logs Operations
-  validateCheckAuthLogsFields: fieldValidationMiddleware("checkAuthLogs", validationSets.checkAuthLogs)
+  validateCheckAuthLogsFields: validateQuery("checkAuthLogs", validationSets.checkAuthLogs)
 };
 
 module.exports = {

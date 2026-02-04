@@ -1,4 +1,4 @@
-const { fieldValidationMiddleware } = require("../factory/field-validation.middleware-factory");
+const { validateBody, validateQuery } = require("../factory/field-validation.middleware-factory");
 const { validationSets } = require("@configs/validation-sets.config.js");
 
 /**
@@ -8,9 +8,9 @@ const { validationSets } = require("@configs/validation-sets.config.js");
 
 const validationMiddlewares = {
   // User Status Operations
-  validateBlockUserFields: fieldValidationMiddleware("blockUser", validationSets.blockUser),
-  validateUnblockUserFields: fieldValidationMiddleware("unblockUser", validationSets.unblockUser),
-  validateFetchUserDetailsFields: fieldValidationMiddleware("fetchUserDetails", validationSets.fetchUserDetails)
+  validateBlockUserFields: validateBody("blockUser", validationSets.blockUser),
+  validateUnblockUserFields: validateBody("unblockUser", validationSets.unblockUser),
+  validateFetchUserBlockDetailsFields: validateQuery("fetchUserBlockDetails", validationSets.fetchUserDetails)
 };
 
 module.exports = {

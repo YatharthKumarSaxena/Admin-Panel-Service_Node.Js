@@ -1,4 +1,4 @@
-const { validateRequestBodyMiddleware } = require("../factory/validate-request-body.middleware-factory");
+const { checkBodyPresence } = require("../factory/validate-request-body.middleware-factory");
 const { 
     createActivationRequestRequiredFields, 
     createDeactivationRequestRequiredFields, 
@@ -9,29 +9,29 @@ const {
 } = require("@configs/required-fields.config.js");
 
 const validateRequestBodyMiddlewares = {
-  validateCreateActivationRequestBody: validateRequestBodyMiddleware(
-    createActivationRequestRequiredFields,
-    "validateCreateActivationRequestBody"
+  validateCreateActivationRequestBody: checkBodyPresence(
+    "validateCreateActivationRequestBody",
+    createActivationRequestRequiredFields
   ),
-  validateCreateDeactivationRequestBody: validateRequestBodyMiddleware(
-    createDeactivationRequestRequiredFields,
-    "validateCreateDeactivationRequestBody"
+  validateCreateDeactivationRequestBody: checkBodyPresence(
+    "validateCreateDeactivationRequestBody",
+    createDeactivationRequestRequiredFields
   ),
-  validateApproveActivationRequestBody: validateRequestBodyMiddleware(
-    approveActivationRequestRequiredFields,
-    "validateApproveActivationRequestBody"
+  validateApproveActivationRequestBody: checkBodyPresence(
+    "validateApproveActivationRequestBody",
+    approveActivationRequestRequiredFields
   ),
-  validateApproveDeactivationRequestBody: validateRequestBodyMiddleware(
-    approveDeactivationRequestRequiredFields,
-    "validateApproveDeactivationRequestBody"
+  validateApproveDeactivationRequestBody: checkBodyPresence(
+    "validateApproveDeactivationRequestBody",
+    approveDeactivationRequestRequiredFields
   ),
-  validateRejectActivationRequestBody: validateRequestBodyMiddleware(
-    rejectActivationRequestRequiredFields,
-    "validateRejectActivationRequestBody"
+  validateRejectActivationRequestBody: checkBodyPresence(
+    "validateRejectActivationRequestBody",
+    rejectActivationRequestRequiredFields
   ),
-  validateRejectDeactivationRequestBody: validateRequestBodyMiddleware(
-    rejectDeactivationRequestRequiredFields,
-    "validateRejectDeactivationRequestBody"
+  validateRejectDeactivationRequestBody: checkBodyPresence(
+    "validateRejectDeactivationRequestBody",
+    rejectDeactivationRequestRequiredFields
   )
 }
 

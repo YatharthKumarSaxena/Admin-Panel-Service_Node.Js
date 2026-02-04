@@ -1,10 +1,10 @@
-const { validateRequestBodyMiddleware } = require("../factory/validate-request-body.middleware-factory");
+const { checkQueryPresence } = require("../factory/validate-request-body.middleware-factory");
 const { viewAdminActivityTrackerRequiredFields, listActivityTrackerRequiredFields } = require("@configs/required-fields.config.js");
 
 const validateRequestBodyMiddlewares = {
-  validateViewAdminActivityTrackerRequestBody: validateRequestBodyMiddleware(
-    viewAdminActivityTrackerRequiredFields,
-    "validateViewAdminActivityTrackerRequestBody"
+  validateViewAdminActivityTrackerRequestBody: checkQueryPresence(
+    "validateViewAdminActivityTrackerRequestBody",
+    viewAdminActivityTrackerRequiredFields
   )
 };
 
