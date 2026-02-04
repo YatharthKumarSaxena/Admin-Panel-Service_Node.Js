@@ -1,5 +1,29 @@
 // configs/enums.config.js
 
+const AuthModes = Object.freeze({
+    EMAIL: "EMAIL",
+    PHONE: "PHONE",
+    BOTH: "BOTH",
+    EITHER: "EITHER"
+});
+
+const UserTypes = Object.freeze({
+    CUSTOMER: "CUSTOMER",
+    USER: "USER"
+});
+
+const DeviceTypes = Object.freeze({
+    MOBILE: "MOBILE",
+    TABLET: "TABLET",
+    LAPTOP: "LAPTOP"
+});
+
+const ContactModes = Object.freeze({
+    EMAIL: "EMAIL",
+    PHONE: "PHONE",
+    BOTH: "BOTH"
+});
+
 const AdminUpdateRoleReasons = Object.freeze({
   PROMOTION: "Promotion",                               // Audit-safe
   DEMOTION: "Demotion",
@@ -183,21 +207,15 @@ const PerformedBy = Object.freeze({
   SUPER_ADMIN: "super_admin"
 });
 
-const AuthModes = Object.freeze({
-  EMAIL: "email",
-  PHONE: "phone",
-  BOTH: "both",
-  EITHER: "either"
-});
-
 const Roles = Object.freeze({
   ...AdminType,
   USER: "user"
 });
 
-const ServiceName = Object.freeze({
-  AUTH_SERVICE: "AuthService",
-  ADMIN_PANEL_SERVICE: "AdminPanelService",
+const ServiceNames = Object.freeze({
+    AUTH_SERVICE: "auth-service",
+    ADMIN_PANEL_SERVICE: "admin-panel-service",
+    SOFTWARE_MANAGEMENT_SERVICE: "software-management-service"
 });
 
 const Status = Object.freeze({
@@ -287,6 +305,13 @@ const UnblockDeviceReasons = Object.freeze({
   OTHER: "other"
 });
 
+const RequestLocation = Object.freeze({
+    BODY: "body",
+    QUERY: "query",
+    PARAMS: "params",
+    HEADERS: "headers" // Future safety ke liye
+});
+
 module.exports = {
   BlockReasons,         // snake_case values → DB/API
   UnblockReasons,
@@ -304,7 +329,6 @@ module.exports = {
   PerformedBy,
   AuthModes,
   Roles,
-  ServiceName,
   Status,
   IdentifierKeys,
   AuditMode,
@@ -317,8 +341,12 @@ module.exports = {
   AdminCreationReasons,
   AdminUpdateRoleReasons,
   FetchAdminDetailsReasons,
-  FetchUserDetailsReasons,
+  FetchUserBlockDetailsReasons,
   FetchDeviceDetailsReasons,
   FirstNameFieldSetting,
-  AdminErrorTypes
+  AdminErrorTypes,
+  RequestLocation,
+  UserTypes,
+  DeviceTypes,
+  ContactModes
 };

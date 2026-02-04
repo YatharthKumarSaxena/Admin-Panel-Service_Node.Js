@@ -1,15 +1,5 @@
-const { validationRules } = require("./validation.config");
-
 /**
- * Validation Sets Configuration
- * Maps controller names to their validation rules
- * Each field maps to a validationRule object with enum/regex/length checks
- */
-
-/**
- * VALIDATION SETS CONFIG (Auto-Generated)
- * 
- * DO NOT MANUALLY EDIT THIS FILE!
+ * VALIDATION SETS CONFIG (Auto-Generated from Field Definitions)
  * 
  * These validation sets are automatically derived from:
  * @see field-definitions.config.js (Single Source of Truth)
@@ -19,134 +9,47 @@ const { validationRules } = require("./validation.config");
  * → Changes will automatically reflect here
  */
 
-/*
 const { FieldDefinitions, getValidationSet } = require("./field-definitions.config");
 
 // AUTO-GENERATED VALIDATION SETS
 
 const validationSets = {
-  signUp: getValidationSet(FieldDefinitions.SIGN_UP),
-  signIn: getValidationSet(FieldDefinitions.SIGN_IN),
-  activateAccount: getValidationSet(FieldDefinitions.ACTIVATE_ACCOUNT),
-  deactivateAccount: getValidationSet(FieldDefinitions.DEACTIVATE_ACCOUNT),
-  handle2FA: getValidationSet(FieldDefinitions.HANDLE_2FA),
-  changePassword: getValidationSet(FieldDefinitions.CHANGE_PASSWORD),
-  resetPassword: getValidationSet(FieldDefinitions.RESET_PASSWORD),
-  verifyPhone: getValidationSet(FieldDefinitions.VERIFY_PHONE),
-  verifyEmail: getValidationSet(FieldDefinitions.VERIFY_EMAIL),
-  resendVerification: getValidationSet(FieldDefinitions.RESEND_VERIFICATION)
-};
-
-module.exports = {
-  validationSets
-};*/
-
-const validationSets = {
   // Admin Management
-  createAdmin: {
-    'adminType': validationRules.adminType,
-    'reason': validationRules.adminCreationReason
-  },
-
-  fetchAdminDetails: {
-    'reason': validationRules.fetchAdminDetailsReason
-  },
-
-  fetchUserDetails: {
-    'reason': validationRules.fetchUserDetailsReason
-  },
-
-  updateAdminDetails: {
-    'reason': validationRules.updateAdminDetailsReason
-  },
+  createAdmin: getValidationSet(FieldDefinitions.CREATE_ADMIN),
+  fetchAdminDetails: getValidationSet(FieldDefinitions.FETCH_ADMIN_DETAILS),
+  fetchUserDetails: getValidationSet(FieldDefinitions.FETCH_USER_DETAILS),
+  updateAdminDetails: getValidationSet(FieldDefinitions.UPDATE_ADMIN_DETAILS),
+  updateAdminRole: getValidationSet(FieldDefinitions.UPDATE_ADMIN_ROLE),
   
-  updateAdminRole: {
-    'newRole': validationRules.adminType,
-    'reason': validationRules.adminUpdateRoleReason
-  },
-
   // Admin Status Operations
-  activateAdmin: {
-    'reason': validationRules.activationReason
-  },
+  activateAdmin: getValidationSet(FieldDefinitions.ACTIVATE_ADMIN),
+  deactivateAdmin: getValidationSet(FieldDefinitions.DEACTIVATE_ADMIN),
+  changeSupervisor: getValidationSet(FieldDefinitions.CHANGE_SUPERVISOR),
   
-  deactivateAdmin: {
-    'reason': validationRules.deactivationReason
-  },
-  
-  approveActivationRequest: {
-    'reviewNotes': validationRules.notes
-  },
-  
-  rejectActivationRequest: {
-    'reviewNotes': validationRules.notes
-  },
-  
-  approveDeactivationRequest: {
-    'reviewNotes': validationRules.notes
-  },
-  
-  rejectDeactivationRequest: {
-    'reviewNotes': validationRules.notes
-  },
-  
-  createActivationRequest: {
-    'reason': validationRules.activationReason,
-    'notes': validationRules.notes
-  },
-  
-  createDeactivationRequest: {
-    'reason': validationRules.deactivationReason,
-    'notes': validationRules.notes
-  },
-  
-  // Supervisor Management
-  changeSupervisor: {
-    'newSupervisorId': validationRules.adminId,
-    'reason': validationRules.changeSupervisorReason
-  },
+  // Request Operations
+  approveActivationRequest: getValidationSet(FieldDefinitions.APPROVE_ACTIVATION_REQUEST),
+  rejectActivationRequest: getValidationSet(FieldDefinitions.REJECT_ACTIVATION_REQUEST),
+  approveDeactivationRequest: getValidationSet(FieldDefinitions.APPROVE_DEACTIVATION_REQUEST),
+  rejectDeactivationRequest: getValidationSet(FieldDefinitions.REJECT_DEACTIVATION_REQUEST),
+  createActivationRequest: getValidationSet(FieldDefinitions.CREATE_ACTIVATION_REQUEST),
+  createDeactivationRequest: getValidationSet(FieldDefinitions.CREATE_DEACTIVATION_REQUEST),
   
   // User Operations
-  blockUser: {
-    'reason': validationRules.blockReason,
-    'reasonDetails': validationRules.notes
-  },
+  blockUser: getValidationSet(FieldDefinitions.BLOCK_USER),
+  unblockUser: getValidationSet(FieldDefinitions.UNBLOCK_USER),
   
-  unblockUser: {
-    'reason': validationRules.unblockReason,
-    'reasonDetails': validationRules.notes
-  },
+  // Device Operations
+  blockDevice: getValidationSet(FieldDefinitions.BLOCK_DEVICE),
+  unblockDevice: getValidationSet(FieldDefinitions.UNBLOCK_DEVICE),
+  fetchDeviceDetails: getValidationSet(FieldDefinitions.FETCH_DEVICE_DETAILS),
   
-  provideUserAccountDetails: {
-    'reason': validationRules.userAccountDetailsReason
-  },
+  // Internal Operations
+  provideUserAccountDetails: getValidationSet(FieldDefinitions.PROVIDE_USER_ACCOUNT_DETAILS),
+  getUserActiveDevices: getValidationSet(FieldDefinitions.GET_USER_ACTIVE_DEVICES),
+  checkAuthLogs: getValidationSet(FieldDefinitions.CHECK_AUTH_LOGS),
   
-  getUserActiveDevices: {
-    'reason': validationRules.userActiveDevicesReason
-  },
-  
-  // Auth Logs Operations
-  checkAuthLogs: {
-    'reason': validationRules.authLogCheckReason
-  },
-
-  viewAdminActivityTracker: {
-    'reason': validationRules.activityTrackerReason
-  },
-
-  blockDevice: {
-    'reason': validationRules.blockDeviceReason,
-    'reasonDetails': validationRules.notes
-  },
-
-  unblockDevice: {
-    'reason': validationRules.unblockDeviceReason,
-    'reasonDetails': validationRules.notes
-  },
-
-  fetchDeviceDetails: {
-    'reason': validationRules.fetchDeviceDetailsReason
-  }
+  // Activity Tracker
+  viewAdminActivityTracker: getValidationSet(FieldDefinitions.VIEW_ADMIN_ACTIVITY_TRACKER)
 };
 
 module.exports = {

@@ -1,7 +1,5 @@
 /**
- * REQUIRED FIELDS CONFIG (Auto-Generated)
- * 
- * DO NOT MANUALLY EDIT THIS FILE!
+ * REQUIRED FIELDS CONFIG (Auto-Generated from Field Definitions)
  * 
  * These arrays are automatically derived from:
  * @see field-definitions.config.js (Single Source of Truth)
@@ -15,66 +13,32 @@ const { FieldDefinitions, getRequiredFields } = require("./field-definitions.con
 
 // AUTO-GENERATED REQUIRED FIELDS
 
-/*
-const signUpField = getRequiredFields(FieldDefinitions.SIGN_UP);
-const signInField = getRequiredFields(FieldDefinitions.SIGN_IN);
-const activateAccount = getRequiredFields(FieldDefinitions.ACTIVATE_ACCOUNT);
-const deactivateAccount = getRequiredFields(FieldDefinitions.DEACTIVATE_ACCOUNT);
-const handle2FA = getRequiredFields(FieldDefinitions.HANDLE_2FA);
-const changePassword = getRequiredFields(FieldDefinitions.CHANGE_PASSWORD);
-const resetPassword = getRequiredFields(FieldDefinitions.RESET_PASSWORD);
-const verifyEmail = getRequiredFields(FieldDefinitions.VERIFY_EMAIL);
-const verifyPhone = getRequiredFields(FieldDefinitions.VERIFY_PHONE);
-const resendVerification = getRequiredFields(FieldDefinitions.RESEND_VERIFICATION);
-
-module.exports = {
-    signUpField,
-    signInField,
-    activateAccount,
-    deactivateAccount,
-    handle2FA,
-    changePassword,
-    resetPassword,
-    verifyEmail,
-    verifyPhone,
-    resendVerification
-};
-*/
-
-const adminCreationRequiredFields = [
-  "adminType",
-  "reason"
-];
-const adminCreationInBulkRequiredFields = [
-  "adminType"
-];
-
-const updateAdminDetailsRequiredFields = ["reason"];
-const activateAdminRequiredFields = ["reason"];
-const deactivateAdminRequiredFields = ["reason"];
-const approveActivationRequestRequiredFields = ["reviewNotes"];
-const rejectActivationRequestRequiredFields = ["reviewNotes"];
-const approveDeactivationRequestRequiredFields = ["reviewNotes"];
-const rejectDeactivationRequestRequiredFields = ["reviewNotes"];
-const createActivationRequestRequiredFields = ["reason", "notes"];
-const createDeactivationRequestRequiredFields = ["reason", "notes"];
-const changeSupervisorRequiredFields = ["newSupervisorId", "reason"];
-const blockUserRequiredFields = ["reason", "reasonDetails"];
-const unblockUserRequiredFields = ["reason", "reasonDetails"];
-const provideUserAccountDetailsRequiredFields = ["reason"];
-const getUserActiveDevicesRequiredFields = ["reason"];
-const checkAuthLogsRequiredFields = ["reason"];
-const viewAdminActivityTrackerRequiredFields = ["reason"];
-const blockDeviceRequiredFields = ["reason", "reasonDetails"];
-const unblockDeviceRequiredFields = ["reason", "reasonDetails"];
-const updateAdminRoleRequiredFields = ["newRole", "reason"];
-const fetchAdminDetailsRequiredFields = ["reason"];
-const fetchUserDetailsRequiredFields = ["reason"];
-const fetchDeviceDetailsRequiredFields = ["reason"];
+const adminCreationRequiredFields = getRequiredFields(FieldDefinitions.CREATE_ADMIN);
+const updateAdminDetailsRequiredFields = getRequiredFields(FieldDefinitions.UPDATE_ADMIN_DETAILS);
+const activateAdminRequiredFields = getRequiredFields(FieldDefinitions.ACTIVATE_ADMIN);
+const deactivateAdminRequiredFields = getRequiredFields(FieldDefinitions.DEACTIVATE_ADMIN);
+const approveActivationRequestRequiredFields = getRequiredFields(FieldDefinitions.APPROVE_ACTIVATION_REQUEST);
+const rejectActivationRequestRequiredFields = getRequiredFields(FieldDefinitions.REJECT_ACTIVATION_REQUEST);
+const approveDeactivationRequestRequiredFields = getRequiredFields(FieldDefinitions.APPROVE_DEACTIVATION_REQUEST);
+const rejectDeactivationRequestRequiredFields = getRequiredFields(FieldDefinitions.REJECT_DEACTIVATION_REQUEST);
+const createActivationRequestRequiredFields = getRequiredFields(FieldDefinitions.CREATE_ACTIVATION_REQUEST);
+const createDeactivationRequestRequiredFields = getRequiredFields(FieldDefinitions.CREATE_DEACTIVATION_REQUEST);
+const changeSupervisorRequiredFields = getRequiredFields(FieldDefinitions.CHANGE_SUPERVISOR);
+const blockUserRequiredFields = getRequiredFields(FieldDefinitions.BLOCK_USER);
+const unblockUserRequiredFields = getRequiredFields(FieldDefinitions.UNBLOCK_USER);
+const provideUserAccountDetailsRequiredFields = getRequiredFields(FieldDefinitions.PROVIDE_USER_ACCOUNT_DETAILS);
+const getUserActiveDevicesRequiredFields = getRequiredFields(FieldDefinitions.GET_USER_ACTIVE_DEVICES);
+const checkAuthLogsRequiredFields = getRequiredFields(FieldDefinitions.CHECK_AUTH_LOGS);
+const viewAdminActivityTrackerRequiredFields = getRequiredFields(FieldDefinitions.VIEW_ADMIN_ACTIVITY_TRACKER);
+const blockDeviceRequiredFields = getRequiredFields(FieldDefinitions.BLOCK_DEVICE);
+const unblockDeviceRequiredFields = getRequiredFields(FieldDefinitions.UNBLOCK_DEVICE);
+const updateAdminRoleRequiredFields = getRequiredFields(FieldDefinitions.UPDATE_ADMIN_ROLE);
+const fetchAdminDetailsRequiredFields = getRequiredFields(FieldDefinitions.FETCH_ADMIN_DETAILS);
+const fetchUserBlockDetailsRequiredFields = getRequiredFields(FieldDefinitions.FETCH_USER_BLOCK_DETAILS);
+const fetchDeviceDetailsRequiredFields = getRequiredFields(FieldDefinitions.FETCH_DEVICE_DETAILS);
 
 module.exports = {
   adminCreationRequiredFields,
-  adminCreationInBulkRequiredFields,
   updateAdminDetailsRequiredFields,
   activateAdminRequiredFields,
   deactivateAdminRequiredFields,
@@ -95,6 +59,6 @@ module.exports = {
   unblockDeviceRequiredFields,
   updateAdminRoleRequiredFields,
   fetchAdminDetailsRequiredFields,
-  fetchUserDetailsRequiredFields,
+  fetchUserBlockDetailsRequiredFields,
   fetchDeviceDetailsRequiredFields
 };
