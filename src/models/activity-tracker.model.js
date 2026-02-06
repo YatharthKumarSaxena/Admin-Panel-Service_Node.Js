@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { DeviceType, PerformedBy } = require("@configs/enums.config");
-const { adminIdRegex, UUID_V4_REGEX, userIdRegex } = require("@configs/regex.config");
+const { DeviceType, AdminType, PerformedOnTypes } = require("@configs/enums.config");
+const { adminIdRegex, UUID_V4_REGEX } = require("@configs/regex.config");
 const { DB_COLLECTIONS } = require("@/configs/db-collections.config");
 
 const activityTrackerSchema = new mongoose.Schema({
@@ -12,24 +12,13 @@ const activityTrackerSchema = new mongoose.Schema({
     index: true
   },
 
-  adminDetails: {
-    type: new mongoose.Schema({
-      adminId: {
-        type: String,
-        required: true,
-        match: adminIdRegex
-      }
-    }, { _id: false }),
-    required: true
-  },
-
   eventType: {
     type: String,
     enum: Object.values(ACTIVITY_TRACKER_EVENTS),
     required: true
   },
 
-  deviceId: {
+  deviceUUID: {
     type: String,
     required: true,
     match: UUID_V4_REGEX
@@ -48,8 +37,8 @@ const activityTrackerSchema = new mongoose.Schema({
 
   performedBy: {
     type: String,
-    enum: Object.values(PerformedBy),
-    default: PerformedBy.ADMIN
+    enum: Object.values(AdminType),
+    default: AdminType.ADMIN
   },
 
   description: {
@@ -68,27 +57,47 @@ const activityTrackerSchema = new mongoose.Schema({
   },
 
   adminActions: {
-    type: new mongoose.Schema({
-      targetId: {
-        type: String,
-        default: null
-      },
-      reason: {
-        type: String,
-        default: null
-      },
-      filter: {
-        type: [String],
-        validate: {
-          validator: function (arr) {
-            return arr.every(item => ACTIVITY_TRACKER_EVENTS.includes(item));
-          },
-          message: 'Filter must contain valid ACTIVITY_TRACKER_EVENTS'
+    type: new mongoose.Schema(
+      {
+        targetId: {
+          type: String,
+          default: null,
         },
-        default: undefined
-      }
-    }, { _id: false }),
-    default: null
+
+        performedOn: {
+          type: String,
+          enum: Object.values(PerformedOnTypes),
+          default: null,
+        },
+
+        reason: {
+          type: String,
+          default: null,
+        },
+
+        filter: {
+          type: [String],
+          validate: {
+            validator: function (arr) {
+              return arr.every((item) =>
+                Object.values(ACTIVITY_TRACKER_EVENTS).includes(item)
+              );
+            },
+            message:
+              "Filter must contain valid ACTIVITY_TRACKER_EVENTS",
+          },
+          default: undefined,
+        },
+      },
+      { _id: false }
+    ),
+    default: null,
+  },
+  requestId: {
+    type: String,
+    required: true,
+    match: UUID_V4_REGEX,
+    index: true
   }
 }, {
   timestamps: true,

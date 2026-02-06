@@ -1,87 +1,108 @@
 const { ActivityTrackerModel } = require("@models/activity-tracker.model");
-const { logWithTime } = require("./time-stamps.util");
+const { logWithTime } = require("@utils/time-stamps.util");
 const { errorMessage } = require("@/responses/common/error-handler.response");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { PerformedBy } = require("@configs/enums.config");
+const { ACTIVITY_TRACKER_EVENTS } = require("@/configs/tracker.config");
+const { PerformedOnTypes } = require("@/configs/enums.config");
+const { isValidAdminId } = require("@/utils/id-validators.util");
+
 
 /**
- * 🔐 Logs an activity tracker event (fire-and-forget)
+ * Logs an authentication / admin activity event (fire-and-forget)
  */
-const logActivityTrackerEvent = async (req, eventType, logOptions = {}) => {
+const logActivityTrackerEvent = (
+  admin,
+  device,
+  requestId,
+  eventType,
+  description,
+  logOptions = {}
+) => {
+  (async () => {
     try {
-      // 1. Validate Event Type
+      // Validate Event Type
       const validEvents = Object.values(ACTIVITY_TRACKER_EVENTS);
       if (!validEvents.includes(eventType)) {
         logWithTime(`⚠️ Invalid eventType: ${eventType}. Skipping activity log.`);
         return;
       }
 
-      const admin = req.admin || req.foundAdmin || null;
-      if (!admin || !admin.adminId) {
+      // Validate Admin
+      if (!admin?.adminId) {
         logWithTime("⚠️ Missing admin information. Skipping activity log.");
         return;
       }
 
-      // 2. Prepare Admin Details
-      const adminDetails = {
-        adminId: admin.adminId
-      };
-
-      // 3. Construct Admin Actions Object
-      const adminActions = {};
-      
-      const targetId = logOptions.adminActions?.targetId || logOptions.performedOn?.id || logOptions.performedOn?.userId;
-      if (targetId) adminActions.targetId = targetId;
-
-      const reason = logOptions.adminActions?.reason?.trim() || req.body?.reason?.trim() || req.query?.reason?.trim();
-      if (reason) adminActions.reason = reason;
-
-      const filter = logOptions.adminActions?.filter || logOptions.filter;
-      if (Array.isArray(filter)) {
-        const validFilters = filter.filter(f => ACTIVITY_TRACKER_EVENTS.includes(f));
-        if (validFilters.length > 0) adminActions.filter = validFilters;
-      }
-
-      // 5. Construct Final Object
+      // Base Log Object (Centralized)
       const baseLog = {
         adminId: admin.adminId,
+        requestId: requestId,
+        deviceUUID: device.deviceUUID,
+        deviceType: device?.deviceType || null,
+        deviceName: device?.deviceName || null,
         eventType,
-        deviceId: req.deviceId, // Ensure this exists in req
-        deviceName: req.deviceName || null, // Schema allows default null
-        deviceType: req.deviceType || null, // Ensure strict enum match or null
-        performedBy: admin.performedBy || PerformedBy.ADMIN,
         description:
-          logOptions.description ||
-          `Performed ${eventType} by ${admin.performedBy || PerformedBy.ADMIN}`,
-        adminDetails: adminDetails,
-        // Include Old/New Data
+          description || `Performed ${eventType} by ${admin.adminId}`,
+        performedBy: admin.adminType,
         oldData: logOptions.oldData || null,
         newData: logOptions.newData || null,
       };
 
-      // Only add adminActions if keys exist (Schema default is null)
+      // Construct Admin Actions
+      const adminActions = {};
+
+      const targetId = logOptions.adminActions?.targetId;
+      const reason = logOptions.adminActions?.reason;
+      const filter =
+        logOptions.adminActions?.filter || logOptions.filter;
+
+      // Decide performedOn centrally
+      if (targetId) {
+        adminActions.targetId = targetId;
+
+        if (isValidAdminId(targetId)) {
+          adminActions.performedOn = PerformedOnTypes.ADMIN;
+        } else {
+          adminActions.performedOn = PerformedOnTypes.USER;
+        }
+      }
+
+      // Reason
+      if (reason) {
+        adminActions.reason = reason;
+      }
+
+      // Filter validation
+      if (Array.isArray(filter)) {
+        const validFilters = filter.filter((f) =>
+          validEvents.includes(f)
+        );
+
+        if (validFilters.length > 0) {
+          adminActions.filter = validFilters;
+        }
+      }
+
+      // Attach only if exists
       if (Object.keys(adminActions).length > 0) {
         baseLog.adminActions = adminActions;
       }
 
-      // 6. Save to DB
+      // Save
       const result = new ActivityTrackerModel(baseLog);
-      
       await result.save();
-      
-      logWithTime(`📘 ActivityTracker saved: ${eventType} | Admin: ${admin.adminId}`);
 
+      logWithTime(
+        `📘 ActivityTracker saved: ${eventType} | Admin: ${admin.adminId} | deviceUUID: ${device.deviceUUID} | requestId: ${requestId}`
+      );
     } catch (err) {
-      logWithTime(`❌ Error saving ActivityTracker for event: ${eventType}`);
-      // Mongoose validation errors will clearly show here now
-      if(err.name === 'ValidationError') {
-         logWithTime(`Validation Details: ${JSON.stringify(err.errors)}`);
-      }
+      logWithTime(
+        `❌ Internal Error saving AuthLog for event: ${eventType}`
+      );
       errorMessage(err);
-      return;
     }
+  })();
 };
 
 module.exports = {
-  logActivityTrackerEvent
+  logActivityTrackerEvent,
 };

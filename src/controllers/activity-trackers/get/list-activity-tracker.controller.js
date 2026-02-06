@@ -2,7 +2,7 @@ const { ActivityTrackerModel } = require("@models/activity-tracker.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
 const { OK } = require("@configs/http-status.config");
-const { AdminType } = require("@configs/enums.config");
+const { AdminType, viewScope } = require("@configs/enums.config");
 const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 
@@ -209,8 +209,7 @@ const listActivityTracker = async (req, res) => {
         }
       },
       meta: {
-        viewScope: actor.adminType === AdminType.SUPER_ADMIN ? "ALL_ACTIVITIES" : 
-                   actor.adminType === AdminType.MID_ADMIN ? "REGULAR_ADMINS_AND_SELF" : "SELF_ONLY",
+        viewScope: actor.adminType === AdminType.SUPER_ADMIN ? viewScope.ALL : (actor.adminType === AdminType.MID_ADMIN ? viewScope.ADMINS_ONLY : viewScope.SELF_ONLY),
         fetchedBy: actor.adminId,
         reason: reason,
         fetchedAt: new Date()
