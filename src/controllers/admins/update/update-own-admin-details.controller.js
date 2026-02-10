@@ -1,10 +1,9 @@
 const { logWithTime } = require("@utils/time-stamps.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwConflictError } = require("@/responses/common/error-handler.response");
-const { OK } = require("@configs/http-status.config");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
 const { notifyOwnDetailsUpdated } = require("@utils/admin-notifications.util");
+const { updateOwnAdminDetailsService } = require("@/services/admins/update/update-own-admin-details.service");
+const { updateOwnAdminDetailsSuccessResponse } = require("@/responses/success/admin.response");
 
 /**
  * Update Own Admin Details Controller
@@ -15,6 +14,7 @@ const updateOwnAdminDetails = async (req, res) => {
   try {
     const admin = req.admin;
     const { email, fullPhoneNumber } = req.body;
+    const device = req.device;
 
     if (!email && !fullPhoneNumber) {
       logWithTime(`❌ No update fields provided ${getLogIdentifiers(req)}`);
@@ -30,32 +30,33 @@ const updateOwnAdminDetails = async (req, res) => {
       }
     }
 
-    // Update fields
-    if (email) admin.email = email;
-    if (fullPhoneNumber) admin.fullPhoneNumber = fullPhoneNumber;
-    
-    admin.updatedBy = admin.adminId;
+    const updates = {};
+    if (email) updates.firstName = email;
+    if (fullPhoneNumber) updates.fullPhoneNumber = fullPhoneNumber;
 
-    await admin.save();
+    const result = await updateOwnAdminDetailsService(
+      admin,
+      updates,
+      device,
+      req.requestId
+    );
 
-    logWithTime(`✅ Admin ${admin.adminId} (${admin.adminType}) updated own details`);
+    if (!result.success) {
+      logWithTime(`❌ ${result.message} ${getLogIdentifiers(req)}`);
+      return throwBadRequestError(res, result.message);
+    }
+
+    logWithTime(`✅ Admin ${admin.adminId} updated own details`);
 
     // Send notifications
-    await notifyOwnDetailsUpdated(admin);
+    await notifyOwnDetailsUpdated(result.data.admin);
 
-    // Log activity
-    logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.UPDATE_OWN_ADMIN_DETAILS, {
-      description: `Admin ${admin.adminId} (${admin.adminType}) updated own details`
-    });
+    const updatedFields = {
+      email: email ? true : false,
+      fullPhoneNumber: fullPhoneNumber ? true : false
+    };
 
-    return res.status(OK).json({
-      message: "Your details updated successfully",
-      adminId: admin.adminId,
-      updatedFields: {
-        email: email ? true : false,
-        fullPhoneNumber: fullPhoneNumber ? true : false
-      }
-    });
+    return updateOwnAdminDetailsSuccessResponse(res, result.data.admin, updatedFields);
 
   } catch (err) {
     if (err.name === 'ValidationError') {

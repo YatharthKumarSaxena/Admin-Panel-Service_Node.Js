@@ -1,11 +1,9 @@
 const { logWithTime } = require("@utils/time-stamps.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwNotFoundError, throwConflictError } = require("@/responses/common/error-handler.response");
-const { OK } = require("@configs/http-status.config");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
-const { AdminType } = require("@configs/enums.config");
+const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwConflictError } = require("@/responses/common/error-handler.response");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
 const { notifyDetailsUpdated, notifyDetailsUpdateConfirmation, notifyDetailsUpdateToSupervisor } = require("@utils/admin-notifications.util");
+const { updateAdminDetailsService } = require("@/services/admins/update/update-admin-details.service");
+const { updateAdminDetailsSuccessResponse } = require("@/responses/success/admin.response");
 
 /**
  * Update Admin Details Controller
@@ -18,8 +16,8 @@ const updateAdminDetails = async (req, res) => {
   try {
     const actor = req.admin;
     const { email, fullPhoneNumber, reason } = req.body;
-
     const targetAdmin = req.foundAdmin;
+    const device = req.device;
 
     // Check for duplicate email/phone
     if (email || fullPhoneNumber) {
@@ -28,46 +26,46 @@ const updateAdminDetails = async (req, res) => {
         logWithTime(`❌ Duplicate admin found during update ${getLogIdentifiers(req)}`);
         return throwConflictError(res, "Admin with provided email/phone already exists");
       }
-    }else{
+    } else {
       logWithTime(`❌ No update fields provided ${getLogIdentifiers(req)}`);
       return throwBadRequestError(res, "At least one field (email or phone) must be provided");
     }
 
-    // Update fields
-    if (email) targetAdmin.email = email.trim().toLowerCase();
-    if (fullPhoneNumber) targetAdmin.fullPhoneNumber = fullPhoneNumber.trim();
-    
-    targetAdmin.updatedBy = actor.adminId;
+    const updates = {};
+    if (email) updates.firstName = email.trim().toLowerCase();
+    if (fullPhoneNumber) updates.fullPhoneNumber = fullPhoneNumber.trim();
 
-    await targetAdmin.save();
+    const result = await updateAdminDetailsService(
+      targetAdmin,
+      actor,
+      updates,
+      reason,
+      device,
+      req.requestId
+    );
 
-    logWithTime(`✅ Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) updated by ${actor.adminId}`);
-
-    // Send notifications
-    await notifyDetailsUpdated(targetAdmin, actor);
-    await notifyDetailsUpdateConfirmation(actor, targetAdmin);
-    
-    // Notify supervisor if different from actor
-    const supervisor = await fetchAdmin(null, null, targetAdmin.supervisorId);
-    if(supervisor) {
-      await notifyDetailsUpdateToSupervisor(supervisor, targetAdmin, actor);
+    if (!result.success) {
+      logWithTime(`❌ ${result.message} ${getLogIdentifiers(req)}`);
+      return throwBadRequestError(res, result.message);
     }
 
-    // Determine event type
-    const eventType = targetAdmin.adminType === AdminType.MID_ADMIN 
-      ? ACTIVITY_TRACKER_EVENTS.UPDATE_MID_ADMIN_DETAILS 
-      : ACTIVITY_TRACKER_EVENTS.UPDATE_ADMIN_DETAILS;
+    logWithTime(`✅ Admin ${targetAdmin.adminId} details updated by ${actor.adminId}`);
 
-    // Log activity
-    logActivityTrackerEvent(req, eventType, {
-      description: `Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) details updated by ${actor.adminId}`,
-      adminActions: {
-        targetId: targetAdmin.adminId,
-        reason: reason
-      }
-    });
+    // Send notifications
+    await notifyDetailsUpdated(result.data.admin, actor);
+    await notifyDetailsUpdateConfirmation(actor, result.data.admin);
+    
+    // Notify supervisor if different from actor
+    const supervisor = await fetchAdmin(null, null, result.data.admin.supervisorId);
+    if (supervisor) {
+      await notifyDetailsUpdateToSupervisor(supervisor, result.data.admin, actor);
+    }
 
-    return res.status(OK).json({
+    const updatedFields = {};
+    if (email) updatedFields.email = true;
+    if (fullPhoneNumber) updatedFields.fullPhoneNumber = true;
+
+    return updateAdminDetailsSuccessResponse(res, result.data.admin, updatedFields);
       message: `${targetAdmin.adminType} details updated successfully`,
       adminId: targetAdmin.adminId,
       updatedBy: actor.adminId

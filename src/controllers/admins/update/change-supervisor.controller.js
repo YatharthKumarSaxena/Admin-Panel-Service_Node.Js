@@ -1,12 +1,10 @@
 const { logWithTime } = require("@utils/time-stamps.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwAccessDeniedError, throwDBResourceNotFoundError } = require("@/responses/common/error-handler.response");
-const { OK } = require("@configs/http-status.config");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 const { AdminType } = require("@configs/enums.config");
-const { prepareAuditData, cloneForAudit } = require("@utils/audit-data.util");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
 const { notifyNewSupervisorAssigned, notifySupervisorChanged, notifyOldSupervisorRemoved } = require("@utils/admin-notifications.util");
+const { changeSupervisorService } = require("@/services/admins/update/change-supervisor.service");
+const { changeSupervisorSuccessResponse } = require("@/responses/success/admin.response");
 
 /**
  * Change Supervisor Controller
@@ -19,12 +17,12 @@ const changeSupervisor = async (req, res) => {
     try {
         const actor = req.admin;
         const { newSupervisorId, reason } = req.body;
-
         const targetAdmin = req.foundAdmin;
+        const device = req.device;
 
         // Super Admin cannot have a supervisor
         if (targetAdmin.adminType === AdminType.SUPER_ADMIN) {
-            logWithTime(`❌ Attempt to change supervisor for Super Admin ${targetAdmin.adminId} by ${actor.adminId} ${getLogIdentifiers(req)}`);
+            logWithTime(`❌ Attempt to change supervisor for Super Admin ${getLogIdentifiers(req)}`);
             return throwAccessDeniedError(res, "Super Admin cannot have a supervisor");
         }
 
@@ -34,11 +32,7 @@ const changeSupervisor = async (req, res) => {
             return throwBadRequestError(res, "Admin already has this supervisor");
         }
 
-        // Clone entity before changes for audit
-        const oldState = cloneForAudit(targetAdmin);
-
         const newSupervisor = await fetchAdmin(null, null, newSupervisorId);
-
         if (!newSupervisor) {
             logWithTime(`❌ New supervisor ${newSupervisorId} not found ${getLogIdentifiers(req)}`);
             return throwDBResourceNotFoundError(res, "New supervisor");
@@ -52,67 +46,50 @@ const changeSupervisor = async (req, res) => {
 
         // New supervisor must be MID_ADMIN or SUPER_ADMIN
         if (newSupervisor.adminType !== AdminType.MID_ADMIN && newSupervisor.adminType !== AdminType.SUPER_ADMIN) {
-            logWithTime(`❌ New supervisor ${newSupervisorId} is not MID_ADMIN or SUPER_ADMIN ${getLogIdentifiers(req)}`);
+            logWithTime(`❌ New supervisor must be MID_ADMIN or SUPER_ADMIN ${getLogIdentifiers(req)}`);
             return throwBadRequestError(res, "New supervisor must be MID_ADMIN or SUPER_ADMIN");
         }
 
         // Cannot assign self as supervisor
         if (newSupervisor.adminId === targetAdmin.adminId) {
-            logWithTime(`❌ Admin ${targetAdmin.adminId} cannot be their own supervisor ${getLogIdentifiers(req)}`);
+            logWithTime(`❌ Admin cannot be their own supervisor ${getLogIdentifiers(req)}`);
             return throwBadRequestError(res, "Admin cannot be their own supervisor");
         }
 
-        // Update supervisor
         const oldSupervisorId = targetAdmin.supervisorId;
-        targetAdmin.supervisorId = newSupervisorId === 'null' ? null : newSupervisorId;
-        targetAdmin.updatedBy = actor.adminId;
+        const result = await changeSupervisorService(
+            targetAdmin,
+            actor,
+            newSupervisorId === 'null' ? null : newSupervisorId,
+            reason,
+            device,
+            req.requestId
+        );
 
-        await targetAdmin.save();
+        if (!result.success) {
+            logWithTime(`❌ ${result.message} ${getLogIdentifiers(req)}`);
+            return throwBadRequestError(res, result.message);
+        }
 
-        // Prepare audit data
-        const { oldData, newData } = prepareAuditData(oldState, targetAdmin);
+        logWithTime(`✅ Supervisor changed for Admin ${targetAdmin.adminId}`);
 
-        logWithTime(`✅ Supervisor changed for Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) from ${oldSupervisorId || 'none'} to ${newSupervisorId || 'none'} by ${actor.adminId}`);
+        // Send notifications to all parties
+        const oldSupervisor = oldSupervisorId ? await fetchAdmin(null, null, oldSupervisorId) : null;
+        
+        // Notify new supervisor if different from actor
+        if (newSupervisor.adminId !== actor.adminId) {
+            await notifyNewSupervisorAssigned(newSupervisor, result.data.admin, actor);
+        }
+        
+        // Notify target admin about supervisor change
+        await notifySupervisorChanged(result.data.admin, oldSupervisor, newSupervisor, actor);
+        
+        // Notify old supervisor if exists and different from actor
+        if (oldSupervisor && oldSupervisor.adminId !== actor.adminId) {
+            await notifyOldSupervisorRemoved(oldSupervisor, result.data.admin, newSupervisor, actor);
+        }
 
-    // Send notifications to all parties
-    const oldSupervisor = oldSupervisorId ? await fetchAdmin(null, null, oldSupervisorId) : null;
-    
-    // Notify new supervisor if different from actor
-    if(newSupervisor.adminId !== actor.adminId) {
-      await notifyNewSupervisorAssigned(newSupervisor, targetAdmin, actor);
-    }
-    
-    // Notify target admin about supervisor change
-    await notifySupervisorChanged(targetAdmin, oldSupervisor, newSupervisor, actor);
-    
-    // Notify old supervisor if exists and different from actor
-    if(oldSupervisor && oldSupervisor.adminId !== actor.adminId) {
-      await notifyOldSupervisorRemoved(oldSupervisor, targetAdmin, newSupervisor, actor);
-    }
-
-    // Determine event type
-    const eventType = targetAdmin.adminType === AdminType.MID_ADMIN
-        ? ACTIVITY_TRACKER_EVENTS.CHANGE_MID_ADMIN_SUPERVISOR
-        : ACTIVITY_TRACKER_EVENTS.CHANGE_ADMIN_SUPERVISOR;
-
-    // Log activity with audit data
-        logActivityTrackerEvent(req, eventType, {
-            description: `Supervisor changed for Admin ${targetAdmin.adminId} (${targetAdmin.adminType}) by ${actor.adminId}`,
-            oldData,
-            newData,
-            adminActions: {
-                targetId: targetAdmin.adminId,
-                reason: reason
-            }
-        });
-
-        return res.status(OK).json({
-            message: `Supervisor changed successfully for ${targetAdmin.adminType}`,
-            adminId: targetAdmin.adminId,
-            oldSupervisorId: oldSupervisorId || null,
-            newSupervisorId: newSupervisorId === 'null' ? null : newSupervisorId,
-            changedBy: actor.adminId
-        });
+        return changeSupervisorSuccessResponse(res, result.data.admin, oldSupervisorId, result.data.newSupervisorId);
 
     } catch (err) {
         if (err.name === 'ValidationError') {
