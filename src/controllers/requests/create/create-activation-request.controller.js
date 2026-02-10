@@ -1,11 +1,7 @@
-const { AdminStatusRequestModel } = require("@models/admin-status-request.model");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwConflictError } = require("@/responses/common/error-handler.response");
-const { CREATED } = require("@configs/http-status.config");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
-const { makeRequestId } = require("@services/request-id.service");
-const { requestType, requestStatus } = require("@configs/enums.config");
+const { createActivationRequestService } = require("@services/requests/create/create-activation-request.service");
+const { createActivationRequestSuccessResponse } = require("@/responses/success/index");
 const { notifyActivationRequestSubmitted, notifyActivationRequestPending, notifyActivationRequestReview } = require("@utils/admin-notifications.util");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
 
@@ -35,65 +31,39 @@ const createActivationRequest = async (req, res) => {
       return throwBadRequestError(res, "Target admin is already active");
     }
 
-    // Check for existing pending request
-    const existingRequest = await AdminStatusRequestModel.findOne({
-      targetAdminId: targetAdminId,
-      requestType: requestType.ACTIVATION,
-      status: requestStatus.PENDING
-    });
-
-    if (existingRequest) {
-      logWithTime(`⚠️ Admin ${targetAdminId} already has pending activation request ${getLogIdentifiers(req)}`);
-      return throwConflictError(res, "Target admin already has a pending activation request");
-    }
-
-    // Generate request ID
-    const requestId = await makeRequestId();
-    if (requestId === "") {
-      logWithTime(`❌ Failed to generate requestId for admin ${actor.adminId} ${getLogIdentifiers(req)}`);
-      return throwInternalServerError(res, "Failed to generate request ID. Please try again later.");
-    }
-
-    // Create activation request
-    const activationRequest = new AdminStatusRequestModel({
-      requestId,
-      requestType: requestType.ACTIVATION,
-      requestedBy: actor.adminId, // Active admin
-      targetAdminId: targetAdminId, // Deactivated admin
+    // Call service
+    const result = await createActivationRequestService(
+      actor,
+      targetAdmin,
       reason,
-      notes: notes
-    });
+      notes,
+      req.device,
+      req.requestId
+    );
 
-    await activationRequest.save();
-
-    logWithTime(`✅ Activation request created: ${requestId} by ${actor.adminId} for ${targetAdminId}`);
+    // Handle service errors
+    if (!result.success) {
+      if (result.type === 'PENDING_EXISTS') {
+        return throwConflictError(res, result.message);
+      }
+      if (result.type === 'GENERATION_FAILED') {
+        return throwInternalServerError(res, result.message);
+      }
+      return throwInternalServerError(res, result.message);
+    }
 
     // Send notifications to all parties
-    await notifyActivationRequestSubmitted(actor, targetAdmin, requestId);
-    await notifyActivationRequestPending(targetAdmin, actor, requestId);
+    await notifyActivationRequestSubmitted(actor, targetAdmin, result.data.requestId);
+    await notifyActivationRequestPending(targetAdmin, actor, result.data.requestId);
     
     // Notify supervisor if different from actor
     const supervisor = await fetchAdmin(null, null, targetAdmin.supervisorId);
     if(supervisor) {
-      await notifyActivationRequestReview(supervisor, targetAdmin, actor, requestId);
+      await notifyActivationRequestReview(supervisor, targetAdmin, actor, result.data.requestId);
     }
 
-    // Log activity
-    logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.CREATE_ACTIVATION_REQUEST, {
-      description: `Admin ${actor.adminId} requested activation for ${targetAdminId}. Request ID: ${requestId}`,
-      adminActions: {
-        targetId: targetAdminId,
-        reason: reason
-      }
-    });
-
-    return res.status(CREATED).json({
-      message: "Activation request created successfully",
-      requestId: requestId,
-      targetAdminId: targetAdminId,
-      status: requestStatus.PENDING,
-      note: "Request is pending approval from supervisor/super admin"
-    });
+    // Success response
+    return createActivationRequestSuccessResponse(res, result.data);
 
   } catch (err) {
     if (err.name === 'ValidationError') {

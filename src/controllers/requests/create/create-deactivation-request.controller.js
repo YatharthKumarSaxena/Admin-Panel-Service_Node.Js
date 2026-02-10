@@ -1,11 +1,7 @@
-const { AdminStatusRequestModel } = require("@models/admin-status-request.model");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { throwBadRequestError, throwInternalServerError, getLogIdentifiers, throwConflictError } = require("@/responses/common/error-handler.response");
-const { CREATED } = require("@configs/http-status.config");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
-const { makeRequestId } = require("@services/request-id.service");
-const { requestType, requestStatus } = require("@configs/enums.config");
+const { createDeactivationRequestService } = require("@services/requests/create/create-deactivation-request.service");
+const { createDeactivationRequestSuccessResponse } = require("@/responses/success/index");
 const { notifyDeactivationRequestSubmitted, notifyDeactivationRequestReview } = require("@utils/admin-notifications.util");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
 
@@ -25,63 +21,38 @@ const createDeactivationRequest = async (req, res) => {
       return throwBadRequestError(res, "Your account is already inactive");
     }
 
-    // Check for existing pending request
-    const existingRequest = await AdminStatusRequestModel.findOne({
-      targetAdminId: actor.adminId,
-      requestType: requestType.DEACTIVATION,
-      status: requestStatus.PENDING
-    });
-
-    if (existingRequest) {
-      logWithTime(`⚠️ Admin ${actor.adminId} already has pending deactivation request ${getLogIdentifiers(req)}`);
-      return throwConflictError(res, "You already have a pending deactivation request");
-    }
-
-    // Generate request ID
-    const requestId = await makeRequestId();
-    if (requestId === "") {
-      logWithTime(`❌ Failed to generate requestId for admin ${actor.adminId} ${getLogIdentifiers(req)}`);
-      return throwInternalServerError(res, "Failed to generate request ID. Please try again later.");
-    }
-
-    // Create deactivation request
-    const deactivationRequest = new AdminStatusRequestModel({
-      requestId,
-      requestType: requestType.DEACTIVATION,
-      requestedBy: actor.adminId,
-      targetAdminId: actor.adminId,
+    // Call service
+    const result = await createDeactivationRequestService(
+      actor,
+      actor, // targetAdmin is also actor for deactivation
       reason,
-      notes: notes || null
-    });
+      notes,
+      req.device,
+      req.requestId
+    );
 
-    await deactivationRequest.save();
-
-    logWithTime(`✅ Deactivation request created: ${requestId} by ${actor.adminId}`);
+    // Handle service errors
+    if (!result.success) {
+      if (result.type === 'PENDING_EXISTS') {
+        return throwConflictError(res, result.message);
+      }
+      if (result.type === 'GENERATION_FAILED') {
+        return throwInternalServerError(res, result.message);
+      }
+      return throwInternalServerError(res, result.message);
+    }
 
     // Send notifications
-    await notifyDeactivationRequestSubmitted(actor, requestId);
+    await notifyDeactivationRequestSubmitted(actor, result.data.requestId);
     
     // Notify supervisor if different from self
     const supervisor = await fetchAdmin(null, null, actor.supervisorId);
     if(supervisor) {
-      await notifyDeactivationRequestReview(supervisor, actor, requestId);
+      await notifyDeactivationRequestReview(supervisor, actor, result.data.requestId);
     }
 
-    // Log activity
-    logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.CREATE_DEACTIVATION_REQUEST, {
-      description: `Admin ${actor.adminId} requested account deactivation`,
-      adminActions: {
-        targetId: actor.adminId,
-        reason: reason
-      }
-    });
-
-    return res.status(CREATED).json({
-      message: "Deactivation request created successfully",
-      requestId: requestId,
-      status: "PENDING",
-      note: "Your request is pending approval from supervisor/super admin"
-    });
+    // Success response
+    return createDeactivationRequestSuccessResponse(res, result.data);
 
   } catch (err) {
     if (err.name === 'ValidationError') {
