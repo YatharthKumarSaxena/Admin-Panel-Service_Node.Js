@@ -1,7 +1,7 @@
-const { UserModel } = require("@models/user.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
-const { OK } = require("@configs/http-status.config");
+const { listUsersService } = require("@services/users/get/list-users.service");
+const { listUsersSuccessResponse } = require("@/responses/success/index");
 
 /**
  * List Users Controller
@@ -78,7 +78,7 @@ const listUsers = async (req, res) => {
 
     // 📅 Date filtering for updatedAt
     if (updatedFrom || updatedTo || updatedAfter || updatedBefore) {
-      query.updatedAt = {};
+      query.updatedAt  = {};
       if (updatedFrom) query.updatedAt.$gte = new Date(updatedFrom);
       if (updatedTo) query.updatedAt.$lte = new Date(updatedTo);
       if (updatedAfter && !updatedFrom) query.updatedAt.$gte = new Date(updatedAfter);
@@ -143,83 +143,32 @@ const listUsers = async (req, res) => {
       query.unblockReasonDetails = { $regex: searchUnblockDetails.trim(), $options: 'i' };
     }
 
-    // Pagination
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    // Pagination, sorting options
+    const options = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      sortBy,
+      sortOrder
+    };
 
-    // Sorting
-    const sortOptions = {};
-    sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
+    // Call service
+    const result = await listUsersService(
+      query,
+      options,
+      admin,
+      req.device,
+      req.requestId
+    );
 
-    // Execute query
-    const [users, totalCount] = await Promise.all([
-      UserModel.find(query)
-        .select('userId email fullPhoneNumber isActive isBlocked blockReason unblockReason blockedBy unblockedBy blockedVia unblockedVia blockCount unblockCount blockedAt unblockedAt createdAt updatedAt')
-        .sort(sortOptions)
-        .limit(parseInt(limit))
-        .skip(skip)
-        .lean(),
-      UserModel.countDocuments(query)
-    ]);
+    // Handle service errors
+    if (!result.success) {
+      return throwInternalServerError(res, result.message);
+    }
 
-    logWithTime(`✅ Users list fetched by admin ${admin.adminId}: ${users.length}/${totalCount} records`);
-
-    return res.status(OK).json({
-      message: "Users list retrieved successfully",
-      users: users,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalCount / parseInt(limit)),
-        totalRecords: totalCount,
-        recordsPerPage: parseInt(limit)
-      },
-      filters: {
-        search: search || null,
-        isBlocked: isBlocked || null,
-        isActive: isActive || null,
-        sortBy: sortBy,
-        sortOrder: sortOrder,
-        blockFilters: {
-          blockReason: blockReason || null,
-          unblockReason: unblockReason || null,
-          blockedBy: blockedBy || null,
-          unblockedBy: unblockedBy || null,
-          blockedVia: blockedVia || null,
-          unblockedVia: unblockedVia || null,
-          blockCountRange: {
-            min: minBlockCount || null,
-            max: maxBlockCount || null
-          },
-          unblockCountRange: {
-            min: minUnblockCount || null,
-            max: maxUnblockCount || null
-          },
-          searchBlockDetails: searchBlockDetails || null,
-          searchUnblockDetails: searchUnblockDetails || null
-        },
-        dateFilters: {
-          createdAt: {
-            after: createdAfter || createdFrom || null,
-            before: createdBefore || createdTo || null
-          },
-          updatedAt: {
-            after: updatedAfter || updatedFrom || null,
-            before: updatedBefore || updatedTo || null
-          },
-          blockedAt: {
-            after: blockedAfter || blockedFrom || null,
-            before: blockedBefore || blockedTo || null
-          },
-          unblockedAt: {
-            after: unblockedAfter || unblockedFrom || null,
-            before: unblockedBefore || unblockedTo || null
-          }
-        }
-      },
-      accessedBy: admin.adminId
-    });
+    return listUsersSuccessResponse(res, result.data.users, result.data.total, page, limit);
 
   } catch (err) {
-    logWithTime(`❌ Error fetching users list: ${err.message} ${getLogIdentifiers(req)}`);
+    logWithTime(`❌ Error in listUsers controller ${getLogIdentifiers(req)}: ${err.message}`);
     return throwInternalServerError(res, err);
   }
 };

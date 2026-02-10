@@ -1,59 +1,39 @@
 const { logWithTime } = require("@utils/time-stamps.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
-const { OK } = require("@configs/http-status.config");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { getUserDetailsService } = require("@services/users/get/get-user-details.service");
+const { viewUserDetailsSuccessResponse } = require("@/responses/success/index");
 
 /**
- * View Admin Details Controller
- * Retrieves comprehensive details of an admin
+ * View User Details Controller
+ * Retrieves comprehensive details of a user
  */
 
 const viewUserDetails = async (req, res) => {
     try {
-        const actor = req.admin;
+        const admin = req.admin;
         const { reason } = req.params;
 
         const targetUser = req.foundUser;
 
-        logWithTime(`🔍 Admin ${actor.adminId} viewing details of ${targetUser.userId}`);
+        // Call service
+        const result = await getUserDetailsService(
+            targetUser,
+            admin,
+            reason,
+            req.device,
+            req.requestId
+        );
 
-        // Prepare sanitized user details
-        const userDetails = {
-            userId: targetUser.userId,
-            email: targetUser.email || null,
-            fullPhoneNumber: targetUser.fullPhoneNumber || null,
-            isBlocked: targetUser.isBlocked,
-            blockedCount: targetUser.blockCount,
-            unblockedCount: targetUser.unblockCount,
-            blockedAt: targetUser.blockedAt || null,
-            unblockedAt: targetUser.unblockedAt || null,
-            createdAt: targetUser.createdAt,
-            updatedAt: targetUser.updatedAt,
-            blockReason: targetUser.blockReason || null,
-            unblockReason: targetUser.unblockReason || null,
-            blockReasonDetails: targetUser.blockReasonDetails || null,
-            unblockReasonDetails: targetUser.unblockReasonDetails || null,
-            blockedBy: targetUser.blockedBy || null,
-            unblockedBy: targetUser.unblockedBy || null
-        };
+        // Handle service errors
+        if (!result.success) {
+            return throwInternalServerError(res, result.message);
+        }
 
-        logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.VIEW_USER_DETAILS, {
-            description: `Admin ${actor.adminId} viewed details of ${targetUser.userId}`,
-            adminActions: {
-                targetId: targetUser.userId,
-                reason: reason
-            }
-        });
-
-        return res.status(OK).json({
-            message: "User details retrieved successfully",
-            data: userDetails,
-            viewedBy: actor.adminId
-        });
+        // Success response
+        return viewUserDetailsSuccessResponse(res, result.data, admin);
 
     } catch (err) {
-        logWithTime(`❌ Internal Error in viewing user details ${getLogIdentifiers(req)}`);
+        logWithTime(`❌ Internal Error in viewUserDetails controller ${getLogIdentifiers(req)}`);
         return throwInternalServerError(res, err);
     }
 };
