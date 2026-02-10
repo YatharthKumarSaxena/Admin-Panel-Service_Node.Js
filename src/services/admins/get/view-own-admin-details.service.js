@@ -3,15 +3,17 @@
 const { AdminModel } = require("@models/admin.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { AdminErrorTypes } = require("@configs/enums.config");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { logActivityTrackerEvent } = require("@/services/audit/activity-tracker.service");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 
 /**
  * View Own Admin Details Service
  * @param {string} adminId - The admin ID to fetch
+ * @param {Object} device - Device object {deviceUUID, deviceType, deviceName}
+ * @param {string} requestId - Request ID for tracking
  * @returns {Promise<{success: boolean, data?: Object, type?: string, message?: string}>}
  */
-const viewOwnAdminDetailsService = async (adminId) => {
+const viewOwnAdminDetailsService = async (adminId, device, requestId) => {
     try {
         const admin = await AdminModel.findOne({ adminId })
             .select('-__v')
@@ -28,9 +30,11 @@ const viewOwnAdminDetailsService = async (adminId) => {
         // Log activity tracker event
         logActivityTrackerEvent(
             admin,
+            device,
+            requestId,
             ACTIVITY_TRACKER_EVENTS.VIEW_OWN_ADMIN_DETAILS,
             `Viewed own admin details`,
-            { viewedOwnDetails: true }
+            {}
         );
 
         logWithTime(`✅ Admin ${adminId} viewed own details`);
