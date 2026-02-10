@@ -3,7 +3,7 @@
 const { AdminModel } = require("@models/admin.model");
 const { makeAdminId } = require("@services/user-id.service");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { logActivityTrackerEvent } = require("@/services/audit/activity-tracker.service");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { AdminErrorTypes } = require("@configs/enums.config");
 const { notifySupervisorOnAdminCreation } = require("@utils/admin-notifications.util");
@@ -13,9 +13,11 @@ const { notifySupervisorOnAdminCreation } = require("@utils/admin-notifications.
  * @param {Object} creatorAdmin - The admin creating the new admin
  * @param {Object} adminData - Admin data {firstName, adminType, supervisorId, creationReason}
  * @param {Object} supervisor - Supervisor admin object (if applicable)
+ * @param {Object} device - Device object {deviceUUID, deviceType, deviceName}
+ * @param {string} requestId - Request ID for tracking
  * @returns {Promise<{success: boolean, data?: Object, type?: string, message?: string}>}
  */
-const createAdminService = async (creatorAdmin, adminData, supervisor) => {
+const createAdminService = async (creatorAdmin, adminData, supervisor, device, requestId) => {
     try {
         const { firstName, adminType, supervisorId, creationReason } = adminData;
 
@@ -46,9 +48,17 @@ const createAdminService = async (creatorAdmin, adminData, supervisor) => {
         // Log activity
         logActivityTrackerEvent(
             creatorAdmin,
+            device,
+            requestId,
             ACTIVITY_TRACKER_EVENTS.ADMIN_CREATED,
             `Created admin ${newAdmin.adminId} (${adminType})`,
-            { targetAdminId: newAdmin.adminId, adminType, creationReason }
+            { 
+                newData: { adminId: newAdmin.adminId, adminType, firstName, supervisorId },
+                adminActions: { 
+                    targetId: newAdmin.adminId, 
+                    reason: creationReason 
+                } 
+            }
         );
 
         // Notify supervisor if applicable
