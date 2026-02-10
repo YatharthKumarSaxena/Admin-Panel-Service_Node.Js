@@ -3,7 +3,7 @@
 const { AdminModel } = require("@models/admin.model");
 const { AdminStatusRequestModel } = require("@models/admin-status-request.model");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { logActivityTrackerEvent } = require("@/services/audit/activity-tracker.service");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { AdminErrorTypes, requestStatus, requestType, AdminType } = require("@configs/enums.config");
 const { 
@@ -12,16 +12,22 @@ const {
     notifyDeactivationToSupervisor 
 } = require("@utils/admin-notifications.util");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
+const { prepareAuditData, cloneForAudit } = require("@utils/audit-data.util");
 
 /**
  * Deactivate Admin with Request Management Service
  * @param {Object} targetAdmin - The admin to deactivate (from req with .lean())
  * @param {Object} deactivatorAdmin - The admin performing deactivation
  * @param {string} deactivationReason - Reason for deactivation
+ * @param {Object} device - Device object {deviceUUID, deviceType, deviceName}
+ * @param {string} requestId - Request ID for tracking
  * @returns {Promise<{success: boolean, data?: Object, type?: string, message?: string}>}
  */
-const deactivateAdminWithRequestService = async (targetAdmin, deactivatorAdmin, deactivationReason) => {
+const deactivateAdminWithRequestService = async (targetAdmin, deactivatorAdmin, deactivationReason, device, requestId) => {
     try {
+        // Clone for audit before changes
+        const oldAdminData = cloneForAudit(targetAdmin);
+
         // Check if Super Admin
         if (targetAdmin.adminType === AdminType.SUPER_ADMIN) {
             return {
@@ -45,20 +51,25 @@ const deactivateAdminWithRequestService = async (targetAdmin, deactivatorAdmin, 
             targetAdminId: targetAdmin.adminId,
             status: requestStatus.PENDING,
             requestType: { $in: [requestType.DEACTIVATION, requestType.ACTIVATION] }
-        });
+        }).lean();
 
         if (existingRequest) {
-            if (existingRequest.requestType === requestType.DEACTIVATION) {
-                existingRequest.status = requestStatus.APPROVED;
-            } else if (existingRequest.requestType === requestType.ACTIVATION) {
-                existingRequest.status = requestStatus.REJECTED;
-            }
+            const newStatus = existingRequest.requestType === requestType.DEACTIVATION 
+                ? requestStatus.APPROVED 
+                : requestStatus.REJECTED;
 
-            existingRequest.reviewedBy = deactivatorAdmin.adminId;
-            existingRequest.reviewedAt = new Date();
-            existingRequest.reviewNotes = `Auto-processed: Admin directly deactivated by Super Admin ${deactivatorAdmin.adminId}`;
-
-            await existingRequest.save();
+            await AdminStatusRequestModel.findOneAndUpdate(
+                { _id: existingRequest._id },
+                {
+                    $set: {
+                        status: newStatus,
+                        reviewedBy: deactivatorAdmin.adminId,
+                        reviewedAt: new Date(),
+                        reviewNotes: `Auto-processed: Admin directly deactivated by Super Admin ${deactivatorAdmin.adminId}`
+                    }
+                },
+                { new: true, runValidators: true }
+            );
         }
 
         // Atomic deactivation - MUST use findOneAndUpdate because targetAdmin is .lean()
@@ -85,6 +96,9 @@ const deactivateAdminWithRequestService = async (targetAdmin, deactivatorAdmin, 
 
         logWithTime(`✅ Admin deactivated in DB: ${updatedAdmin.adminId} by ${deactivatorAdmin.adminId}`);
 
+        // Prepare audit data
+        const { oldData, newData } = prepareAuditData(oldAdminData, updatedAdmin);
+
         // Send notifications
         await notifyAdminDeactivated(updatedAdmin, deactivatorAdmin, deactivationReason);
         await notifyDeactivationConfirmation(deactivatorAdmin, updatedAdmin);
@@ -103,9 +117,18 @@ const deactivateAdminWithRequestService = async (targetAdmin, deactivatorAdmin, 
         // Log activity
         logActivityTrackerEvent(
             deactivatorAdmin,
+            device,
+            requestId,
             eventType,
             `Admin ${updatedAdmin.adminId} directly deactivated by Super Admin`,
-            { targetAdminId: updatedAdmin.adminId, reason: deactivationReason }
+            { 
+                oldData,
+                newData,
+                adminActions: { 
+                    targetId: updatedAdmin.adminId, 
+                    reason: deactivationReason 
+                } 
+            }
         );
 
         return {

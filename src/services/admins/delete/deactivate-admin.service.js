@@ -2,18 +2,21 @@
 
 const { AdminModel } = require("@models/admin.model");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { logActivityTrackerEvent } = require("@/services/audit/activity-tracker.service");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { AdminErrorTypes } = require("@configs/enums.config");
+const { prepareAuditData, cloneForAudit } = require("@utils/audit-data.util");
 
 /**
  * Deactivate Admin Service
  * @param {Object} targetAdmin - The admin to deactivate
  * @param {Object} deactivatorAdmin - The admin performing deactivation
  * @param {string} deactivationReason - Reason for deactivation
+ * @param {Object} device - Device object {deviceUUID, deviceType, deviceName}
+ * @param {string} requestId - Request ID for tracking
  * @returns {Promise<{success: boolean, data?: Object, type?: string, message?: string}>}
  */
-const deactivateAdminService = async (targetAdmin, deactivatorAdmin, deactivationReason) => {
+const deactivateAdminService = async (targetAdmin, deactivatorAdmin, deactivationReason, device, requestId) => {
     try {
         // Check if already inactive
         if (targetAdmin.isActive === false) {
@@ -23,6 +26,9 @@ const deactivateAdminService = async (targetAdmin, deactivatorAdmin, deactivatio
                 message: "Admin is already deactivated"
             };
         }
+
+        // Clone for audit before changes
+        const oldAdminData = cloneForAudit(targetAdmin);
 
         // Atomic deactivation using findOneAndUpdate
         const updatedAdmin = await AdminModel.findOneAndUpdate(
@@ -48,12 +54,24 @@ const deactivateAdminService = async (targetAdmin, deactivatorAdmin, deactivatio
 
         logWithTime(`✅ Admin deactivated in DB: ${updatedAdmin.adminId}`);
 
+        // Prepare audit data
+        const { oldData, newData } = prepareAuditData(oldAdminData, updatedAdmin);
+
         // Log activity
         logActivityTrackerEvent(
             deactivatorAdmin,
+            device,
+            requestId,
             ACTIVITY_TRACKER_EVENTS.ADMIN_DEACTIVATED,
             `Deactivated admin ${updatedAdmin.adminId}`,
-            { targetAdminId: updatedAdmin.adminId, reason: deactivationReason }
+            { 
+                oldData,
+                newData,
+                adminActions: { 
+                    targetId: updatedAdmin.adminId, 
+                    reason: deactivationReason 
+                } 
+            }
         );
 
         return {
