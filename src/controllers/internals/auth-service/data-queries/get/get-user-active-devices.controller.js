@@ -1,8 +1,6 @@
 const { logWithTime } = require("@utils/time-stamps.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
-const { OK } = require("@configs/http-status.config");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { getUserActiveDevicesSuccessResponse } = require("@/responses/success/internal.response");
 
 /**
  * Get User Active Devices Controller
@@ -32,20 +30,9 @@ const getUserActiveDevices = async (req, res) => {
       message: "Auth Service integration pending"
     };
 
-    // Log activity
-    logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.GET_USER_ACTIVE_DEVICES, {
-      description: `Admin ${admin.adminId} retrieved active devices for user ${userId}`,
-      adminActions: {
-        targetId: userId,
-        reason: reason
-      }
-    });
+    logWithTime(`✅ Admin ${admin.adminId} retrieved active devices for user ${userId}`);
 
-    return res.status(OK).json({
-      message: "Active devices retrieved successfully",
-      data: activeDevices,
-      checkedBy: admin.adminId
-    });
+    return getUserActiveDevicesSuccessResponse(res, activeDevices);
 
   } catch (err) {
     logWithTime(`❌ Internal Error in fetching active devices ${getLogIdentifiers(req)}`);

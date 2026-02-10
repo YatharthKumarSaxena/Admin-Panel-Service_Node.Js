@@ -1,8 +1,6 @@
 const { logWithTime } = require("@utils/time-stamps.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { throwInternalServerError, throwBadRequestError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
 const { checkAuthLogsSuccessResponse } = require("@/responses/success/index");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
 
 /**
  * Check Auth Logs Controller
@@ -47,14 +45,7 @@ const checkAuthLogs = async (req, res) => {
       note: "Access control will be enforced by Authentication Service"
     };
 
-    // Log activity
-    logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.CHECK_AUTH_LOGS, {
-      description: `Admin ${actor.adminId} checked auth logs for ${targetId}`,
-      adminActions: {
-        targetId: targetId,
-        reason: reason
-      }
-    });
+    logWithTime(`✅ Admin ${actor.adminId} checked auth logs for ${targetId}`);
 
     return checkAuthLogsSuccessResponse(res, authLogs.logs);
 

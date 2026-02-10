@@ -1,8 +1,6 @@
 const { logWithTime } = require("@utils/time-stamps.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
-const { OK } = require("@configs/http-status.config");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { listAuthLogsSuccessResponse } = require("@/responses/success/internal.response");
 
 /**
  * List Auth Logs Controller
@@ -43,23 +41,9 @@ const listAuthLogs = async (req, res) => {
       note: "Aggregated logs for monitoring - no individual targeting"
     };
 
-    // Log activity (NO reason needed for list view)
-    logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.LIST_AUTH_LOGS, {
-      description: `Admin ${actor.adminId} viewed auth logs dashboard`,
-      adminActions: {
-        reason: reason
-      }
-    });
+    logWithTime(`✅ Admin ${actor.adminId} viewed auth logs dashboard`);
 
-    return res.status(OK).json({
-      message: "Auth logs list retrieved successfully",
-      data: authLogsList,
-      pagination: {
-        currentPage: parseInt(page),
-        recordsPerPage: parseInt(limit)
-      },
-      viewedBy: actor.adminId
-    });
+    return listAuthLogsSuccessResponse(res, authLogsList.logs, authLogsList.totalLogs, page, limit);
 
   } catch (err) {
     logWithTime(`❌ Error fetching auth logs list ${getLogIdentifiers(req)}`);
