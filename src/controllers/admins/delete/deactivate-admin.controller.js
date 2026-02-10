@@ -21,7 +21,13 @@ const deactivateAdmin = async (req, res) => {
     const targetAdmin = req.foundAdmin;
 
     // Call service (handles notifications)
-    const result = await deactivateAdminWithRequestService(targetAdmin, actor, reason);
+    const result = await deactivateAdminWithRequestService(
+      targetAdmin, 
+      actor, 
+      reason,
+      req.device,
+      req.requestId
+    );
 
     // Handle service errors
     if (!result.success) {
