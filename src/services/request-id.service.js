@@ -1,7 +1,9 @@
 const { CounterModel } = require("@models/counter.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { errorMessage } = require("@/responses/common/error-handler.response");
-const { IP_Address_Code, requestIDPrefix, totalRequestCapacity } = require("@configs/system.config");
+const { totalRequestCapacity } = require("@configs/app-limits.config");
+const { requestIdPrefix } = require("@configs/id-prefixes.config");
+const { IP_Address_Code } = require("@configs/ip-address.config");
 
 /**
  * Generate unique request ID for admin status requests
@@ -11,7 +13,6 @@ const { IP_Address_Code, requestIDPrefix, totalRequestCapacity } = require("@con
 
 const makeRequestId = async () => {
   try {
-    const requestIdPrefix = requestIDPrefix;
     const counter = await CounterModel.findOneAndUpdate(
       { _id: requestIdPrefix },
       { $inc: { seq: 1 } },
@@ -31,7 +32,7 @@ const makeRequestId = async () => {
 
     // Step 3: ID Construction
     const numericId = `${totalRequestCapacity+counter.seq}`; 
-    const identityCode = `${requestIDPrefix}${IP_Address_Code}`;
+    const identityCode = `${requestIdPrefix}${IP_Address_Code}`;
     const requestId = `${identityCode}${numericId}`;
     return requestId;
 

@@ -1,53 +1,49 @@
 const { CounterModel } = require("@models/counter.model");
-const { 
-    adminDataCapacity, 
-    adminIDPrefix, 
-    IP_Address_Code
-} = require("@configs/system.config");
+const { userRegistrationCapacity } = require("@configs/app-limits.config");
+const { IP_Address_Code } = require("@configs/ip-address.config");
+const { adminIdPrefix } = require("@configs/id-prefixes.config");
 const { errorMessage } = require("@/responses/common/error-handler.response");
 const { logWithTime } = require("@utils/time-stamps.util");
 
-
-const makeAdminId = async () => {
+const makeUserId = async () => {
     try {
         // Step 1: Atomic Update (Find & Increment OR Create & Set 1)
+        // Upsert ensures document exists, new:true returns updated val
         const counter = await CounterModel.findOneAndUpdate(
-            { _id: adminIDPrefix },
+            { _id: adminIdPrefix },
             { $inc: { seq: 1 } },
             { new: true, upsert: true, setDefaultsOnInsert: true }
         );
 
         if (!counter) {
-            logWithTime("🛑 Critical: Failed to generate or retrieve admin counter.");
+            logWithTime("🛑 Critical: Failed to generate or retrieve user counter.");
             return ""; 
         }
 
-        let currentSeq = counter.seq;
+        const currentSeq = counter.seq;
 
         // Step 2: Check Capacity
-        if (currentSeq > adminDataCapacity) {
-            logWithTime("⚠️ Machine Capacity to Store Admin Data is full.");
+        if (currentSeq > userRegistrationCapacity) {
+            logWithTime("⚠️ Machine Capacity to Store User Data is full.");
             return "0"; 
         }
 
-        // Step 3: ID Construction (Using Template Literals for cleaner code)
-        // Logic: (Prefix + IP Code) + (BaseOffset + CurrentSequence)
+        // Step 3: ID Construction
+        // Logic: Offset ID by Adding Capacity (e.g., 10000 + 1 = 10001) for fixed length
+        const numericId = userRegistrationCapacity + currentSeq; 
         
-        // Note: Make sure adminUserID is defined/imported properly
-        const numericId = (adminDataCapacity+currentSeq); 
-        
-        const identityCode = `${adminIDPrefix}${IP_Address_Code}`;
-        const adminId = `${identityCode}${numericId}`;
+        const identityCode = `${adminIdPrefix}${IP_Address_Code}`;
+        const userId = `${identityCode}${numericId}`;
 
-        return adminId;
+        return userId;
 
     } catch (err) {
-        logWithTime("🛑 Error in makeAdminId process");
+        logWithTime("🛑 Error in makeUserId process");
         errorMessage(err);    
         return ""; 
     }
 };
 
 module.exports = {
-    makeAdminId
+    makeUserId
 };
