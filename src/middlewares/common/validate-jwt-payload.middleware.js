@@ -5,7 +5,7 @@ const {
 } = require("@/responses/common/error-handler.response");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { tokenPayloads } = require("@configs/token.config");
-const { isValidUUID, isValidadminId, isValidMongoID } = require("@utils/id-validators.util");
+const { isValidUUID, isValidAdminId, isValidMongoID } = require("@utils/id-validators.util");
 const { validateObjectShape } = require("@utils/object-shape-validator.util");
 
 const validateJwtPayloadMiddleware = (req, res, next) => {
@@ -40,7 +40,7 @@ const validateJwtPayloadMiddleware = (req, res, next) => {
       return throwAccessDeniedError(res, "Invalid access token deviceId");
     }
     
-    if (!isValidadminId(accessToken.adminId)) {
+    if (!isValidAdminId(accessToken.adminId)) {
       logWithTime(`❌ [validateJwtPayloadMiddleware] Invalid access token adminId format`);
       logMiddlewareError("validateJwtPayloadMiddleware", "Access token adminId validation failed", req);
       return throwAccessDeniedError(res, "Invalid access token adminId");
@@ -57,7 +57,7 @@ const validateJwtPayloadMiddleware = (req, res, next) => {
       logMiddlewareError("validateJwtPayloadMiddleware", "Refresh token deviceId validation failed", req);
       return throwAccessDeniedError(res, "Invalid refresh token deviceId");
     }
-    if (!isValidadminId(refreshToken.adminId)) {
+    if (!isValidAdminId(refreshToken.adminId)) {
       logWithTime(`❌ [validateJwtPayloadMiddleware] Invalid refresh token adminId format`);
       logMiddlewareError("validateJwtPayloadMiddleware", "Refresh token adminId validation failed", req);
       return throwAccessDeniedError(res, "Invalid refresh token adminId");
