@@ -1,6 +1,6 @@
-const { DeviceModel } = require("@models/device.model");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { throwInternalServerError } = require("@/responses/common/error-handler.response");
+const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
+const { listDevicesService } = require("@services/devices/get/list-devices.service");
 const { listDevicesSuccessResponse } = require("@/responses/success/index");
 
 /**
@@ -9,6 +9,7 @@ const { listDevicesSuccessResponse } = require("@/responses/success/index");
  */
 const listDevices = async (req, res, next) => {
     try {
+        const admin = req.admin;
         const {
             deviceId,
             isBlocked,
@@ -79,35 +80,33 @@ const listDevices = async (req, res, next) => {
             if (createdTo) filter.createdAt.$lte = new Date(createdTo);
         }
 
-        /* 📌 Pagination */
-        const skip = (Number(page) - 1) * Number(limit);
-
-        /* ↕ Sorting */
-        const sort = {
-            [sortBy]: sortOrder === "asc" ? 1 : -1
+        // Pagination, sorting, and select options
+        const options = {
+            select,
+            page: Number(page),
+            limit: Number(limit),
+            sortBy,
+            sortOrder
         };
 
-        /* 📦 Query */
-        const query = DeviceModel.find(filter)
-            .sort(sort)
-            .skip(skip)
-            .limit(Number(limit));
+        // Call service
+        const result = await listDevicesService(
+            filter,
+            options,
+            admin,
+            req.device,
+            req.requestId
+        );
 
-        /* 🎯 Field Selection */
-        if (select) {
-            // select=deviceId,isBlocked,blockCount
-            query.select(select.split(",").join(" "));
+        // Handle service errors
+        if (!result.success) {
+            return throwInternalServerError(res, result.message);
         }
 
-        const [devices, total] = await Promise.all([
-            query.exec(),
-            DeviceModel.countDocuments(filter)
-        ]);
-
-        return listDevicesSuccessResponse(res, devices, total, page, limit);
+        return listDevicesSuccessResponse(res, result.data.devices, result.data.total, page, limit);
 
     } catch (error) {
-        logWithTime(`❌ Error in listDevices controller: ${error.message}`);
+        logWithTime(`❌ Error in listDevices controller ${getLogIdentifiers(req)}: ${error.message}`);
         return throwInternalServerError(res, error);
     }
 };

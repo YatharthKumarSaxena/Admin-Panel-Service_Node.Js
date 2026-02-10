@@ -1,67 +1,40 @@
 const { logWithTime } = require("@utils/time-stamps.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { throwInternalServerError, getLogIdentifiers, throwDBResourceNotFoundError } = require("@/responses/common/error-handler.response");
-const { OK } = require("@configs/http-status.config");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
-const { DeviceModel } = require("@models/index");
+const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
+const { getDeviceDetailsService } = require("@services/devices/get/get-device-details.service");
+const { viewDeviceDetailsSuccessResponse } = require("@/responses/success/index");
 
 /**
- * View Admin Details Controller
- * Retrieves comprehensive details of an admin
+ * View Device Details Controller
+ * Retrieves comprehensive details of a device
  */
 
 const viewDeviceDetails = async (req, res) => {
     try {
-        const actor = req.admin;
+        const admin = req.admin;
         const { deviceId, reason } = req.params;
 
-        const device = await DeviceModel.findOne({ deviceId: deviceId });
+        // Call service (service will fetch device and handle not found)
+        const result = await getDeviceDetailsService(
+            deviceId,
+            admin,
+            req.device,
+            req.requestId
+        );
 
-        if (!device) {
-            logWithTime(`❌ Device ${deviceId} not found ${getLogIdentifiers(req)}`);
-            return throwDBResourceNotFoundError(res, `Device with ID ${deviceId}`);
+        // Handle service errors
+        if (!result.success) {
+            if (result.type === 'NOT_FOUND') {
+                const { throwDBResourceNotFoundError } = require("@/responses/common/error-handler.response");
+                return throwDBResourceNotFoundError(res, result.message);
+            }
+            return throwInternalServerError(res, result.message);
         }
 
-        logWithTime(`🔍 Admin ${actor.adminId} viewing details of device ${deviceId}`);
-
-        // Prepare sanitized device details
-        const deviceDetails = {
-            deviceId: device.deviceId,
-            deviceType: device.deviceType,
-            deviceName: device.deviceName,
-            isVerified: device.isVerified,
-            createdAt: device.createdAt,
-            updatedAt: device.updatedAt,
-            isBlocked: device.isBlocked,
-            blockReason: device.blockReason,
-            blockReasonDetails: device.blockReasonDetails,
-            blockedBy: device.blockedBy,
-            blockCount: device.blockCount,
-            unblockReason: device.unblockReason,
-            unblockReasonDetails: device.unblockReasonDetails,
-            unblockedBy: device.unblockedBy,
-            unblockCount: device.unblockCount,
-            blockedAt: device.blockedAt,
-            unblockedAt: device.unblockedAt
-        };
-
-        logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.VIEW_DEVICE_DETAILS, {
-            description: `Admin ${actor.adminId} viewed details of device ${deviceId}`,
-            adminActions: {
-                targetId: deviceId,
-                reason: reason
-            }
-        });
-
-
-        return res.status(OK).json({
-            message: "Device details retrieved successfully",
-            data: deviceDetails,
-            viewedBy: actor.adminId
-        });
+        // Success response
+        return viewDeviceDetailsSuccessResponse(res, result.data, admin);
 
     } catch (err) {
-        logWithTime(`❌ Internal Error in viewing device details ${getLogIdentifiers(req)}`);
+        logWithTime(`❌ Internal Error in viewDeviceDetails controller ${getLogIdentifiers(req)}`);
         return throwInternalServerError(res, err);
     }
 };
