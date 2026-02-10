@@ -1,8 +1,7 @@
 const { logWithTime } = require("@utils/time-stamps.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { throwBadRequestError, throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
-const { OK } = require("@configs/http-status.config");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { unblockUserService } = require("@services/users/update/unblock-user.service");
+const { unblockUserSuccessResponse } = require("@/responses/success/index");
 const { UnblockReasons } = require("@configs/enums.config");
 const { notifyUserUnblocked, notifyUserUnblockedToSupervisor } = require("@utils/admin-notifications.util");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
@@ -25,51 +24,35 @@ const unblockUser = async (req, res) => {
     // Find user (assumed to be in req.foundUser by middleware)
     const user = req.foundUser;
 
-    const userId = user.userId;
-    
-    // Check if user is actually blocked
-    if (!user.isBlocked) {
-      logWithTime(`⚠️ User ${userId} is not blocked ${getLogIdentifiers(req)}`);
-      return throwBadRequestError(res, "User is not blocked");
+    // Call service
+    const result = await unblockUserService(
+      user,
+      admin,
+      reason,
+      reasonDetails,
+      req.device,
+      req.requestId
+    );
+
+    // Handle service errors
+    if (!result.success) {
+      if (result.type === 'NOT_BLOCKED') {
+        return throwBadRequestError(res, result.message);
+      }
+      return throwInternalServerError(res, result.message);
     }
 
-    // Unblock the user
-    user.isBlocked = false;
-    user.unblockReason = reason;
-    user.unblockReasonDetails = reasonDetails;
-    user.unblockedBy = admin.adminId;
-    user.updatedBy = admin.adminId;
-
-    await user.save();
-
-    logWithTime(`✅ User ${userId} unblocked successfully by ${admin.adminId}`);
-
     // Send notifications
-    await notifyUserUnblocked(user, admin, reason);
+    await notifyUserUnblocked(result.data, admin, reason);
     
     // Notify supervisor if different from actor
     const supervisor = await fetchAdmin(null, null, admin.supervisorId);
     if(supervisor) {
-      await notifyUserUnblockedToSupervisor(supervisor, user, admin, reason, reasonDetails);
+      await notifyUserUnblockedToSupervisor(supervisor, result.data, admin, reason, reasonDetails);
     }
 
-    // Update isBlocked status in Auth Service and all other services
-    
-    // Log activity
-    logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.UNBLOCK_USER, {
-      description: `User ${userId} unblocked for reason: ${reason}`,
-      adminActions: {
-        targetId: userId,
-        reason: reasonDetails
-      }
-    });
-
-    return res.status(OK).json({
-      message: "User unblocked successfully",
-      userId: userId,
-      unblockedBy: admin.adminId,
-      reason: reason
-    });
+    // Success response
+    return unblockUserSuccessResponse(res, result.data, admin);
 
   } catch (err) {
     if (err.name === 'ValidationError') {
