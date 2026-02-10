@@ -3,7 +3,7 @@
 const { AdminModel } = require("@models/admin.model");
 const { AdminStatusRequestModel } = require("@models/admin-status-request.model");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { logActivityTrackerEvent } = require("@/services/audit/activity-tracker.service");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { AdminErrorTypes, requestStatus, requestType, AdminType } = require("@configs/enums.config");
 const { 
@@ -12,16 +12,22 @@ const {
     notifyActivationToSupervisor 
 } = require("@utils/admin-notifications.util");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
+const { prepareAuditData, cloneForAudit } = require("@utils/audit-data.util");
 
 /**
  * Activate Admin with Request Management Service
  * @param {Object} targetAdmin - The admin to activate (from req with .lean())
  * @param {Object} activatorAdmin - The admin performing activation
  * @param {string} activationReason - Reason for activation
+ * @param {Object} device - Device object {deviceUUID, deviceType, deviceName}
+ * @param {string} requestId - Request ID for tracking
  * @returns {Promise<{success: boolean, data?: Object, type?: string, message?: string}>}
  */
-const activateAdminWithRequestService = async (targetAdmin, activatorAdmin, activationReason) => {
+const activateAdminWithRequestService = async (targetAdmin, activatorAdmin, activationReason, device, requestId) => {
     try {
+        // Clone for audit before changes
+        const oldAdminData = cloneForAudit(targetAdmin);
+
         // Check if Super Admin
         if (targetAdmin.adminType === AdminType.SUPER_ADMIN) {
             return {
@@ -45,20 +51,25 @@ const activateAdminWithRequestService = async (targetAdmin, activatorAdmin, acti
             targetAdminId: targetAdmin.adminId,
             requestType: { $in: [requestType.ACTIVATION, requestType.DEACTIVATION] },
             status: requestStatus.PENDING
-        });
+        }).lean();
 
         if (existingRequest) {
-            if (existingRequest.requestType === requestType.ACTIVATION) {
-                existingRequest.status = requestStatus.APPROVED;
-            } else if (existingRequest.requestType === requestType.DEACTIVATION) {
-                existingRequest.status = requestStatus.REJECTED;
-            }
+            const newStatus = existingRequest.requestType === requestType.ACTIVATION 
+                ? requestStatus.APPROVED 
+                : requestStatus.REJECTED;
 
-            existingRequest.reviewedBy = activatorAdmin.adminId;
-            existingRequest.reviewedAt = new Date();
-            existingRequest.reviewNotes = `Auto-processed: Admin directly activated by Super Admin ${activatorAdmin.adminId}`;
-
-            await existingRequest.save();
+            await AdminStatusRequestModel.findOneAndUpdate(
+                { _id: existingRequest._id },
+                {
+                    $set: {
+                        status: newStatus,
+                        reviewedBy: activatorAdmin.adminId,
+                        reviewedAt: new Date(),
+                        reviewNotes: `Auto-processed: Admin directly activated by Super Admin ${activatorAdmin.adminId}`
+                    }
+                },
+                { new: true, runValidators: true }
+            );
         }
 
         // Atomic activation - MUST use findOneAndUpdate because targetAdmin is .lean()
@@ -85,6 +96,9 @@ const activateAdminWithRequestService = async (targetAdmin, activatorAdmin, acti
 
         logWithTime(`✅ Admin activated in DB: ${updatedAdmin.adminId} by ${activatorAdmin.adminId}`);
 
+        // Prepare audit data
+        const { oldData, newData } = prepareAuditData(oldAdminData, updatedAdmin);
+
         // Send notifications
         await notifyAdminActivated(updatedAdmin, activatorAdmin);
         await notifyActivationConfirmation(activatorAdmin, updatedAdmin);
@@ -103,9 +117,18 @@ const activateAdminWithRequestService = async (targetAdmin, activatorAdmin, acti
         // Log activity
         logActivityTrackerEvent(
             activatorAdmin,
+            device,
+            requestId,
             eventType,
             `Admin ${updatedAdmin.adminId} directly activated by Super Admin`,
-            { targetAdminId: updatedAdmin.adminId, reason: activationReason }
+            { 
+                oldData,
+                newData,
+                adminActions: { 
+                    targetId: updatedAdmin.adminId, 
+                    reason: activationReason 
+                } 
+            }
         );
 
         return {

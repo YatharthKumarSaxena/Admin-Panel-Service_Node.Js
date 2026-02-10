@@ -2,9 +2,10 @@
 
 const { AdminModel } = require("@models/admin.model");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { logActivityTrackerEvent } = require("@/services/audit/activity-tracker.service");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { AdminErrorTypes } = require("@configs/enums.config");
+const { prepareAuditData, cloneForAudit } = require("@utils/audit-data.util");
 
 /**
  * Update Admin Details Service
@@ -12,13 +13,18 @@ const { AdminErrorTypes } = require("@configs/enums.config");
  * @param {Object} updaterAdmin - The admin performing the update
  * @param {Object} updates - Fields to update {firstName, etc.}
  * @param {string} updateReason - Reason for update
+ * @param {Object} device - Device object {deviceUUID, deviceType, deviceName}
+ * @param {string} requestId - Request ID for tracking
  * @returns {Promise<{success: boolean, data?: Object, type?: string, message?: string}>}
  */
-const updateAdminDetailsService = async (targetAdmin, updaterAdmin, updates, updateReason) => {
+const updateAdminDetailsService = async (targetAdmin, updaterAdmin, updates, updateReason, device, requestId) => {
     try {
         const allowedUpdates = ['firstName'];
         const updateFields = {};
         const updatedFieldNames = [];
+
+        // Clone for audit before changes
+        const oldAdminData = cloneForAudit(targetAdmin);
 
         // Build update object
         for (const [key, value] of Object.entries(updates)) {
@@ -56,15 +62,23 @@ const updateAdminDetailsService = async (targetAdmin, updaterAdmin, updates, upd
 
         logWithTime(`✅ Admin details updated in DB: ${updatedAdmin.adminId}`);
 
+        // Prepare audit data
+        const { oldData, newData } = prepareAuditData(oldAdminData, updatedAdmin);
+
         // Log activity
         logActivityTrackerEvent(
             updaterAdmin,
+            device,
+            requestId,
             ACTIVITY_TRACKER_EVENTS.ADMIN_UPDATED,
-            `Updated admin ${updatedAdmin.adminId} details`,
+            `Updated admin ${updatedAdmin.adminId} details: ${updatedFieldNames.join(', ')}`,
             { 
-                targetAdminId: updatedAdmin.adminId, 
-                updatedFields: updatedFieldNames,
-                reason: updateReason 
+                oldData,
+                newData,
+                adminActions: { 
+                    targetId: updatedAdmin.adminId, 
+                    reason: updateReason 
+                } 
             }
         );
 

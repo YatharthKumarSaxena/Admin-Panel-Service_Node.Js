@@ -2,9 +2,10 @@
 
 const { AdminModel } = require("@models/admin.model");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { logActivityTrackerEvent } = require("@/services/audit/activity-tracker.service");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { AdminErrorTypes } = require("@configs/enums.config");
+const { prepareAuditData, cloneForAudit } = require("@utils/audit-data.util");
 
 /**
  * Change Supervisor Service
@@ -12,11 +13,16 @@ const { AdminErrorTypes } = require("@configs/enums.config");
  * @param {Object} changerAdmin - The admin performing the change
  * @param {string} newSupervisorId - New supervisor ID
  * @param {string} changeReason - Reason for change
+ * @param {Object} device - Device object {deviceUUID, deviceType, deviceName}
+ * @param {string} requestId - Request ID for tracking
  * @returns {Promise<{success: boolean, data?: Object, type?: string, message?: string}>}
  */
-const changeSupervisorService = async (targetAdmin, changerAdmin, newSupervisorId, changeReason) => {
+const changeSupervisorService = async (targetAdmin, changerAdmin, newSupervisorId, changeReason, device, requestId) => {
     try {
         const oldSupervisorId = targetAdmin.supervisorId;
+
+        // Clone for audit before changes
+        const oldAdminData = cloneForAudit(targetAdmin);
 
         // Check if same supervisor
         if (oldSupervisorId === newSupervisorId) {
@@ -49,16 +55,23 @@ const changeSupervisorService = async (targetAdmin, changerAdmin, newSupervisorI
 
         logWithTime(`✅ Supervisor changed in DB: ${updatedAdmin.adminId} from ${oldSupervisorId} to ${newSupervisorId}`);
 
+        // Prepare audit data
+        const { oldData, newData } = prepareAuditData(oldAdminData, updatedAdmin);
+
         // Log activity
         logActivityTrackerEvent(
             changerAdmin,
+            device,
+            requestId,
             ACTIVITY_TRACKER_EVENTS.CHANGE_SUPERVISOR,
-            `Changed supervisor for ${updatedAdmin.adminId}`,
+            `Changed supervisor for ${updatedAdmin.adminId} from ${oldSupervisorId} to ${newSupervisorId}`,
             { 
-                targetAdminId: updatedAdmin.adminId, 
-                oldSupervisorId,
-                newSupervisorId,
-                reason: changeReason 
+                oldData,
+                newData,
+                adminActions: { 
+                    targetId: updatedAdmin.adminId, 
+                    reason: changeReason 
+                } 
             }
         );
 

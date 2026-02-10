@@ -2,9 +2,10 @@
 
 const { AdminModel } = require("@models/admin.model");
 const { logWithTime } = require("@utils/time-stamps.util");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { logActivityTrackerEvent } = require("@/services/audit/activity-tracker.service");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { AdminErrorTypes } = require("@configs/enums.config");
+const { prepareAuditData, cloneForAudit } = require("@utils/audit-data.util");
 
 /**
  * Update Admin Role Service
@@ -12,11 +13,16 @@ const { AdminErrorTypes } = require("@configs/enums.config");
  * @param {Object} updaterAdmin - The admin performing the update
  * @param {string} newRole - New admin type/role
  * @param {string} updateReason - Reason for role change
+ * @param {Object} device - Device object {deviceUUID, deviceType, deviceName}
+ * @param {string} requestId - Request ID for tracking
  * @returns {Promise<{success: boolean, data?: Object, type?: string, message?: string}>}
  */
-const updateAdminRoleService = async (targetAdmin, updaterAdmin, newRole, updateReason) => {
+const updateAdminRoleService = async (targetAdmin, updaterAdmin, newRole, updateReason, device, requestId) => {
     try {
         const oldRole = targetAdmin.adminType;
+
+        // Clone for audit before changes
+        const oldAdminData = cloneForAudit(targetAdmin);
 
         // Check if same role
         if (oldRole === newRole) {
@@ -49,16 +55,23 @@ const updateAdminRoleService = async (targetAdmin, updaterAdmin, newRole, update
 
         logWithTime(`✅ Admin role updated in DB: ${updatedAdmin.adminId} from ${oldRole} to ${newRole}`);
 
+        // Prepare audit data
+        const { oldData, newData } = prepareAuditData(oldAdminData, updatedAdmin);
+
         // Log activity
         logActivityTrackerEvent(
             updaterAdmin,
+            device,
+            requestId,
             ACTIVITY_TRACKER_EVENTS.UPDATE_ADMIN_ROLE,
-            `Updated role for ${updatedAdmin.adminId}`,
+            `Updated role for ${updatedAdmin.adminId} from ${oldRole} to ${newRole}`,
             { 
-                targetAdminId: updatedAdmin.adminId, 
-                oldRole,
-                newRole,
-                reason: updateReason 
+                oldData,
+                newData,
+                adminActions: { 
+                    targetId: updatedAdmin.adminId, 
+                    reason: updateReason 
+                } 
             }
         );
 
