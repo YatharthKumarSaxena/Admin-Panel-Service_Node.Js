@@ -1,8 +1,7 @@
-const { ActivityTrackerModel } = require("@models/activity-tracker.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
-const { OK } = require("@configs/http-status.config");
-const { viewScope } = require("@configs/enums.config");
+const { viewOwnActivityTrackerService } = require("@services/activity-trackers/get/view-own-activity-tracker.service");
+const { viewOwnActivityTrackerSuccessResponse } = require("@/responses/success/index");
 
 /**
  * View Own Activity Tracker Controller
@@ -30,10 +29,8 @@ const viewOwnActivityTracker = async (req, res) => {
       deviceId            // Filter by specific device
     } = req.query;
 
-    // ✅ Query only for actor's own activity
-    const query = {
-      adminId: actor.adminId
-    };
+    // Build query from filters
+    const query = {};
 
     // Apply filters
     if (eventType) {
@@ -73,70 +70,52 @@ const viewOwnActivityTracker = async (req, res) => {
       }
     }
 
-    // Pagination
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const sortObj = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
+    // Pagination and sorting options
+    const options = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      sortBy,
+      sortOrder
+    };
 
-    // Execute query
-    const [activities, totalCount] = await Promise.all([
-      ActivityTrackerModel.find(query)
-        .sort(sortObj)
-        .limit(parseInt(limit))
-        .skip(skip)
-        .lean(),
-      ActivityTrackerModel.countDocuments(query)
-    ]);
+    // Call service
+    const result = await viewOwnActivityTrackerService(
+      query,
+      options,
+      actor
+    );
 
-    // Calculate event type statistics
-    const eventTypeCounts = await ActivityTrackerModel.aggregate([
-      { $match: query },
-      { $group: { _id: "$eventType", count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: 10 }
-    ]);
+    // Handle service errors
+    if (!result.success) {
+      return throwInternalServerError(res, result.message);
+    }
 
-    logWithTime(`✅ Own activity tracker fetched by ${actor.adminId}: ${activities.length}/${totalCount} records`);
-
-    // ❌ No activity logging here - viewing own activity is not audit-worthy
-
-    return res.status(OK).json({
-      message: "Your activity tracker retrieved successfully",
-      activities: activities,
-      statistics: {
-        totalActivities: totalCount,
-        topEvents: eventTypeCounts.map(e => ({ 
-          eventType: e._id, 
-          count: e.count 
-        }))
+    // Build filters object for response
+    const filters = {
+      eventType: eventType || null,
+      performedBy: performedBy || null,
+      deviceType: deviceType || null,
+      deviceId: deviceId || null,
+      targetId: targetUserId || null,
+      description: description || null,
+      dateRange: {
+        from: dateFrom || null,
+        to: dateTo || null
       },
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalCount / parseInt(limit)),
-        totalRecords: totalCount,
-        recordsPerPage: parseInt(limit),
-        hasNext: skip + activities.length < totalCount,
-        hasPrevious: parseInt(page) > 1
-      },
-      filters: {
-        eventType: eventType || null,
-        performedBy: performedBy || null,
-        deviceType: deviceType || null,
-        deviceId: deviceId || null,
-        targetId: targetUserId || null,
-        description: description || null,
-        dateRange: {
-          from: dateFrom || null,
-          to: dateTo || null
-        },
-        sortBy: sortBy,
-        sortOrder: sortOrder
-      },
-      meta: {
-        viewScope: viewScope.SELF_ONLY,
-        fetchedBy: actor.adminId,
-        fetchedAt: new Date()
-      }
-    });
+      sortBy: sortBy,
+      sortOrder: sortOrder
+    };
+
+    return viewOwnActivityTrackerSuccessResponse(
+      res,
+      result.data.activities,
+      result.data.total,
+      page,
+      limit,
+      result.data.statistics,
+      filters,
+      result.data.meta
+    );
 
   } catch (err) {
     logWithTime(`❌ Error fetching own activity tracker: ${err.message} ${getLogIdentifiers(req)}`);

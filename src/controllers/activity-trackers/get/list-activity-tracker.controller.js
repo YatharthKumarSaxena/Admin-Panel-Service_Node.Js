@@ -1,10 +1,7 @@
-const { ActivityTrackerModel } = require("@models/activity-tracker.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
-const { OK } = require("@configs/http-status.config");
-const { AdminType, viewScope } = require("@configs/enums.config");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
+const { listActivityTrackerService } = require("@services/activity-trackers/get/list-activity-tracker.service");
+const { listActivityTrackerSuccessResponse } = require("@/responses/success/index");
 
 /**
  * List Activity Tracker Controller
@@ -46,21 +43,8 @@ const listActivityTracker = async (req, res) => {
 
     const { reason } = req.body;
 
-    // ✅ Hierarchical access control
+    // Build query from filters
     let query = {};
-
-    if (actor.adminType === AdminType.SUPER_ADMIN) {
-      // Super Admin: Can view ALL activity tracker logs
-    } else if (actor.adminType === AdminType.MID_ADMIN) {
-      // Mid Admin: Can only view regular ADMIN activities and their own
-      const { AdminModel } = require("@models/admin.model");
-      const allowedAdmins = await AdminModel.find({ adminType: AdminType.ADMIN }).select('adminId').lean();
-      const allowedIds = [...allowedAdmins.map(a => a.adminId), actor.adminId];
-      query.adminId = { $in: allowedIds };
-    } else {
-      // Regular ADMIN: Can only view their own activity
-      query.adminId = actor.adminId;
-    }
 
     // Apply primary filters
     if (eventType) {
@@ -128,93 +112,76 @@ const listActivityTracker = async (req, res) => {
       }
     }
 
-    // Pagination
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const sortObj = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
+    // Pagination and sorting options
+    const options = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      sortBy,
+      sortOrder
+    };
 
-    // Execute query
-    const [activities, totalCount] = await Promise.all([
-      ActivityTrackerModel.find(query)
-        .sort(sortObj)
-        .limit(parseInt(limit))
-        .skip(skip)
-        .lean(),
-      ActivityTrackerModel.countDocuments(query)
-    ]);
+    // Call service
+    const result = await listActivityTrackerService(
+      query,
+      options,
+      actor,
+      reason,
+      req.device,
+      req.requestId
+    );
 
-    // Calculate statistics
-    const eventTypeCounts = await ActivityTrackerModel.aggregate([
-      { $match: query },
-      { $group: { _id: "$eventType", count: { $sum: 1 } } },
-      { $sort: { count: -1 } }
-    ]);
+    // Handle service errors
+    if (!result.success) {
+      return throwInternalServerError(res, result.message);
+    }
 
-    logWithTime(`✅ Activity tracker list fetched by ${actor.adminId} (${actor.adminType}): ${activities.length}/${totalCount} records. Reason: ${reason}`);
-
-    // ✅ Log this activity
-    logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.LIST_ACTIVITY_TRACKER, {
-      description: `Admin ${actor.adminId} listed activity tracker logs`,
-      adminActions: {
-        reason: reason
-      }
-    });
-
-    return res.status(OK).json({
-      message: "Activity tracker logs retrieved successfully",
-      activities: activities,
-      statistics: {
-        eventTypeBreakdown: eventTypeCounts.map(e => ({ eventType: e._id, count: e.count }))
+    // Build filters object for response
+    const filters = {
+      primary: {
+        adminId: adminId || null,
+        eventType: eventType || null,
+        performedBy: performedBy || null,
+        deviceType: deviceType || null,
+        deviceId: deviceId || null
       },
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalCount / parseInt(limit)),
-        totalRecords: totalCount,
-        recordsPerPage: parseInt(limit),
-        hasNext: skip + activities.length < totalCount,
-        hasPrevious: parseInt(page) > 1
-      },
-      filters: {
-        primary: {
-          adminId: adminId || null,
-          eventType: eventType || null,
-          performedBy: performedBy || null,
-          deviceType: deviceType || null,
-          deviceId: deviceId || null
+      nested: {
+        adminDetails: {
+          adminId: adminDetailsId || null
         },
-        nested: {
-          adminDetails: {
-            adminId: adminDetailsId || null
-          },
-          adminActions: {
-            targetId: targetUserId || null,
-            reason: actionReason || null
-          }
-        },
-        search: {
-          description: description || null
-        },
-        dateRange: {
-          createdAt: {
-            from: dateFrom || createdAfter || null,
-            to: dateTo || createdBefore || null
-          },
-          updatedAt: {
-            after: updatedAfter || null,
-            before: updatedBefore || null
-          }
-        },
-        sorting: {
-          sortBy: sortBy,
-          sortOrder: sortOrder
+        adminActions: {
+          targetId: targetUserId || null,
+          reason: actionReason || null
         }
       },
-      meta: {
-        viewScope: actor.adminType === AdminType.SUPER_ADMIN ? viewScope.ALL : (actor.adminType === AdminType.MID_ADMIN ? viewScope.ADMINS_ONLY : viewScope.SELF_ONLY),
-        fetchedBy: actor.adminId,
-        reason: reason,
-        fetchedAt: new Date()
+      search: {
+        description: description || null
+      },
+      dateRange: {
+        createdAt: {
+          from: dateFrom || createdAfter || null,
+          to: dateTo || createdBefore || null
+        },
+        updatedAt: {
+          after: updatedAfter || null,
+          before: updatedBefore || null
+        }
+      },
+      sorting: {
+        sortBy: sortBy,
+        sortOrder: sortOrder
       }
-    });
+    };
+
+    return listActivityTrackerSuccessResponse(
+      res,
+      result.data.activities,
+      result.data.total,
+      page,
+      limit,
+      result.data.statistics,
+      filters,
+      result.data.meta
+    );
 
   } catch (err) {
     logWithTime(`❌ Error fetching activity tracker list: ${err.message} ${getLogIdentifiers(req)}`);

@@ -1,12 +1,9 @@
-const { ActivityTrackerModel } = require("@models/activity-tracker.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { throwInternalServerError, getLogIdentifiers, throwAccessDeniedError } = require("@/responses/common/error-handler.response");
-const { OK } = require("@configs/http-status.config");
-const { AdminType } = require("@configs/enums.config");
 const { canActOnRole } = require("@/utils/role.util");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
+const { viewAdminActivityTrackerService } = require("@services/activity-trackers/get/view-admin-activity-tracker.service");
+const { viewAdminActivityTrackerSuccessResponse } = require("@/responses/success/index");
 
 /**
  * View Single Admin Activity Tracker Controller
@@ -36,10 +33,8 @@ const viewAdminActivityTracker = async (req, res) => {
 
     const { reason } = req.body;
 
-    // ✅ Hierarchical access control
-    let query = {};
-
-    const foundAdmin = fetchAdmin(null, null, targetAdminId);
+    // Hierarchical access control
+    const foundAdmin = await fetchAdmin(null, null, targetAdminId);
     if (!foundAdmin) {
       logWithTime(`❌ Admin ${actor.adminId} attempted to view activity of non-existent admin ${targetAdminId} ${getLogIdentifiers(req)}`);
       return throwAccessDeniedError(res, "Target admin does not exist");
@@ -50,6 +45,9 @@ const viewAdminActivityTracker = async (req, res) => {
       logWithTime(`❌ Admin ${actor.adminId} attempted to view unauthorized activity of admin ${targetAdminId} ${getLogIdentifiers(req)}`);
       return throwAccessDeniedError(res, "You don't have permission to view this admin's activity");
     }
+
+    // Build query from filters
+    let query = {};
 
     // Apply filters
     if (eventType) {
@@ -88,67 +86,58 @@ const viewAdminActivityTracker = async (req, res) => {
       }
     }
 
-    // Pagination
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const sortObj = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
+    // Pagination and sorting options
+    const options = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      sortBy,
+      sortOrder
+    };
 
-    // Execute query
-    const [activities, totalCount] = await Promise.all([
-      ActivityTrackerModel.find(query)
-        .sort(sortObj)
-        .limit(parseInt(limit))
-        .skip(skip)
-        .lean(),
-      ActivityTrackerModel.countDocuments(query)
-    ]);
+    // Call service (only if viewing OTHER admin's activity)
+    const result = await viewAdminActivityTrackerService(
+      targetAdminId,
+      query,
+      options,
+      actor,
+      reason,
+      req.device,
+      req.requestId
+    );
 
-    logWithTime(`✅ Activity tracker fetched by ${actor.adminId} for ${targetAdminId || 'all admins'}: ${activities.length}/${totalCount} records. Reason: ${reason}`);
-
-    // ✅ Log activity only when viewing OTHER admin's activity (not self)
-    if (targetAdminId && targetAdminId !== actor.adminId) {
-      logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.VIEW_ADMIN_ACTIVITY_TRACKER, {
-        description: `Admin ${actor.adminId} viewed activity tracker of admin ${targetAdminId}`,
-        adminActions: {
-          targetId: targetAdminId,
-          reason: reason
-        }
-      });
+    // Handle service errors
+    if (!result.success) {
+      return throwInternalServerError(res, result.message);
     }
 
-    return res.status(OK).json({
-      message: "Admin activity tracker retrieved successfully",
-      activities: activities,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalCount / parseInt(limit)),
-        totalRecords: totalCount,
-        recordsPerPage: parseInt(limit),
-        hasNext: skip + activities.length < totalCount,
-        hasPrevious: parseInt(page) > 1
+    // Build filters object for response
+    const filters = {
+      targetAdminId: targetAdminId || null,
+      eventType: eventType || null,
+      performedBy: performedBy || null,
+      deviceType: deviceType || null,
+      deviceId: deviceId || null,
+      targetId: targetUserId || null,
+      description: description || null,
+      dateRange: {
+        from: dateFrom || null,
+        to: dateTo || null
       },
-      filters: {
-        targetAdminId: targetAdminId || null,
-        eventType: eventType || null,
-        performedBy: performedBy || null,
-        deviceType: deviceType || null,
-        deviceId: deviceId || null,
-        targetId: targetUserId || null,
-        description: description || null,
-        dateRange: {
-          from: dateFrom || null,
-          to: dateTo || null
-        },
-        sortBy: sortBy,
-        sortOrder: sortOrder
-      },
-      meta: {
-        viewScope: actor.adminType === AdminType.SUPER_ADMIN ? "ALL_ADMINS" : 
-                   actor.adminType === AdminType.MID_ADMIN ? "REGULAR_ADMINS_AND_SELF" : "SELF_ONLY",
-        fetchedBy: actor.adminId,
-        reason: reason,
-        fetchedAt: new Date()
-      }
-    });
+      sortBy: sortBy,
+      sortOrder: sortOrder
+    };
+
+    return viewAdminActivityTrackerSuccessResponse(
+      res,
+      result.data.activities,
+      result.data.total,
+      page,
+      limit,
+      result.data.statistics,
+      filters,
+      result.data.targetAdminId,
+      result.data.meta
+    );
 
   } catch (err) {
     logWithTime(`❌ Error fetching admin activity tracker: ${err.message} ${getLogIdentifiers(req)}`);
