@@ -42,7 +42,9 @@ const createAdmin = async (req, res) => {
     const result = await createAdminService(
       creator,
       { firstName, adminType, supervisorId, creationReason },
-      supervisor
+      supervisor,
+      req.device,
+      req.requestId
     );
 
     // Handle service errors

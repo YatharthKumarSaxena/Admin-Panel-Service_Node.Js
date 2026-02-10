@@ -3,12 +3,12 @@
 const { AdminModel } = require("@models/admin.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { CREATED } = require("@configs/http-status.config");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { logActivityTrackerEvent } = require("@/services/audit/activity-tracker.service");
 const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
 const { AdminType } = require("@configs/enums.config");
 const { makeAdminId } = require("@services/user-id.service");
 const { fetchAdmin } = require("@/utils/fetch-admin.util"); 
+const { bulkCreateAdminsSuccessResponse } = require("@/responses/success/admin.response");
 const XLSX = require("xlsx");
 const path = require("path");
 const fs = require("fs");
@@ -193,19 +193,18 @@ const bulkAdminCreate = async (req, res) => {
     logWithTime(`📄 Bulk report generated: ${fileName}`);
 
     // ✅ Final Response
-    return res.status(CREATED).json({
-      message: "Bulk admin creation process completed",
-      summary: {
-        totalProcessed: rows.length,
-        created: createdCount,
-        invalid: invalidCount,
-        skipped: notApplicableCount,
-        errors: errorCount,
-        aborted: abortedCount, // 🆕 Summary mein bhi dikhega
-        reportFile: fileName
-      },
+    const summary = {
+      totalProcessed: rows.length,
+      created: createdCount,
+      invalid: invalidCount,
+      skipped: notApplicableCount,
+      errors: errorCount,
+      aborted: abortedCount,
+      reportFile: fileName,
       downloadUrl: `/api/v1/downloads/${fileName}`
-    });
+    };
+
+    return bulkCreateAdminsSuccessResponse(res, createdCount, invalidCount + notApplicableCount + errorCount + abortedCount, summary);
 
   } catch (err) {
     logWithTime(`❌ Critical Error in bulk admin creation ${getLogIdentifiers(req)}`);
