@@ -1,6 +1,6 @@
 const { logWithTime } = require("@utils/time-stamps.util");
-const { OK } = require("@configs/http-status.config");
 const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
+const { viewOwnAdminDetailsSuccessResponse } = require("@/responses/success/admin.response");
 
 /**
  * View Own Admin Details Controller
@@ -31,10 +31,7 @@ const viewOwnAdminDetails = async (req, res) => {
       deactivationReason: admin.deactivationReason || null
     };
 
-    return res.status(OK).json({
-      message: "Profile retrieved successfully",
-      profile: adminProfile
-    });
+    return viewOwnAdminDetailsSuccessResponse(res, adminProfile);
 
   } catch (err) {
     logWithTime(`❌ Error viewing own profile: ${err.message} ${getLogIdentifiers(req)}`);

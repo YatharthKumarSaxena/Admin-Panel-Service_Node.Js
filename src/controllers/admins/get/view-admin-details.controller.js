@@ -1,8 +1,6 @@
 const { logWithTime } = require("@utils/time-stamps.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
-const { OK } = require("@configs/http-status.config");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { viewAdminDetailsSuccessResponse } = require("@/responses/success/admin.response");
 
 /**
  * View Admin Details Controller
@@ -36,23 +34,9 @@ const viewAdminDetails = async (req, res) => {
       deactivatedReason: targetAdmin.deactivatedReason || null
     };
 
-    // Log activity - only when viewing OTHER admins (not self)
-    // Industry standard: Self-views are not audit-worthy
-    if (actor.adminId !== targetAdmin.adminId) {
-      logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.VIEW_ADMIN_DETAILS, {
-        description: `Admin ${actor.adminId} viewed details of ${targetAdmin.adminId}`,
-        adminActions: {
-          targetId: targetAdmin.adminId,
-          reason: reason
-        }
-      });
-    }
-
-    return res.status(OK).json({
-      message: "Admin details retrieved successfully",
-      data: adminDetails,
-      viewedBy: actor.adminId
-    });
+    logWithTime(`✅ Admin ${actor.adminId} viewed details of ${targetAdmin.adminId}`);
+  
+    return viewAdminDetailsSuccessResponse(res, adminDetails);
 
   } catch (err) {
     logWithTime(`❌ Internal Error in viewing admin details ${getLogIdentifiers(req)}`);
