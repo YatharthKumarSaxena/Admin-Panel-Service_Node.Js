@@ -1,72 +1,53 @@
-const { OK } = require("@/configs/http-status.config");
 const { logWithTime } = require("@/utils/time-stamps.util");
-const { DeviceModel } = require("@models/device.model");
-const { AdminModel } = require("@models/admin.model");
-const { throwDBResourceNotFoundError, throwConflictError, throwInternalServerError } = require("@/responses/common/error-handler.response");
-const { logActivityTrackerEvent } = require("@utils/activity-tracker.util");
+const { blockDeviceService } = require("@services/devices/update/block-device.service");
+const { throwConflictError, throwInternalServerError, getLogIdentifiers } = require("@/responses/common/error-handler.response");
+const { blockDeviceSuccessResponse } = require("@/responses/success/index");
 const { notifyUserDeviceBlockedToSupervisor } = require("@utils/admin-notifications.util");
-const { ACTIVITY_TRACKER_EVENTS } = require("@/configs/tracker.config");
+const { fetchAdmin } = require("@/utils/fetch-admin.util");
 
 /* 🚫 Block Device */
 const blockDevice = async (req, res) => {
     try {
+        const admin = req.admin;
         const { deviceId } = req.params;
-        const {
-            reason,
-            reasonDetails
-        } = req.body;
+        const { reason, reasonDetails } = req.body;
 
+        // Check if blocking own device
         if (deviceId === req.deviceId) {
-            logWithTime(`❌ Admin ${req.admin.adminId} attempted to block their own device ${deviceId}`);
+            logWithTime(`❌ Admin ${admin.adminId} attempted to block their own device ${deviceId} ${getLogIdentifiers(req)}`);
             return throwConflictError(res, "You cannot block the device you are currently using");
         }
 
-        const adminId = req.admin.adminId; 
+        // Call service (service will fetch device and handle all DB operations)
+        const result = await blockDeviceService(
+            deviceId,
+            admin,
+            reason,
+            reasonDetails,
+            req.device,
+            req.requestId
+        );
 
-        const device = await DeviceModel.findOne({ deviceId });
-
-        if (!device) {
-            logWithTime(`❌ Device ${deviceId} not found for blocking`);
-            return throwDBResourceNotFoundError(res, `Device with ID ${deviceId}`);
+        // Handle service errors
+        if (!result.success) {
+            if (result.type === 'NOT_FOUND') {
+                const { throwDBResourceNotFoundError } = require("@/responses/common/error-handler.response");
+                return throwDBResourceNotFoundError(res, result.message);
+            }
+            if (result.type === 'ALREADY_BLOCKED') {
+                return throwConflictError(res, result.message);
+            }
+            return throwInternalServerError(res, result.message);
         }
 
-        if (device.isBlocked) {
-            logWithTime(`⚠️ Device ${deviceId} is already blocked`);
-            return throwConflictError(res, `Device with ID ${deviceId} is already blocked`);
-        }
-
-        device.isBlocked = true;
-        device.blockReason = reason;
-        device.blockReasonDetails = reasonDetails || null;
-        device.blockedBy = adminId;
-
-        await device.save();
-
-        logWithTime(`✅ Device ${deviceId} blocked by admin ${adminId}`);
-
-        // Activity Tracking
-        logActivityTrackerEvent(req, ACTIVITY_TRACKER_EVENTS.DEVICE_BLOCKED, {
-            adminActions: {
-                targetId: deviceId,
-                reason: reason,
-            },
-            description: `Admin ${adminId} blocked device ${deviceId}`,
-            oldData: { isBlocked: false },
-            newData: { isBlocked: true, blockReason: reason, blockedBy: adminId }
-        });
-
-        // Notify Supervisor
+        // Notify Supervisor using fetchAdmin utility
         try {
-            const admin = req.admin;
-            if (admin.supervisor) {
-                const supervisor = await AdminModel.findOne({ adminId: admin.supervisor });
+            if (admin.supervisorId) {
+                const supervisor = await fetchAdmin(null, null, admin.supervisorId);
                 if (supervisor) {
-                    // Get device owner if exists
-                    const deviceOwner = device.owner ? await require("@models/user.model").UserModel.findById(device.owner) : null;
-                    
                     await notifyUserDeviceBlockedToSupervisor(
                         supervisor,
-                        deviceOwner || { userId: 'N/A', email: 'N/A', fullPhoneNumber: 'N/A' },
+                        { userId: 'N/A', email: 'N/A', fullPhoneNumber: 'N/A' },
                         deviceId,
                         admin,
                         reason,
@@ -75,17 +56,15 @@ const blockDevice = async (req, res) => {
                 }
             }
         } catch (notifyError) {
-            logWithTime(`⚠️ Failed to notify supervisor about device block: ${notifyError.message}`);
+            logWithTime(`⚠️ Failed to notify supervisor: ${notifyError.message}`);
         }
 
-        return res.status(OK).json({
-            success: true,
-            message: "Device blocked successfully"
-        });
+        // Success response
+        return blockDeviceSuccessResponse(res, result.data, admin);
 
     } catch (error) {
-        logWithTime(`❌ Internal Error in blocking device ${deviceId}`);
-        return throwInternalServerError(res,error);
+        logWithTime(`❌ Internal Error in blockDevice controller ${getLogIdentifiers(req)}: ${error.message}`);
+        return throwInternalServerError(res, error);
     }
 };
 
