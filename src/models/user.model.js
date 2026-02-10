@@ -29,7 +29,6 @@ const userSchema = new mongoose.Schema({
     unblockReason: { type: String, enum: Object.values(UnblockReasons), default: null },
     unblockReasonDetails: { type: String, minlength: reasonFieldLength.min, maxlength: reasonFieldLength.max, default: null },
     unblockedBy: { type: String, default: null, match: adminIdRegex },
-    unblockCount: { type: Number, default: 0 },
     blockedAt: { type: Date, default: null },
     unblockedAt: { type: Date, default: null }
 }, { timestamps: true, versionKey: false });
@@ -73,7 +72,6 @@ userSchema.pre("save", function (next) {
             this.blockCount += 1;
             this.blockedAt = new Date();
         } else {
-            this.unblockCount += 1;
             this.unblockedAt = new Date();
         }
     }

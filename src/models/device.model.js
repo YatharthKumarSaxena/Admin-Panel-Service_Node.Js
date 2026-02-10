@@ -75,8 +75,6 @@ const deviceSchema = new mongoose.Schema({
         default: null
     },
 
-    unblockCount: { type: Number, default: 0 },
-
     blockedAt: { type: Date, default: null },
     unblockedAt: { type: Date, default: null }
 
