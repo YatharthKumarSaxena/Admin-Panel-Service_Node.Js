@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
-const { DeviceType, AdminType, PerformedOnTypes } = require("@configs/enums.config");
+const { DeviceTypes, AdminTypes, PerformedOnTypes } = require("@configs/enums.config");
 const { adminIdRegex, UUID_V4_REGEX } = require("@configs/regex.config");
 const { DB_COLLECTIONS } = require("@/configs/db-collections.config");
 
@@ -31,14 +31,14 @@ const activityTrackerSchema = new mongoose.Schema({
 
   deviceType: {
     type: String,
-    enum: Object.values(DeviceType),
+    enum: Object.values(DeviceTypes),
     default: null
   },
 
   performedBy: {
     type: String,
-    enum: Object.values(AdminType),
-    default: AdminType.ADMIN
+    enum: Object.values(AdminTypes),
+    default: AdminTypes.INTERNAL_ADMIN
   },
 
   description: {

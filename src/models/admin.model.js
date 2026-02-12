@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { firstNameLength } = require("@configs/fields-length.config");
-const { AdminType, ActivationReasons, DeactivationReasons, FirstNameFieldSetting } = require("@configs/enums.config");
+const { AdminTypes, ActivationReasons, DeactivationReasons, FirstNameFieldSetting } = require("@configs/enums.config");
 const { firstNameRegex, adminIdRegex } = require("@configs/regex.config");
 const { FIRST_NAME_SETTING } = require("@configs/security.config");
 const { DB_COLLECTIONS } = require("@/configs/db-collections.config");
@@ -27,8 +27,8 @@ const adminSchema = new mongoose.Schema({
     },
     adminType: {
         type: String,
-        enum: Object.values(AdminType),
-        default: AdminType.ADMIN
+        enum: Object.values(AdminTypes),
+        default: AdminTypes.INTERNAL_ADMIN
     },
     supervisorId: {
         type: String,
@@ -88,14 +88,15 @@ adminSchema.pre("validate", function (next) {
     }
 
     // 2. Supervisor Validation (Dependent on AdminType) 
-    if ([AdminType.ADMIN, AdminType.MID_ADMIN].includes(this.adminType)) {
+    // All roles except SUPER_ADMIN require a supervisor
+    if (this.adminType !== AdminTypes.SUPER_ADMIN) {
         if (!this.supervisorId) {
-            return next(new Error(`supervisorId is required for ${this.adminType} users.`));
+            return next(new Error(`supervisorId is required for ${this.adminType} admins.`));
         }
     }
     
     // 3. createdBy Validation (Dependent on AdminType) 
-    if (this.adminType === AdminType.SUPER_ADMIN) {
+    if (this.adminType === AdminTypes.SUPER_ADMIN) {
         if (this.createdBy !== null && this.createdBy !== "SYSTEM") {
             return next(new Error("SUPER_ADMIN must have createdBy as null or 'SYSTEM'."));
         }

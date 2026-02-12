@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
-const { reasonFieldLength, deviceNameLength } = require("@configs/fields-length.config");
-const { BlockDeviceReasons, UnblockDeviceReasons, DeviceType } = require("@configs/enums.config");
-const { adminIdRegex, deviceIdRegex } = require("@configs/regex.config");
+const { notesFieldLength, deviceNameLength } = require("@configs/fields-length.config");
+const { DeviceTypes } = require("@configs/enums.config");
+const { BlockDeviceReasons, UnblockDeviceReasons } = require("@configs/reasons.config");
+const { adminIdRegex, UUID_V4_REGEX } = require("@configs/regex.config");
 const { DB_COLLECTIONS } = require("@/configs/db-collections.config");
 
 /* Device Tracker Schema */
@@ -11,7 +12,7 @@ const deviceSchema = new mongoose.Schema({
         required: true,
         unique: true,
         immutable: true,
-        match: deviceIdRegex,
+        match: UUID_V4_REGEX,
         index: true
     },
 
@@ -27,7 +28,7 @@ const deviceSchema = new mongoose.Schema({
     deviceType: {
         type: String,
         required: false,
-        enum: Object.values(DeviceType),
+        enum: Object.values(DeviceTypes),
         default: null
     },
 
@@ -43,8 +44,8 @@ const deviceSchema = new mongoose.Schema({
 
     blockReasonDetails: {
         type: String,
-        minlength: reasonFieldLength.min,
-        maxlength: reasonFieldLength.max,
+        minlength: notesFieldLength.min,
+        maxlength: notesFieldLength.max,
         default: null
     },
 
@@ -64,8 +65,8 @@ const deviceSchema = new mongoose.Schema({
 
     unblockReasonDetails: {
         type: String,
-        minlength: reasonFieldLength.min,
-        maxlength: reasonFieldLength.max,
+        minlength: notesFieldLength.min,
+        maxlength: notesFieldLength.max,
         default: null
     },
 
