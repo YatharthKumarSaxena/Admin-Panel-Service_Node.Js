@@ -1,98 +1,114 @@
 const mongoose = require("mongoose");
-const { adminIdRegex } = require("@configs/regex.config");
-const { requestType, requestStatus } = require("@configs/enums.config");
-const { reasonFieldLength, notesFieldLength } = require("@/configs/fields-length.config");
-const { DB_COLLECTIONS } = require("@/configs/db-collections.config");
+const { BaseRequestModel } = require("./base-request.model");
+const { requestType, requestStatus, AdminTypes } = require("@configs/enums.config");
+const { reasonFieldLength } = require("@/configs/fields-length.config");
+const { adminIdRegex } = require("@/configs/regex.config");
 
 /**
- * Admin Status Request Schema
- * Handles both activation and deactivation requests with approval workflow
+ * 🚦 Admin Status Request Discriminator
+ * Extends BaseRequest for admin activation/deactivation workflows
+ * 
+ * Handles:
+ * - Admin activation requests
+ * - Admin deactivation requests
+ * - Suspension workflows
+ * - Reactivation approvals
  */
 
 const adminStatusRequestSchema = new mongoose.Schema({
-  requestId: {
-    type: String,
-    unique: true,
-    required: true,
-    index: true
-  },
-  requestType: {
-    type: String,
-    enum: Object.values(requestType),
-    required: true
-  },
-  requestedBy: {
-    type: String,
-    required: true,
-    match: adminIdRegex,
-    index: true
-  },
-  targetAdminId: {
-    type: String,
-    required: true,
-    match: adminIdRegex,
-    index: true
-  },
-  reason: {
-    type: String,
-    required: true,
-    trim: true,
-    minlength: reasonFieldLength.min,
-    maxlength: reasonFieldLength.max
-  },
-  notes: {
-    type: String,
-    trim: true,
-    minlength: notesFieldLength.min,
-    maxlength: notesFieldLength.max,
-    default: null
-  },
-  status: {
-    type: String,
-    enum: Object.values(requestStatus),
-    default: requestStatus.PENDING,
-    index: true
-  },
-  reviewedBy: {
-    type: String,
-    match: adminIdRegex,
-    default: null
-  },
-  reviewedAt: {
-    type: Date,
-    default: null
-  },
-  reviewNotes: {
-    type: String,
-    trim: true,
-    minlength: notesFieldLength.min,
-    maxlength: notesFieldLength.max,
-    default: null
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-    immutable: true
-  }
-}, {
-  timestamps: true,
-  collection: "admin_status_requests"
+  // Status requests don't need additional fields beyond base
+  // requestType differentiates ACTIVATION vs DEACTIVATION
 });
 
-// Indexes for efficient queries
-adminStatusRequestSchema.index({ requestType: 1, status: 1 });
-adminStatusRequestSchema.index({ targetAdminId: 1, status: 1 });
-adminStatusRequestSchema.index({ createdAt: -1 });
+// Override reason validation to enforce length constraints
+adminStatusRequestSchema.path('reason').validate(function(value) {
+  if (!value || value.trim().length < reasonFieldLength.min) {
+    throw new Error(`Reason must be at least ${reasonFieldLength.min} characters`);
+  }
+  if (value.length > reasonFieldLength.max) {
+    throw new Error(`Reason must not exceed ${reasonFieldLength.max} characters`);
+  }
+  return true;
+}, 'Invalid reason length');
 
-// Prevent duplicate pending requests
+// 🔐 Type-Specific Indexes
+adminStatusRequestSchema.index({ targetId: 1, status: 1 });
+
+// Prevent duplicate pending requests for same admin and request type
 adminStatusRequestSchema.index(
-  { targetAdminId: 1, requestType: 1, status: 1 },
+  { targetId: 1, requestType: 1, status: 1 },
   { 
     unique: true,
-    partialFilterExpression: { status: requestStatus.PENDING }
+    partialFilterExpression: { 
+      status: requestStatus.PENDING,
+      requestType: { 
+        $in: [requestType.ACTIVATION, requestType.DEACTIVATION] 
+      }
+    }
   }
 );
 
-const AdminStatusRequestModel = mongoose.model(DB_COLLECTIONS.ADMIN_STATUS_REQUESTS, adminStatusRequestSchema);
+adminStatusRequestSchema.pre("validate", function(next) {
 
-module.exports = { AdminStatusRequestModel };
+  // Request type guard
+  if (![requestType.ACTIVATION, requestType.DEACTIVATION]
+        .includes(this.requestType)) {
+    return next(new Error(
+      "Admin status request type must be ACTIVATION or DEACTIVATION."
+    ));
+  }
+
+  // Target must be admin
+  if (!adminIdRegex.test(this.targetId)) {
+    return next(new Error("Target must be a valid adminId."));
+  }
+
+  // Requester must be admin
+  if (!adminIdRegex.test(this.requestedBy)) {
+    return next(new Error("Only admins can raise admin status requests."));
+  }
+
+  // Prevent self status change
+  if (this.requestedBy === this.targetId) {
+    return next(new Error(
+      "Admins cannot change their own status."
+    ));
+  }
+
+  next();
+});
+
+
+// 📊 Static Methods
+adminStatusRequestSchema.statics.findPendingActivations = function() {
+  return this.find({
+    requestType: requestType.ACTIVATION,
+    status: requestStatus.PENDING
+  }).sort({ createdAt: -1 });
+};
+
+adminStatusRequestSchema.statics.findPendingDeactivations = function() {
+  return this.find({
+    requestType: requestType.DEACTIVATION,
+    status: requestStatus.PENDING
+  }).sort({ createdAt: -1 });
+};
+
+// Create discriminator for ACTIVATION
+const AdminActivationRequestModel = BaseRequestModel.discriminator(
+  requestType.ACTIVATION,
+  adminStatusRequestSchema
+);
+
+// Create discriminator for DEACTIVATION (shares same schema)
+const AdminDeactivationRequestModel = BaseRequestModel.discriminator(
+  requestType.DEACTIVATION,
+  adminStatusRequestSchema.clone()
+);
+
+module.exports = { 
+  AdminActivationRequestModel,
+  AdminDeactivationRequestModel,
+  // Backward compatibility
+  AdminStatusRequestModel: AdminActivationRequestModel
+};
