@@ -9,7 +9,8 @@ const AuthModes = Object.freeze({
 
 const UserTypes = Object.freeze({
     CUSTOMER: "CUSTOMER",
-    USER: "USER"
+    USER: "USER",
+    CLIENT: "CLIENT"
 });
 
 const DeviceTypes = Object.freeze({
@@ -25,17 +26,23 @@ const ContactModes = Object.freeze({
 });
 
 const AdminTypes = Object.freeze({
-  ADMIN: "admin",
   SUPER_ADMIN: "super_admin",
-  MID_ADMIN: "mid_admin"
+  ORG_ADMIN: "org_admin",
+  OPERATIONS_ADMIN: "operations_admin",
+  SUPPORT_ADMIN: "support_admin",
+  AUDIT_ADMIN: "audit_admin",
+  INTERNAL_ADMIN: "internal_admin"
 });
 
 // Role Hierarchy: Higher numeric value = Higher authority
 // An admin can ONLY act on roles with STRICTLY LOWER hierarchy values
 const RoleHierarchy = Object.freeze({
-  [AdminTypes.SUPER_ADMIN]: 3,
-  [AdminTypes.MID_ADMIN]: 2,
-  [AdminTypes.ADMIN]: 1
+  [AdminTypes.SUPER_ADMIN]: 5,
+  [AdminTypes.ORG_ADMIN]: 4,
+  [AdminTypes.OPERATIONS_ADMIN]: 3,
+  [AdminTypes.SUPPORT_ADMIN]: 2,
+  [AdminTypes.AUDIT_ADMIN]: 2,
+  [AdminTypes.INTERNAL_ADMIN]: 1
 });
 
 const FirstNameFieldSetting = Object.freeze({
@@ -60,10 +67,23 @@ const AdminErrorTypes = Object.freeze({
 });
 
 const PerformedBy = Object.freeze({
-  ADMIN: "admin",
-  SYSTEM: "system",
-  MID_ADMIN: "mid_admin",
-  SUPER_ADMIN: "super_admin"
+  SUPER_ADMIN: "super_admin",
+  ORG_ADMIN: "org_admin",
+  OPERATIONS_ADMIN: "operations_admin",
+  SUPPORT_ADMIN: "support_admin",
+  AUDIT_ADMIN: "audit_admin",
+  INTERNAL_ADMIN: "internal_admin",
+  SYSTEM: "system"
+});
+
+// Fix: Export PerformedOnTypes (referenced in activity-tracker.model.js)
+const PerformedOnTypes = Object.freeze({
+  ...AdminTypes,
+  ...UserTypes,
+  DEVICE: "device",
+  REQUEST: "request",
+  PERMISSION: "permission",
+  SYSTEM: "system"
 });
 
 const Roles = Object.freeze({
@@ -90,13 +110,37 @@ const AuditMode = Object.freeze({
 
 const requestType = Object.freeze({
   DEACTIVATION: "deactivation",
-  ACTIVATION: "activation"
+  ACTIVATION: "activation",
+  ROLE_CHANGE: "role_change",
+  PERMISSION_GRANT: "permission_grant",
+  PERMISSION_REVOKE: "permission_revoke",
+  CLIENT_ONBOARDING: "client_onboarding_self",
+  CLIENT_ONBOARDING_ADMIN: "client_onboarding_admin", // New request type for admin-initiated client onboarding
+  CLIENT_REVERT: "client_revert"
 });
 
 const requestStatus = Object.freeze({
   PENDING: "PENDING",
   APPROVED: "APPROVED",
-  REJECTED: "REJECTED"
+  REJECTED: "REJECTED",
+  EXPIRED: "EXPIRED"
+});
+
+const PermissionEffect = Object.freeze({
+  ALLOW: "ALLOW",
+  DENY: "DENY"
+});
+
+const OverrideType = Object.freeze({
+  SPECIAL_PERMISSION: "special_permission",
+  BLOCKED_PERMISSION: "blocked_permission"
+});
+
+const ClientStatus = Object.freeze({
+  PENDING: "pending",
+  ACTIVE: "active",
+  SUSPENDED: "suspended",
+  REVERTED: "reverted"
 });
 
 const viewScope = Object.freeze({
@@ -117,6 +161,7 @@ module.exports = {
   RoleHierarchy,
   DeviceTypes,
   PerformedBy,
+  PerformedOnTypes,
   AuthModes,
   Roles,
   Status,
@@ -129,5 +174,8 @@ module.exports = {
   RequestLocation,
   UserTypes,
   ContactModes,
-  ServiceNames
+  ServiceNames,
+  PermissionEffect,
+  OverrideType,
+  ClientStatus
 };

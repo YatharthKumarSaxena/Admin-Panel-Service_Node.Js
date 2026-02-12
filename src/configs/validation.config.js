@@ -31,14 +31,21 @@ const {
   DeviceTypeHelper,
   PerformedByHelper,
   ChangeSupervisorReasonHelper,
-  ViewActivityTrackerReasonsHelper,
   BlockDeviceReasonHelper,
   UnblockDeviceReasonHelper,
   AdminCreationReasonHelper,
   AdminUpdateRoleReasonHelper,
   FetchAdminDetailsReasonHelper,
   FetchUserDetailsReasonHelper,
-  FetchDeviceDetailsReasonHelper
+  FetchDeviceDetailsReasonHelper,
+  ViewActivityTrackerReasonsHelper,
+  SpecialPermissionReasonHelper,
+  BlockPermissionReasonHelper,
+  ClientCreationReasonHelper,
+  ClientRevertReasonHelper,
+  RoleChangeReasonHelper,
+  PermissionEffectHelper,
+  ClientStatusHelper
 } = require("@utils/enum-validators.util");
 
 const validationRules = {
@@ -178,6 +185,42 @@ const validationRules = {
 
   fetchDeviceDetailsReason: {
     enum: FetchDeviceDetailsReasonHelper
+  },
+
+  specialPermissionReason: {
+    enum: SpecialPermissionReasonHelper
+  },
+
+  blockPermissionReason: {
+    enum: BlockPermissionReasonHelper
+  },
+
+  clientCreationReason: {
+    enum: ClientCreationReasonHelper
+  },
+
+  clientRevertReason: {
+    enum: ClientRevertReasonHelper
+  },
+
+  roleChangeReason: {
+    enum: RoleChangeReasonHelper
+  },
+
+  permissionEffect: {
+    enum: PermissionEffectHelper
+  },
+
+  clientStatus: {
+    enum: ClientStatusHelper
+  },
+
+  permission: {
+    length: { min: 5, max: 100 }
+  },
+
+  userType: {
+    length: { min: 3, max: 20 }
   }
 };
 

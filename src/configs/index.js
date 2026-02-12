@@ -4,20 +4,40 @@ const { throwAccessDeniedError, throwConflictError, throwDBResourceNotFoundError
 const { adminCreationRequiredFields, adminCreationInBulkRequiredFields } = require("./required-fields.config");
 const { emailRegex, mongoIdRegex, customIdRegex, UUID_V4_REGEX, fullPhoneNumberRegex } = require("./regex.config");
 const { validationRules, validationSets } = require("./validation.config");
-
-/*
-const {  } = require("./rate-limit.config");
-const {  } = require("./fields-length.config");
-const {  } = require("./server-error-handler.config");
-const {  } = require("./server.config");
-const {  } = require("./ip-address.config");
-const {  } = require("./system.config");
-const {  } = require("./token.config");
-const {  } = require("./tracker.config");
-const {  } = require("./uri.config");
+const { RBACResources, ResourceCodes } = require("./rbac-resources.config");
+const { RBACActions, ActionCodes } = require("./rbac-actions.config");
+const { Permissions, RolePermissions, AllPermissions, getRolePermissions, roleHasPermission } = require("./rbac-permissions.config");
 
 module.exports = {
-    validationRules,
-    validationSets
-}
-*/
+  validationRules,
+  validationSets,
+  DB_NAME,
+  DB_URL,
+  adminCleanup,
+  activityTrackerCleanup,
+  throwAccessDeniedError,
+  throwConflictError,
+  throwDBResourceNotFoundError,
+  throwInternalServerError,
+  throwInvalidResourceError,
+  throwResourceNotFoundError,
+  throwSessionExpiredError,
+  logMiddlewareError,
+  getLogIdentifiers,
+  adminCreationRequiredFields,
+  adminCreationInBulkRequiredFields,
+  emailRegex,
+  mongoIdRegex,
+  customIdRegex,
+  UUID_V4_REGEX,
+  fullPhoneNumberRegex,
+  RBACResources,
+  ResourceCodes,
+  RBACActions,
+  ActionCodes,
+  Permissions,
+  RolePermissions,
+  AllPermissions,
+  getRolePermissions,
+  roleHasPermission
+};

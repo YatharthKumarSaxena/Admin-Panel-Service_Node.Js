@@ -18,7 +18,7 @@ const FetchUserDetailsReasons = Object.values({
   OTHER: "other"
 });
 
-const BlockReasons = Object.freeze({
+const BlockUserReasons = Object.freeze({
   POLICY_VIOLATION: "policy_violation",                 // DB-safe
   SPAM_ACTIVITY: "spam_activity",
   HARASSMENT: "harassment",
@@ -27,7 +27,7 @@ const BlockReasons = Object.freeze({
   OTHER: "other"
 });
 
-const UnblockReasons = Object.freeze({
+const UnblockUserReasons = Object.freeze({
   MANUAL_REVIEW_PASSED: "manual_review_passed",         // DB-safe
   USER_APPEAL_GRANTED: "user_appeal_granted",
   SYSTEM_ERROR: "system_error",
@@ -173,9 +173,58 @@ const UnblockDeviceReasons = Object.freeze({
   OTHER: "other"
 });
 
+const SpecialPermissionReasons = Object.freeze({
+  TEMPORARY_ACCESS: "temporary_access",
+  EMERGENCY_GRANT: "emergency_grant",
+  PROJECT_REQUIREMENT: "project_requirement",
+  SUPERVISOR_APPROVAL: "supervisor_approval",
+  ROLE_EXPANSION: "role_expansion",
+  COMPLIANCE_REQUIREMENT: "compliance_requirement",
+  OTHER: "other"
+});
+
+const BlockPermissionReasons = Object.freeze({
+  SECURITY_CONCERN: "security_concern",
+  POLICY_VIOLATION: "policy_violation",
+  TEMPORARY_RESTRICTION: "temporary_restriction",
+  UNDER_INVESTIGATION: "under_investigation",
+  COMPLIANCE_RESTRICTION: "compliance_restriction",
+  ADMINISTRATIVE_DECISION: "administrative_decision",
+  OTHER: "other"
+});
+
+const ClientCreationReasons = Object.freeze({
+  NEW_CLIENT_ONBOARDING: "new_client_onboarding",
+  USER_UPGRADE: "user_upgrade",
+  BUSINESS_EXPANSION: "business_expansion",
+  SPECIAL_ARRANGEMENT: "special_arrangement",
+  MIGRATION: "migration",
+  OTHER: "other"
+});
+
+const ClientRevertReasons = Object.freeze({
+  CLIENT_REQUEST: "client_request",
+  POLICY_VIOLATION: "policy_violation",
+  DOWNGRADE: "downgrade",
+  ACCOUNT_CLEANUP: "account_cleanup",
+  MISTAKE_CORRECTION: "mistake_correction",
+  OTHER: "other"
+});
+
+const RoleChangeReasons = Object.freeze({
+  PROMOTION: "promotion",
+  DEMOTION: "demotion",
+  REORGANIZATION: "reorganization",
+  PERFORMANCE_BASED: "performance_based",
+  SKILL_DEVELOPMENT: "skill_development",
+  ADMIN_REQUEST: "admin_request",
+  DEPARTMENT_TRANSFER: "department_transfer",
+  OTHER: "other"
+});
+
 module.exports = {
-  BlockReasons,
-  UnblockReasons,
+  BlockUserReasons,
+  UnblockUserReasons,
   ActivationReasons,
   DeactivationReasons,
   AuthLogCheckReasons,
@@ -191,5 +240,10 @@ module.exports = {
   AdminUpdateRoleReasons,
   FetchAdminDetailsReasons,
   FetchUserDetailsReasons,
-  FetchDeviceDetailsReasons
+  FetchDeviceDetailsReasons,
+  SpecialPermissionReasons,
+  BlockPermissionReasons,
+  ClientCreationReasons,
+  ClientRevertReasons,
+  RoleChangeReasons
 };

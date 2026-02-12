@@ -323,6 +323,180 @@ const FieldDefinitions = {
       validation: validationRules.activityTrackerReason,
       description: 'Reason for viewing activity tracker'
     }
+  },
+
+  // ========== PERMISSION MANAGEMENT OPERATIONS ==========
+
+  // Grant Special Permission
+  GRANT_SPECIAL_PERMISSION: {
+    ADMIN_ID: {
+      field: 'adminId',
+      required: true,
+      validation: validationRules.adminId,
+      description: 'Target admin ID to grant permission'
+    },
+    PERMISSION: {
+      field: 'permission',
+      required: true,
+      validation: validationRules.permission,
+      description: 'Permission code (resource:action format)'
+    },
+    REASON: {
+      field: 'reason',
+      required: true,
+      validation: validationRules.specialPermissionReason,
+      description: 'Reason for granting special permission'
+    },
+    NOTES: {
+      field: 'notes',
+      required: false,
+      validation: validationRules.notes,
+      description: 'Additional notes for permission grant'
+    },
+    EXPIRES_AT: {
+      field: 'expiresAt',
+      required: false,
+      description: 'Optional expiration date (ISO 8601)'
+    }
+  },
+
+  // Block Permission
+  BLOCK_PERMISSION: {
+    ADMIN_ID: {
+      field: 'adminId',
+      required: true,
+      validation: validationRules.adminId,
+      description: 'Target admin ID to block permission'
+    },
+    PERMISSION: {
+      field: 'permission',
+      required: true,
+      validation: validationRules.permission,
+      description: 'Permission code to block'
+    },
+    REASON: {
+      field: 'reason',
+      required: true,
+      validation: validationRules.blockPermissionReason,
+      description: 'Reason for blocking permission'
+    },
+    NOTES: {
+      field: 'notes',
+      required: false,
+      validation: validationRules.notes,
+      description: 'Additional notes for permission block'
+    }
+  },
+
+  // Revoke Permission Override
+  REVOKE_PERMISSION_OVERRIDE: {
+    NOTES: {
+      field: 'notes',
+      required: false,
+      validation: validationRules.notes,
+      description: 'Notes for revocation'
+    }
+  },
+
+  // ========== ROLE CHANGE REQUEST OPERATIONS ==========
+
+  // Create Role Change Request
+  CREATE_ROLE_CHANGE_REQUEST: {
+    TARGET_ADMIN_ID: {
+      field: 'targetAdminId',
+      required: true,
+      validation: validationRules.adminId,
+      description: 'Admin ID whose role is to be changed'
+    },
+    REQUESTED_ROLE: {
+      field: 'requestedRole',
+      required: true,
+      validation: validationRules.adminType,
+      description: 'New role being requested'
+    },
+    REASON: {
+      field: 'reason',
+      required: true,
+      validation: validationRules.roleChangeReason,
+      description: 'Reason for role change'
+    },
+    NOTES: {
+      field: 'notes',
+      required: false,
+      validation: validationRules.notes,
+      description: 'Additional notes for role change request'
+    }
+  },
+
+  // Approve/Reject Role Change Request
+  REVIEW_ROLE_CHANGE_REQUEST: {
+    REVIEW_NOTES: {
+      field: 'reviewNotes',
+      required: false,
+      validation: validationRules.reviewNotes,
+      description: 'Review notes from approver'
+    }
+  },
+
+  // ========== CLIENT MANAGEMENT OPERATIONS ==========
+
+  // Create Client (Admin-initiated)
+  CREATE_CLIENT: {
+    USER_ID: {
+      field: 'userId',
+      required: true,
+      validation: validationRules.adminId,
+      description: 'User ID to convert to client'
+    },
+    REASON: {
+      field: 'reason',
+      required: true,
+      validation: validationRules.clientCreationReason,
+      description: 'Reason for client creation'
+    },
+    NOTES: {
+      field: 'notes',
+      required: false,
+      validation: validationRules.notes,
+      description: 'Additional notes for client creation'
+    }
+  },
+
+  // Revert Client
+  REVERT_CLIENT: {
+    REASON: {
+      field: 'reason',
+      required: true,
+      validation: validationRules.clientRevertReason,
+      description: 'Reason for reverting client'
+    },
+    NOTES: {
+      field: 'notes',
+      required: false,
+      validation: validationRules.notes,
+      description: 'Additional notes for client revert'
+    }
+  },
+
+  // Request Client Onboarding (Self-signup)
+  REQUEST_CLIENT_ONBOARDING: {
+    USER_ID: {
+      field: 'userId',
+      required: true,
+      validation: validationRules.adminId,
+      description: 'User ID requesting client status'
+    },
+    ORG_NAME: {
+      field: 'orgName',
+      required: true,
+      description: 'Organization name'
+    },
+    NOTES: {
+      field: 'notes',
+      required: false,
+      validation: validationRules.notes,
+      description: 'Additional information about the organization'
+    }
   }
 };
 
