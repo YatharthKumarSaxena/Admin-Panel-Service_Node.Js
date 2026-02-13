@@ -23,16 +23,17 @@ const { DB_COLLECTIONS } = require("@/configs/db-collections.config");
  */
 
 const baseRequestSchema = new mongoose.Schema({
-  // 🆔 Request Identification
+  // Request Identification
   requestId: {
     type: String,
     unique: true,
     required: true,
     match: requestIdRegex,
+    immutable: true,
     index: true
   },
   
-  // 📌 Request Classification
+  // Request Classification
   requestType: {
     type: String,
     enum: Object.values(requestType),
@@ -52,7 +53,7 @@ const baseRequestSchema = new mongoose.Schema({
     enum: Object.values(Roles)
   },
   
-  // 🎯 Target Information
+  // Target Information
   targetId: {
     type: String,
     index: true
