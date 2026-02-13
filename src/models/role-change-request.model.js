@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const { BaseRequestModel } = require("./base-request.model");
-const { AdminTypes, requestStatus, RoleChangeReasons, requestType } = require("@configs/enums.config");
+const { AdminTypes, requestStatus, requestType } = require("@configs/enums.config");
 const { adminIdRegex } = require("@/configs/regex.config");
+const { RoleChangeReasons } = require("@/configs/reasons.config");
 
 /**
  * 🎭 Role Change Request Discriminator
@@ -15,13 +16,6 @@ const { adminIdRegex } = require("@/configs/regex.config");
  */
 
 const roleChangeRequestSchema = new mongoose.Schema({
-  // 🔄 Role Transition
-  currentRole: {
-    type: String,
-    enum: Object.values(AdminTypes),
-    required: true
-  },
-  
   requestedRole: {
     type: String,
     enum: Object.values(AdminTypes),
@@ -44,7 +38,7 @@ roleChangeRequestSchema
     .path("targetId")
     .validate(function (value) {
         return adminIdRegex.test(value);
-    }, "requestedBy must be a valid adminId");
+    }, "targetId must be a valid adminId");
     
 // 🔐 Type-Specific Indexes
 roleChangeRequestSchema.index({ targetId: 1, requestedBy: 1 });
@@ -69,13 +63,25 @@ roleChangeRequestSchema.pre("validate", function(next) {
   }
   
   // Prevent same role assignment
-  if (this.currentRole === this.requestedRole) {
+  if (this.requestedRole === this.targetType) {
     return next(new Error("Current role and requested role cannot be the same."));
   }
   
+  if(!Object.values(AdminTypes).includes(this.requesterType)) {
+    return next(new Error("Requester type must be a valid admin type."));
+  }
+
+  if(!Object.values(AdminTypes).includes(this.targetType)) {
+    return next(new Error("Target type must be a valid admin type."));
+  }
+
+  if(!Object.values(AdminTypes).includes(this.requestedRole)) {
+    return next(new Error("Requested role must be a valid admin type."));
+  }
+
   next();
 });
-
+    
 // 📊 Static Methods
 roleChangeRequestSchema.statics.findPendingForAdmin = function(adminId) {
   return this.find({
