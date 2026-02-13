@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { firstNameLength, reasonFieldLength } = require("@configs/fields-length.config");
+const { firstNameLength, notesFieldLength } = require("@configs/fields-length.config");
 const { FirstNameFieldSetting, UserTypes, ClientStatus } = require("@configs/enums.config");
 const { BlockUserReasons, UnblockUserReasons, ClientRevertReasons } = require("@configs/reasons.config");
 const { firstNameRegex, userIdRegex, adminIdRegex } = require("@configs/regex.config");
@@ -50,8 +50,8 @@ const userSchema = new mongoose.Schema({
     },
     clientRevertReasonDetails: {
         type: String,
-        minlength: reasonFieldLength.min,
-        maxlength: reasonFieldLength.max,
+        minlength: notesFieldLength.min,
+        maxlength: notesFieldLength.max,
         default: null
     },
     clientRevertedBy: {
@@ -66,10 +66,10 @@ const userSchema = new mongoose.Schema({
     isBlocked: { type: Boolean, default: false },
     blockReason: { type: String, enum: Object.values(BlockUserReasons), default: null },
     blockedBy: { type: String, default: null, match: adminIdRegex },
-    blockReasonDetails: { type: String, minlength: reasonFieldLength.min, maxlength: reasonFieldLength.max, default: null },
+    blockReasonDetails: { type: String, minlength: notesFieldLength.min, maxlength: notesFieldLength.max, default: null },
     blockCount: { type: Number, default: 0 },
     unblockReason: { type: String, enum: Object.values(UnblockUserReasons), default: null },
-    unblockReasonDetails: { type: String, minlength: reasonFieldLength.min, maxlength: reasonFieldLength.max, default: null },
+    unblockReasonDetails: { type: String, minlength: notesFieldLength.min, maxlength: notesFieldLength.max, default: null },
     unblockedBy: { type: String, default: null, match: adminIdRegex },
     blockedAt: { type: Date, default: null },
     unblockedAt: { type: Date, default: null }
@@ -105,7 +105,7 @@ userSchema.pre("validate", function (next) {
             return next(new Error("Unblocked users must have unblockedBy when unblockReason is set."));
         }
     }
-    
+
     // 3. Client Status Validation
     if (this.userType === UserTypes.CLIENT) {
         if (!this.clientStatus) {
@@ -119,6 +119,25 @@ userSchema.pre("validate", function (next) {
             return next(new Error("Only CLIENT userType can have clientStatus."));
         }
     }
+
+    if (this.isBlocked && !this.blockedAt) {
+        this.blockedAt = new Date();
+    }
+
+    if (!this.isBlocked && this.unblockReason && !this.unblockedAt) {
+        this.unblockedAt = new Date();
+    }
+
+    if (this.clientRevertReason && !this.convertedToClientAt) {
+        return next(new Error(
+            "Cannot revert a user who was never converted to client."
+        ));
+    }
+
+    if (this.userType !== UserTypes.CLIENT) {
+        this.clientStatus = null;
+    }
+
     next();
 });
 
