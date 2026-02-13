@@ -16,11 +16,11 @@ const deviceSchema = new mongoose.Schema({
         index: true
     },
 
-    deviceName: { 
-        type: String, 
-        required: false, 
-        trim: true, 
-        minlength: deviceNameLength.min, 
+    deviceName: {
+        type: String,
+        required: false,
+        trim: true,
+        minlength: deviceNameLength.min,
         maxlength: deviceNameLength.max,
         default: null
     },
@@ -83,6 +83,15 @@ const deviceSchema = new mongoose.Schema({
 
 /* 🔐 Block / Unblock Integrity */
 deviceSchema.pre("validate", function (next) {
+
+    if (this.isBlocked && !this.blockedAt) {
+        this.blockedAt = new Date();
+    }
+
+    if (!this.isBlocked && this.unblockReason && !this.unblockedAt) {
+        this.unblockedAt = new Date();
+    }
+
     if (this.isBlocked) {
         if (!this.blockReason || !this.blockedBy) {
             return next(new Error("Blocked device must have blockReason and blockedBy."));
@@ -102,7 +111,6 @@ deviceSchema.pre("save", function (next) {
             this.blockCount += 1;
             this.blockedAt = new Date();
         } else {
-            this.unblockCount += 1;
             this.unblockedAt = new Date();
         }
     }
