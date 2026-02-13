@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 const { BaseRequestModel } = require("./base-request.model");
 const { requestType, requestStatus, AdminTypes } = require("@configs/enums.config");
-const { reasonFieldLength } = require("@/configs/fields-length.config");
 const { adminIdRegex } = require("@/configs/regex.config");
+const { ActivationReasons, DeactivationReasons } = require("@configs/reasons.config");
 
 /**
  * 🚦 Admin Status Request Discriminator
@@ -20,39 +20,28 @@ const adminStatusRequestSchema = new mongoose.Schema({
   // requestType differentiates ACTIVATION vs DEACTIVATION
 });
 
-// Override reason validation to enforce length constraints
-adminStatusRequestSchema.path('reason').validate(function(value) {
-  if (!value || value.trim().length < reasonFieldLength.min) {
-    throw new Error(`Reason must be at least ${reasonFieldLength.min} characters`);
-  }
-  if (value.length > reasonFieldLength.max) {
-    throw new Error(`Reason must not exceed ${reasonFieldLength.max} characters`);
-  }
-  return true;
-}, 'Invalid reason length');
-
 // 🔐 Type-Specific Indexes
 adminStatusRequestSchema.index({ targetId: 1, status: 1 });
 
 // Prevent duplicate pending requests for same admin and request type
 adminStatusRequestSchema.index(
   { targetId: 1, requestType: 1, status: 1 },
-  { 
+  {
     unique: true,
-    partialFilterExpression: { 
+    partialFilterExpression: {
       status: requestStatus.PENDING,
-      requestType: { 
-        $in: [requestType.ACTIVATION, requestType.DEACTIVATION] 
+      requestType: {
+        $in: [requestType.ACTIVATION, requestType.DEACTIVATION]
       }
     }
   }
 );
 
-adminStatusRequestSchema.pre("validate", function(next) {
+adminStatusRequestSchema.pre("validate", function (next) {
 
   // Request type guard
   if (![requestType.ACTIVATION, requestType.DEACTIVATION]
-        .includes(this.requestType)) {
+    .includes(this.requestType)) {
     return next(new Error(
       "Admin status request type must be ACTIVATION or DEACTIVATION."
     ));
@@ -68,11 +57,36 @@ adminStatusRequestSchema.pre("validate", function(next) {
     return next(new Error("Only admins can raise admin status requests."));
   }
 
-  // Prevent self status change
-  if (this.requestedBy === this.targetId) {
-    return next(new Error(
-      "Admins cannot change their own status."
-    ));
+  if (!Object.values(AdminTypes).includes(this.targetType)) {
+    return next(new Error("Target must be a valid admin type."));
+  }
+
+  if (!Object.values(AdminTypes).includes(this.requesterType)) {
+    return next(new Error("Requester must be a valid admin type."));
+  }
+
+  if (this.requestType === requestType.ACTIVATION) {
+    if (!Object.values(ActivationReasons)
+      .includes(this.reason)) {
+      return next(new Error(
+        "Invalid activation reason."
+      ));
+    }
+    // Prevent self status change
+    if (this.requestedBy === this.targetId) {
+      return next(new Error(
+        "Admins cannot change their own status."
+      ));
+    }
+  }
+
+  else {
+    if (!Object.values(DeactivationReasons)
+      .includes(this.reason)) {
+      return next(new Error(
+        "Invalid deactivation reason."
+      ));
+    }
   }
 
   next();
@@ -80,14 +94,14 @@ adminStatusRequestSchema.pre("validate", function(next) {
 
 
 // 📊 Static Methods
-adminStatusRequestSchema.statics.findPendingActivations = function() {
+adminStatusRequestSchema.statics.findPendingActivations = function () {
   return this.find({
     requestType: requestType.ACTIVATION,
     status: requestStatus.PENDING
   }).sort({ createdAt: -1 });
 };
 
-adminStatusRequestSchema.statics.findPendingDeactivations = function() {
+adminStatusRequestSchema.statics.findPendingDeactivations = function () {
   return this.find({
     requestType: requestType.DEACTIVATION,
     status: requestStatus.PENDING
@@ -106,9 +120,7 @@ const AdminDeactivationRequestModel = BaseRequestModel.discriminator(
   adminStatusRequestSchema.clone()
 );
 
-module.exports = { 
+module.exports = {
   AdminActivationRequestModel,
-  AdminDeactivationRequestModel,
-  // Backward compatibility
-  AdminStatusRequestModel: AdminActivationRequestModel
+  AdminDeactivationRequestModel
 };
