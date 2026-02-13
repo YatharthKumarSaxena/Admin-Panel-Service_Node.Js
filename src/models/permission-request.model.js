@@ -6,7 +6,7 @@ const { AllPermissions } = require("@configs/rbac-permissions.config");
 const { adminIdRegex } = require("@/configs/regex.config");
 
 /**
- * 🔐 Permission Request Discriminator
+ * Permission Request Discriminator
  * Extends BaseRequest for permission grant/revoke workflows
  * 
  * Handles:
@@ -33,13 +33,8 @@ const permissionRequestSchema = new mongoose.Schema({
   expiresAt: {
     type: Date,
     default: null
-  },
-
-  // 🔗 Override Reference (links to special_permissions or blocked_permissions collection)
-  overrideId: {
-    type: String,
-    default: null
   }
+
 });
 
 // Override reason validation to match request type
@@ -77,11 +72,6 @@ permissionRequestSchema.pre("validate", function (next) {
     return next(new Error("Permission request type must be PERMISSION_GRANT or PERMISSION_REVOKE."));
   }
 
-  // Validate approved requests have overrideId
-  if (this.status === requestStatus.APPROVED && !this.overrideId) {
-    return next(new Error("Approved permission requests must have overrideId."));
-  }
-
   if (
     this.requestType === requestType.PERMISSION_GRANT &&
     this.expiresAt &&
@@ -92,12 +82,6 @@ permissionRequestSchema.pre("validate", function (next) {
     );
   }
 
-  if (this.requestedBy === this.targetId) {
-    return next(
-      new Error("Self permission override not allowed.")
-    );
-  }
-  
   if (this.targetType === AdminTypes.INTERNAL_ADMIN) {
     return next(
       new Error("Permission requests does not apply to internal admins.")
@@ -130,6 +114,23 @@ permissionRequestSchema.pre("validate", function (next) {
       )
     );
   }
+
+  if (!Object.values(AdminTypes).includes(this.targetType)) {
+    return next(
+      new Error(
+        "targetType must be a valid admin type."
+      )
+    );
+  }
+
+  if (!Object.values(AdminTypes).includes(this.requesterType)) {
+    return next(
+      new Error(
+        "requesterType must be a valid admin type."
+      )
+    );
+  }
+
   next();
 });
 
