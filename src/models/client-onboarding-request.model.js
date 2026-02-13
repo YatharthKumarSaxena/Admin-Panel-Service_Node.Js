@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
 const { BaseRequestModel } = require("./base-request.model");
-const { requestStatus, ClientCreationReasons, requestType, UserTypes } = require("@configs/enums.config");
+const { requestStatus, requestType, UserTypes, ClientTypes } = require("@configs/enums.config");
 const { userIdRegex } = require("@/configs/regex.config");
+const { ClientCreationReasons, ClientOnboardingRejectionReasons } = require("@/configs/reasons.config");
+const { notesFieldLength, orgNameLength } = require("@/configs/fields-length.config");
 
 /**
  * 🏢 Client Onboarding (Self) Request Discriminator
@@ -13,46 +15,54 @@ const clientOnboardingSelfRequestSchema = new mongoose.Schema({
   // 🏢 Organization Details
   orgName: {
     type: String,
-    required: true,
+    required: false,
     trim: true,
-    minlength: 2,
-    maxlength: 200
+    minlength: orgNameLength.min,
+    maxlength: orgNameLength.max
   },
-  
+
   orgSize: {
     type: String,
-    enum: ["1-10", "11-50", "51-200", "201-500", "500+"],
+    enum: ["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5001-10000", "10000+"],
     default: null
   },
-  
+
   orgIndustry: {
     type: String,
     maxlength: 100,
     default: null
   },
-  
+
+  clientEntityType: {
+    type: String,
+    enum: Object.values(ClientTypes),
+    required: true
+  },
+
   // ❌ Rejection Details
   rejectionReason: {
     type: String,
-    maxlength: 500,
+    enum: Object.values(ClientOnboardingRejectionReasons),
+    default: null
+  },
+
+  rejectionReasonDetails: {
+    type: String,
+    minlength: notesFieldLength.min, // fix
+    maxlength: notesFieldLength.max,
     default: null
   }
 
 });
 
-
-/* -------------------------------------------------------------------------- */
 /*                        🎯 Reason Validation Override                       */
-/* -------------------------------------------------------------------------- */
 
 clientOnboardingSelfRequestSchema.path("reason").validate(function (value) {
   return Object.values(ClientCreationReasons).includes(value);
 }, "Invalid client onboarding reason");
 
 
-/* -------------------------------------------------------------------------- */
 /*                          🔐 Indexes (Corrected)                             */
-/* -------------------------------------------------------------------------- */
 
 // Org search
 clientOnboardingSelfRequestSchema.index({ orgName: 1 });
@@ -69,17 +79,18 @@ clientOnboardingSelfRequestSchema.index(
   }
 );
 
-
-/* -------------------------------------------------------------------------- */
 /*                         🛡️ Governance Validation                           */
-/* -------------------------------------------------------------------------- */
 
 clientOnboardingSelfRequestSchema.pre("validate", function (next) {
 
   // 1️⃣ Rejection reason mandatory if rejected
-  if (this.status === requestStatus.REJECTED && !this.rejectionReason) {
+  if (
+    this.status === requestStatus.REJECTED &&
+    this.rejectionReason &&
+    !this.rejectionReasonDetails
+  ) {
     return next(
-      new Error("Rejected onboarding requests must have rejectionReason.")
+      new Error("Rejection details required for audit clarity.")
     );
   }
 
@@ -104,41 +115,49 @@ clientOnboardingSelfRequestSchema.pre("validate", function (next) {
     );
   }
 
+  if (this.clientEntityType === ClientTypes.ORGANIZATION) {
+    if (!this.orgName) {
+      return next(new Error(
+        "Organization name required for org clients."
+      ));
+    }
+  }
+
+  if (this.clientEntityType !== ClientTypes.ORGANIZATION) {
+    this.orgName = null;
+    this.orgSize = null;
+    this.orgIndustry = null;
+  }
+
   next();
 });
 
-
-/* -------------------------------------------------------------------------- */
 /*                             📊 Static Methods                               */
-/* -------------------------------------------------------------------------- */
 
 clientOnboardingSelfRequestSchema.statics.findPendingOnboardings =
-function () {
-  return this.find({
-    status: requestStatus.PENDING
-  }).sort({ createdAt: -1 });
-};
+  function () {
+    return this.find({
+      status: requestStatus.PENDING
+    }).sort({ createdAt: -1 });
+  };
 
 
 clientOnboardingSelfRequestSchema.statics.findByRequester =
-function (userId) {
-  return this.find({
-    requestedBy: userId
-  }).sort({ createdAt: -1 });
-};
+  function (userId) {
+    return this.find({
+      requestedBy: userId
+    }).sort({ createdAt: -1 });
+  };
 
 
 clientOnboardingSelfRequestSchema.statics.findByOrgName =
-function (orgName) {
-  return this.find({
-    orgName: new RegExp(orgName, "i")
-  }).sort({ createdAt: -1 });
-};
+  function (orgName) {
+    return this.find({
+      orgName: new RegExp(orgName, "i")
+    }).sort({ createdAt: -1 });
+  };
 
-
-/* -------------------------------------------------------------------------- */
 /*                         🎭 Discriminator Mapping                            */
-/* -------------------------------------------------------------------------- */
 
 const ClientOnboardingSelfRequestModel =
   BaseRequestModel.discriminator(
