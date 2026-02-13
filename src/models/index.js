@@ -14,13 +14,11 @@ const { BaseRequestModel } = require("./base-request.model");
 const { RoleChangeRequestModel } = require("./role-change-request.model");
 const { 
   AdminActivationRequestModel, 
-  AdminDeactivationRequestModel,
-  AdminStatusRequestModel // Backward compatibility alias
+  AdminDeactivationRequestModel
 } = require("./admin-status-request.model");
 const { 
   PermissionGrantRequestModel,
-  PermissionRevokeRequestModel,
-  PermissionRequestModel // Backward compatibility alias
+  PermissionRevokeRequestModel
 } = require("./permission-request.model");
 const { ClientOnboardingSelfRequestModel } = require("./client-onboarding-request.model");
 const { ClientOnboardingAdminRequestModel } = require("./client-onboarding-admin-request.model");
@@ -42,15 +40,10 @@ const models = {
   RoleChangeRequestModel,
   AdminActivationRequestModel,
   AdminDeactivationRequestModel,
-  AdminStatusRequestModel, // Backward compatibility
   PermissionGrantRequestModel,
   PermissionRevokeRequestModel,
-  PermissionRequestModel, // Backward compatibility
   ClientOnboardingSelfRequestModel,
-  ClientOnboardingAdminRequestModel,
-  
-  // Backward compatibility aliases
-  ClientOnboardingRequestModel: ClientOnboardingSelfRequestModel
+  ClientOnboardingAdminRequestModel
 }
 
 module.exports = {
