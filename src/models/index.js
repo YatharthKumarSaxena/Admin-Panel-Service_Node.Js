@@ -4,6 +4,8 @@ const { UserModel } = require("./user.model");
 const { DeviceModel } = require("./device.model");
 const { SpecialPermissionModel } = require("./special-permission.model");
 const { BlockPermissionModel } = require("./block-permission.model");
+const { CounterModel } = require("./counter.model");
+const { ServiceTrackerModel } = require("./service-tracker.model");
 
 // 🔄 New: Base Request Model (for polymorphic queries)
 const { BaseRequestModel } = require("./base-request.model");
@@ -20,7 +22,8 @@ const {
   PermissionRevokeRequestModel,
   PermissionRequestModel // Backward compatibility alias
 } = require("./permission-request.model");
-const { ClientOnboardingRequestModel } = require("./client-onboarding-request.model");
+const { ClientOnboardingSelfRequestModel } = require("./client-onboarding-request.model");
+const { ClientOnboardingAdminRequestModel } = require("./client-onboarding-admin-request.model");
 
 const models = {
   ActivityTrackerModel,
@@ -29,6 +32,8 @@ const models = {
   DeviceModel,
   SpecialPermissionModel,
   BlockPermissionModel,
+  CounterModel,
+  ServiceTrackerModel,
   
   // Base model for polymorphic queries
   BaseRequestModel,
@@ -41,7 +46,11 @@ const models = {
   PermissionGrantRequestModel,
   PermissionRevokeRequestModel,
   PermissionRequestModel, // Backward compatibility
-  ClientOnboardingRequestModel
+  ClientOnboardingSelfRequestModel,
+  ClientOnboardingAdminRequestModel,
+  
+  // Backward compatibility aliases
+  ClientOnboardingRequestModel: ClientOnboardingSelfRequestModel
 }
 
 module.exports = {
