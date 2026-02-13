@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { firstNameLength } = require("@configs/fields-length.config");
-const { AdminTypes, ActivationReasons, DeactivationReasons, FirstNameFieldSetting } = require("@configs/enums.config");
+const { AdminTypes, FirstNameFieldSetting } = require("@configs/enums.config");
+const { ActivationReasons, DeactivationReasons } = require("@configs/reasons.config");
 const { firstNameRegex, adminIdRegex } = require("@configs/regex.config");
 const { FIRST_NAME_SETTING } = require("@configs/security.config");
 const { DB_COLLECTIONS } = require("@/configs/db-collections.config");
