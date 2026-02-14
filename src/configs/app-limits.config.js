@@ -1,5 +1,7 @@
+const { getMyEnvAsNumber } = require("@/utils/env.util");
+
 module.exports = {
-  adminRegistrationCapacity: Number(process.env.ADMIN_REGISTRATION_CAPACITY),
-  totalRequestCapacity: Number(process.env.REQUEST_DATA_CAPACITY),
-  userRegistrationCapacity: Number(process.env.USER_REGISTRATION_CAPACITY)
+  adminRegistrationCapacity: getMyEnvAsNumber('ADMIN_REGISTRATION_CAPACITY', 100),
+  totalRequestCapacity: getMyEnvAsNumber('REQUEST_DATA_CAPACITY', 1000),
+  userRegistrationCapacity: getMyEnvAsNumber('USER_REGISTRATION_CAPACITY', 100)
 };
