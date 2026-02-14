@@ -8,7 +8,6 @@ const AuthModes = Object.freeze({
 });
 
 const UserTypes = Object.freeze({
-    CUSTOMER: "CUSTOMER",
     USER: "USER",
     CLIENT: "CLIENT"
 });
@@ -66,29 +65,22 @@ const AdminErrorTypes = Object.freeze({
   CANNOT_MODIFY_SELF: "CANNOT_MODIFY_SELF"
 });
 
+const Roles = Object.freeze({
+  ...AdminTypes,
+  ...UserTypes
+});
+
 const PerformedBy = Object.freeze({
-  SUPER_ADMIN: "super_admin",
-  ORG_ADMIN: "org_admin",
-  OPERATIONS_ADMIN: "operations_admin",
-  SUPPORT_ADMIN: "support_admin",
-  AUDIT_ADMIN: "audit_admin",
-  INTERNAL_ADMIN: "internal_admin",
+  ...Roles,
   SYSTEM: "system"
 });
 
 // Fix: Export PerformedOnTypes (referenced in activity-tracker.model.js)
 const PerformedOnTypes = Object.freeze({
-  ...AdminTypes,
-  ...UserTypes,
+  ...PerformedBy,
   DEVICE: "device",
   REQUEST: "request",
-  PERMISSION: "permission",
-  SYSTEM: "system"
-});
-
-const Roles = Object.freeze({
-  ...AdminTypes,
-  ...UserTypes
+  PERMISSION: "permission"
 });
 
 const ServiceNames = Object.freeze({
@@ -143,17 +135,22 @@ const ClientStatus = Object.freeze({
   REVERTED: "reverted"
 });
 
-const viewScope = Object.freeze({
-  ALL: "ALL",
-  ADMINS_ONLY: "ADMINS_ONLY",
-  SELF_ONLY: "SELF_ONLY"
-});
+const viewScope = {
+  HIERARCHY: "HIERARCHY",
+  SELF_ONLY: "SELF_ONLY",
+  GLOBAL: "GLOBAL"
+}
 
 const RequestLocation = Object.freeze({
     BODY: "body",
     QUERY: "query",
     PARAMS: "params",
     HEADERS: "headers" // Future safety ke liye
+});
+
+const ClientTypes = Object.freeze({
+    INDIVIDUAL: "individual",
+    ORGANIZATION: "organization"
 });
 
 module.exports = {
@@ -177,5 +174,6 @@ module.exports = {
   ServiceNames,
   PermissionEffect,
   OverrideType,
-  ClientStatus
+  ClientStatus,
+  ClientTypes
 };
