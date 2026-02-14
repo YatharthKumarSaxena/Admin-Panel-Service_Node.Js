@@ -1,4 +1,4 @@
-const { getMyEnv } = require("@/utils/get-my-env.util");
+const { getMyEnv } = require("@/utils/env.util");
 
 module.exports = {
   SALT: Number(getMyEnv('SALT', '10')),
