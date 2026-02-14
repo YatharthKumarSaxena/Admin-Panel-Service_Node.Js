@@ -222,6 +222,16 @@ const RoleChangeReasons = Object.freeze({
   OTHER: "other"
 });
 
+const ClientOnboardingRejectionReasons = Object.freeze({
+  INSUFFICIENT_RESOURCES: "insufficient_resources",
+  SCOPE_CREEP: "scope_creep",
+  BUDGET_OVERRUN: "budget_overrun",
+  MISALIGNMENT_WITH_GOALS: "misalignment_with_goals",
+  TECHNICAL_FEASIBILITY: "technical_feasibility",
+  SECURITY_CONCERNS: "security_concerns",
+  OTHER: "other"
+});
+
 module.exports = {
   BlockUserReasons,
   UnblockUserReasons,
@@ -245,5 +255,6 @@ module.exports = {
   BlockPermissionReasons,
   ClientCreationReasons,
   ClientRevertReasons,
-  RoleChangeReasons
+  RoleChangeReasons,
+  ClientOnboardingRejectionReasons
 };
