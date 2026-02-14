@@ -1,9 +1,17 @@
 // 📁 configs/field-lengths.config.js
 
 module.exports = {
-  fullPhoneNumberLength: {
-    min: 11,
+  phoneNumberLength: {
+    min: 10,
     max: 16 
+  },
+  localNumberLength: {
+    min: 9,
+    max: 12
+  },
+  countryCodeLength: {
+    min: 1,
+    max: 4 
   },
   emailLength: {
     min: 5,
@@ -16,10 +24,6 @@ module.exports = {
   deviceNameLength: {
     min: 3,
     max: 64
-  },
-  reasonFieldLength: {
-    min: 10,
-    max: 500
   },
   notesFieldLength: {
     min: 0,
@@ -36,5 +40,9 @@ module.exports = {
   uuidV4Length: {
     min: 36,
     max: 36
+  },
+  orgNameLength: {
+    min: 2,
+    max: 200
   }
 };
