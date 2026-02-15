@@ -1,6 +1,6 @@
 // src/utils/notification.util.js
 
-const { ContactModes } = require("../configs/enums.config");
+const { ContactModes } = require("@configs/enums.config");
 const { sendEmail } = require("@services/mail.service");
 const { sendSMS } = require("../services/sms.service");
 const { generateEmailHtml } = require("./email-generator.util");

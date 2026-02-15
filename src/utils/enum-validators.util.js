@@ -3,8 +3,23 @@ const { isValidEnumValue, getEnumKeyByValue } = require("./validators-factory.ut
 const { logWithTime } = require("./time-stamps.util");
 
 const {
-  AdminType,
+  AdminTypes,
   AuthModes,
+  DeviceTypes,
+  PerformedBy,
+  Roles,
+  ServiceNames,
+  Status,
+  AuditMode,
+  requestType,
+  requestStatus,
+  viewScope,
+  PermissionEffect,
+  OverrideType,
+  ClientStatus
+} = require("@configs/enums.config");
+
+const {
   BlockReasons,
   UnblockReasons,
   ActivationReasons,
@@ -15,25 +30,20 @@ const {
   UserActiveDevicesReasons,
   UpdateAdminDetailsReasons,
   ChangeSupervisorReasons,
-  DeviceType,
-  PerformedBy,
-  Roles,
-  ServiceName,
-  Status,
-  IdentifierKeys,
-  AuditMode,
-  requestType,
-  requestStatus,
-  viewScope,
-  ViewActivityTrackerReasons,
   BlockDeviceReasons,
   UnblockDeviceReasons,
   AdminCreationReasons,
   AdminUpdateRoleReasons,
   FetchAdminDetailsReasons,
   FetchUserDetailsReasons,
-  FetchDeviceDetailsReasons
-} = require("@configs/enums.config");
+  FetchDeviceDetailsReasons,
+  ViewActivityTrackerReasons,
+  SpecialPermissionReasons,
+  BlockPermissionReasons,
+  ClientCreationReasons,
+  ClientRevertReasons,
+  RoleChangeReasons
+} = require("@configs/reasons.config");
 
 const { tokenPayloads } = require("@configs/token.config");
 
@@ -74,20 +84,18 @@ const UserAccountDetailsReasonHelper = createEnumHelper(UserAccountDetailsReason
 const UserActiveDevicesReasonHelper = createEnumHelper(UserActiveDevicesReasons, "UserActiveDevicesReasons");
 const UpdateAdminDetailsReasonHelper = createEnumHelper(UpdateAdminDetailsReasons, "UpdateAdminDetailsReasons");
 const ChangeSupervisorReasonHelper = createEnumHelper(ChangeSupervisorReasons, "ChangeSupervisorReasons");
-const DeviceTypeHelper = createEnumHelper(DeviceType, "DeviceType");
+const DeviceTypeHelper = createEnumHelper(DeviceTypes, "DeviceTypes");
 const TokenPayloadHelper = createEnumHelper(tokenPayloads, "TokenPayloads");
-const PerformedByHelper = createEnumHelper(PerformedBy,"PerformedBy")
-const AdminTypeHelper = createEnumHelper(AdminType, "AdminType");
+const PerformedByHelper = createEnumHelper(PerformedBy,"PerformedBy");
+const AdminTypeHelper = createEnumHelper(AdminTypes, "AdminTypes");
 const AuthModesHelper = createEnumHelper(AuthModes, "AuthModes");
 const RolesHelper = createEnumHelper(Roles, "Roles");
-const ServiceNameHelper = createEnumHelper(ServiceName, "ServiceName");
+const ServiceNameHelper = createEnumHelper(ServiceNames, "ServiceNames");
 const StatusHelper = createEnumHelper(Status, "Status");
-const IdentifierKeysHelper = createEnumHelper(IdentifierKeys, "IdentifierKeys");
 const AuditModeHelper = createEnumHelper(AuditMode, "AuditMode");
 const RequestTypeHelper = createEnumHelper(requestType, "requestType");
 const RequestStatusHelper = createEnumHelper(requestStatus, "requestStatus");
 const ViewScopeHelper = createEnumHelper(viewScope, "viewScope");
-const ViewActivityTrackerReasonsHelper = createEnumHelper(ViewActivityTrackerReasons, "ViewActivityTrackerReasons");
 const BlockDeviceReasonHelper = createEnumHelper(BlockDeviceReasons, "BlockDeviceReasons");
 const UnblockDeviceReasonHelper = createEnumHelper(UnblockDeviceReasons, "UnblockDeviceReasons");
 const AdminCreationReasonHelper = createEnumHelper(AdminCreationReasons, "AdminCreationReasons");
@@ -95,6 +103,17 @@ const AdminUpdateRoleReasonHelper = createEnumHelper(AdminUpdateRoleReasons, "Ad
 const FetchAdminDetailsReasonHelper = createEnumHelper(FetchAdminDetailsReasons, "FetchAdminDetailsReasons");
 const FetchUserDetailsReasonHelper = createEnumHelper(FetchUserDetailsReasons, "FetchUserDetailsReasons");
 const FetchDeviceDetailsReasonHelper = createEnumHelper(FetchDeviceDetailsReasons, "FetchDeviceDetailsReasons");
+const ViewActivityTrackerReasonsHelper = createEnumHelper(ViewActivityTrackerReasons, "ViewActivityTrackerReasons");
+const SpecialPermissionReasonHelper = createEnumHelper(SpecialPermissionReasons, "SpecialPermissionReasons");
+const BlockPermissionReasonHelper = createEnumHelper(BlockPermissionReasons, "BlockPermissionReasons");
+const ClientCreationReasonHelper = createEnumHelper(ClientCreationReasons, "ClientCreationReasons");
+const ClientRevertReasonHelper = createEnumHelper(ClientRevertReasons, "ClientRevertReasons");
+const RoleChangeReasonHelper = createEnumHelper(RoleChangeReasons, "RoleChangeReasons");
+const PermissionEffectHelper = createEnumHelper(PermissionEffect, "PermissionEffect");
+const OverrideTypeHelper = createEnumHelper(OverrideType, "OverrideType");
+const ClientStatusHelper = createEnumHelper(ClientStatus, "ClientStatus");
+
+const AdminStatusHelper = AdminTypeHelper; // Alias for backward compatibility
 
 module.exports = {
   BlockReasonHelper,
@@ -111,22 +130,30 @@ module.exports = {
   DeviceTypeHelper,
   TokenPayloadHelper,
   AdminTypeHelper,
+  AdminStatusHelper,
   AuthModesHelper,
   RolesHelper,
   ServiceNameHelper,
   StatusHelper,
-  IdentifierKeysHelper,
   AuditModeHelper,
   RequestTypeHelper,
   RequestStatusHelper,
   ViewScopeHelper,
-  ViewActivityTrackerReasonsHelper,
   BlockDeviceReasonHelper,
   UnblockDeviceReasonHelper,
   AdminCreationReasonHelper,
   AdminUpdateRoleReasonHelper,
   FetchAdminDetailsReasonHelper,
   FetchUserDetailsReasonHelper,
-  FetchDeviceDetailsReasonHelper
+  FetchDeviceDetailsReasonHelper,
+  ViewActivityTrackerReasonsHelper,
+  SpecialPermissionReasonHelper,
+  BlockPermissionReasonHelper,
+  ClientCreationReasonHelper,
+  ClientRevertReasonHelper,
+  RoleChangeReasonHelper,
+  PermissionEffectHelper,
+  OverrideTypeHelper,
+  ClientStatusHelper
 };
 
