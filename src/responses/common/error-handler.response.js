@@ -9,7 +9,7 @@
 // Extracts file that include timeStamp function
 const {logWithTime} = require("@utils/time-stamps.util");
 const { BAD_REQUEST, INTERNAL_ERROR, UNAUTHORIZED, FORBIDDEN, CONFLICT, UNPROCESSABLE_ENTITY, NOT_FOUND, TOO_MANY_REQUESTS } = require("@configs/http-status.config");
-const { errorMessage, logMiddlewareError, getLogIdentifiers } = require("@utils/log-error.util");
+const { errorMessage, logMiddlewareError, getLogIdentifiers } = require("@/utils/log-error.util");
 
 /*
   SRP + DRY: 
@@ -165,6 +165,17 @@ const throwTooManyRequestsError = (res, message, retryAfter = null) => {
     return res.status(TOO_MANY_REQUESTS).json(response);
 };
 
+const throwFeatureDisabledError = (res, featureName, reason = "This feature is currently disabled.") => {
+    logWithTime(`🚫 Feature Disabled: ${featureName} - ${reason}`);
+    return res.status(FORBIDDEN).json({
+        success: false,
+        type: "FeatureDisabled",
+        feature: featureName,
+        warning: reason,
+        message: `${featureName} is not available based on current system configuration.`
+    });
+};
+
 module.exports = {
     throwMissingFieldsError,
     throwInternalServerError,
@@ -177,6 +188,7 @@ module.exports = {
     throwValidationError,
     throwSpecificInternalServerError,
     throwTooManyRequestsError,
+    throwFeatureDisabledError,
     getLogIdentifiers,
     logMiddlewareError,
     errorMessage
