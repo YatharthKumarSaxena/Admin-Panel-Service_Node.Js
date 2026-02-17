@@ -7,10 +7,10 @@ const {
     validateJwtPayloadMiddleware,
     verifyJWTSignature,
     isAdmin,
-    isAdminAccountActive
+    isAdminAccountActive,
 } = commonMiddlewares;
 
-const { mockAuthMiddleware } = require("@testing/mock-auth.testing.middleware");
+const { mockAuthMiddleware } = require("testing/mock-auth.testing.middleware");
 
 const baseMiddlewares = [
     verifyDeviceField,
