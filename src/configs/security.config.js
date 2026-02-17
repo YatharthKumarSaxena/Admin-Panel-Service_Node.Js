@@ -1,11 +1,11 @@
-const { getMyEnv } = require("@/utils/env.util");
+const { getMyEnv, getMyEnvAsBool, getMyEnvAsNumber, getMyEnvAsArray } = require("@/utils/env.util");
 
 module.exports = {
-  SALT: Number(getMyEnv('SALT', '10')),
+  SALT: getMyEnvAsNumber('SALT', 10),
   authMode: getMyEnv('AUTH_MODE', 'both'),
   auditMode: getMyEnv('AUDIT_MODE', 'CHANGED_ONLY'),
   verificationMode: getMyEnv('VERIFICATION_MODE', 'optional'),
-  ACTIVITY_TRACKING_ENABLED: getMyEnv('ACTIVITY_TRACKING_ENABLED', 'true') === 'true',
+  ACTIVITY_TRACKING_ENABLED: getMyEnvAsBool('ACTIVITY_TRACKING_ENABLED', true),
   otp: {
     length: 6,                // digits in OTP
     maxAttempts: 5,
@@ -20,12 +20,14 @@ module.exports = {
     MAX_ATTEMPTS: 5,           // 5 baar galat password allow hai
     LOCKOUT_TIME_MINUTES: 15   // Uske baad 15 minute ka ban
   },
-  WHITELISTED_DEVICE_UUIDS: getMyEnv('WHITELISTED_DEVICE_UUIDS', '').split(',').filter(Boolean),
+  WHITELISTED_DEVICE_UUIDS: getMyEnvAsArray('WHITELISTED_DEVICE_UUIDS'),
   FIRST_NAME_SETTING: getMyEnv('FIRST_NAME_SETTING', 'required'),
   link: {
     length: 32,
     algorithm: "sha256",
     encoding: "hex",
     secret: getMyEnv('VERIFICATION_LINK_SECRET', 'default-secret-change-in-production')
-  }
+  },
+  ADMIN_SUSPENSION_ALLOWED: getMyEnvAsBool('ADMIN_SUSPENSION_ALLOWED', true),
+  ADMIN_BLOCKING_ALLOWED: getMyEnvAsBool('ADMIN_BLOCKING_ALLOWED', true)
 };

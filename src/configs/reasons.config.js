@@ -232,6 +232,46 @@ const ClientOnboardingRejectionReasons = Object.freeze({
   OTHER: "other"
 });
 
+const BlockAdminReasons = Object.freeze({
+  POLICY_VIOLATION: "policy_violation",
+  MISCONDUCT: "misconduct",
+  SECURITY_CONCERN: "security_conern",
+  RESIGNED: "resigned",
+  TERMINATED: "terminated",
+  TEMPORARY_SUSPENSION: "temporary_suspension",
+  INACTIVITY: "inactivity",
+  OTHER: "other"
+});
+
+const UnblockAdminReasons = Object.freeze({
+  REINSTATEMENT_AFTER_REVIEW: "reinstatement_after_review",
+  TEMPORARY_SUSPENSION_ENDED: "temporary_suspension_ended",
+  APPEAL_APPROVED: "appeal_approved",
+  ADMINISTRATIVE_DECISION: "administrative_decision",
+  SYSTEM_ERROR_CORRECTION: "system_error_correction",
+  OTHER: "other"
+});
+
+const SuspensionReasons = Object.freeze({
+  POLICY_VIOLATION: "policy_violation",
+  MISCONDUCT: "misconduct",
+  SECURITY_CONCERN: "security_concern",
+  RESIGNED: "resigned",
+  TERMINATED: "terminated",
+  TEMPORARY_SUSPENSION: "temporary_suspension",
+  INACTIVITY: "inactivity",
+  OTHER: "other"
+});
+
+const UnsuspensionReasons = Object.freeze({
+  REINSTATEMENT_AFTER_REVIEW: "reinstatement_after_review",
+  TEMPORARY_SUSPENSION_ENDED: "temporary_suspension_ended",
+  APPEAL_APPROVED: "appeal_approved",
+  ADMINISTRATIVE_DECISION: "administrative_decision",
+  SYSTEM_ERROR_CORRECTION: "system_error_correction",
+  OTHER: "other"
+});
+
 module.exports = {
   BlockUserReasons,
   UnblockUserReasons,
@@ -256,5 +296,9 @@ module.exports = {
   ClientCreationReasons,
   ClientRevertReasons,
   RoleChangeReasons,
-  ClientOnboardingRejectionReasons
+  ClientOnboardingRejectionReasons,
+  SuspensionReasons,
+  UnsuspensionReasons,
+  BlockAdminReasons,
+  UnblockAdminReasons
 };
