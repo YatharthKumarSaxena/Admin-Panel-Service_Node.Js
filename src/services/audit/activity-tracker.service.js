@@ -2,9 +2,7 @@ const { ActivityTrackerModel } = require("@models/activity-tracker.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { errorMessage } = require("@/responses/common/error-handler.response");
 const { ACTIVITY_TRACKER_EVENTS } = require("@/configs/tracker.config");
-const { PerformedOnTypes } = require("@/configs/enums.config");
-const { isValidAdminId } = require("@/utils/id-validators.util");
-const { ACTIVITY_TRACKING_ENABLED } = require("@/configs/activity-tracker.config");
+const { ACTIVITY_TRACKING_ENABLED } = require("@/configs/security.config");
 
 
 /**
@@ -44,8 +42,8 @@ const logActivityTrackerEvent = (
         adminId: admin.adminId,
         requestId: requestId,
         deviceUUID: device.deviceUUID,
-        deviceType: device?.deviceType || null,
-        deviceName: device?.deviceName || null,
+        deviceType: device.deviceType,
+        deviceName: device.deviceName,
         eventType,
         description:
           description || `Performed ${eventType} by ${admin.adminId}`,
@@ -57,20 +55,15 @@ const logActivityTrackerEvent = (
       // Construct Admin Actions
       const adminActions = {};
 
-      const targetId = logOptions.adminActions?.targetId;
-      const reason = logOptions.adminActions?.reason;
+      const targetId = logOptions.adminActions?.targetId || null;
+      const reason = logOptions.adminActions?.reason || null;
       const filter =
-        logOptions.adminActions?.filter || logOptions.filter;
+        logOptions.adminActions?.filter;
 
       // Decide performedOn centrally
       if (targetId) {
         adminActions.targetId = targetId;
-
-        if (isValidAdminId(targetId)) {
-          adminActions.performedOn = PerformedOnTypes.ADMIN;
-        } else {
-          adminActions.performedOn = PerformedOnTypes.USER;
-        }
+        adminActions.performedOn = logOptions.adminActions?.performedOn || null;
       }
 
       // Reason
