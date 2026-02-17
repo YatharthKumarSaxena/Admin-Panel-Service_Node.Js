@@ -5,6 +5,8 @@ const { fetchEntityFactory } = require("./fetch-entity.middleware-factory");
 const { validateBody, validateParams, validateQuery } = require("./field-validation.middleware-factory");
 const { createAuthValidator } = require("./auth-mode-middleware.factory");
 const { sanitizeAuthPayload } = require("./sanitize-auth-payload.middleware.factory");
+const { createRbacPermissionMiddleware } = require("./rbac-permission.middleware-factory");
+const { checkFeatureEnabled, checkBooleanFeature, checkEnumFeature } = require("./feature-enabled.middleware-factory");
 
 const factoryMiddlewares = {
     createRoleMiddleware,
@@ -17,7 +19,11 @@ const factoryMiddlewares = {
     checkParamsPresence,
     checkQueryPresence,
     createAuthValidator,
-    sanitizeAuthPayload
+    sanitizeAuthPayload,
+    createRbacPermissionMiddleware,
+    checkFeatureEnabled,
+    checkBooleanFeature,
+    checkEnumFeature
 };
 
 module.exports = { factoryMiddlewares };
