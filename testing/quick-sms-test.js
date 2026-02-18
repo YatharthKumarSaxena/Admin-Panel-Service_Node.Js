@@ -16,7 +16,7 @@
 require('dotenv').config();
 require('module-alias/register');
 
-const { sendSMS } = require('@services/sms.service');
+const { sendSMS } = require('@/services/common/sms.service');
 
 const phoneNumber = process.env.TEST_PHONE_NUMBER || "+919456974451";
 const message = "🎉 Test SMS from Admin Panel Service! System is working perfectly.";
