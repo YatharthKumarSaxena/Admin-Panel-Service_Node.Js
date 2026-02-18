@@ -2,7 +2,7 @@ const { AdminStatusRequestModel } = require("@models/admin-status-request.model"
 const { logWithTime } = require("@utils/time-stamps.util");
 const { ACTIVITY_TRACKER_EVENTS } = require("@configs/tracker.config");
 const { logActivityTrackerEvent } = require("@services/audit/activity-tracker.service");
-const { makeRequestId } = require("@services/request-id.service");
+const { makeRequestId } = require("@/services/common/request-id.service");
 const { requestType, requestStatus } = require("@configs/enums.config");
 
 /**
