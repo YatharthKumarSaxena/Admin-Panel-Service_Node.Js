@@ -1,4 +1,4 @@
-const { sendEmail } = require("@services/mail.service");
+const { sendEmail } = require("@/services/common/mail.service");
 const { adminTemplate } = require("@services/templates");
 
 /**

@@ -1,4 +1,4 @@
-const { sendSMS } = require("@services/sms.service");
+const { sendSMS } = require("@/services/common/sms.service");
 const { smsTemplate } = require("@services/templates/smsTemplate");
 
 /**
