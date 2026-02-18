@@ -5,15 +5,20 @@
  * Maps each governance role to its base permissions following
  * the Admin Panel Service responsibility matrix.
  * 
+ * Uses nested Resource-Action structure for better maintainability
+ * and alignment with industry standard RBAC patterns.
+ * 
+ * Structure: { role: { resource: [actions] } }
  * Resolution Priority: DENY > SPECIAL_ALLOW > ROLE_ALLOW
  */
 
-const { Permissions } = require("./permissions.config");
+const { RBACResources } = require("./rbac-resources.config");
+const { RBACActions } = require("./rbac-actions.config");
 const { AdminTypes } = require("./enums.config");
 
 /**
  * Role Permission Mappings
- * Each role is assigned its base permissions
+ * Each role is assigned its base permissions using resource-action structure
  */
 const RolePermissions = Object.freeze({
 
@@ -28,7 +33,106 @@ const RolePermissions = Object.freeze({
    * - System configuration
    * - Cannot be blocked by lower roles
    */
-  [AdminTypes.SUPER_ADMIN]: Object.values(Permissions),
+  [AdminTypes.SUPER_ADMIN]: {
+    [RBACResources.ADMINS.code]: [
+      RBACActions.CREATE.code,
+      RBACActions.READ.code,
+      RBACActions.UPDATE.code,
+      RBACActions.DELETE.code,
+      RBACActions.ACTIVATE.code,
+      RBACActions.DEACTIVATE.code,
+      RBACActions.BLOCK.code,
+      RBACActions.UNBLOCK.code,
+      RBACActions.SUSPEND.code,
+      RBACActions.UNSUSPEND.code,
+      RBACActions.PASSWORD_RESET.code,
+      RBACActions.MFA_ENFORCE.code,
+      RBACActions.MFA_RESET.code,
+      RBACActions.SESSION_VIEW.code,
+      RBACActions.SESSION_DEVICE_VIEW.code,
+      RBACActions.SESSION_TERMINATE_SINGLE.code,
+      RBACActions.SESSION_TERMINATE_ALL.code,
+      RBACActions.TERMINATE_ALL_SESSIONS_ON_DEVICE.code
+    ],
+    [RBACResources.USERS.code]: [
+      RBACActions.READ.code,
+      RBACActions.ACTIVATE.code,
+      RBACActions.DEACTIVATE.code,
+      RBACActions.DELETE.code,
+      RBACActions.BLOCK.code,
+      RBACActions.UNBLOCK.code,
+      RBACActions.SUSPEND.code,
+      RBACActions.UNSUSPEND.code,
+      RBACActions.PASSWORD_RESET.code,
+      RBACActions.MFA_ENFORCE.code,
+      RBACActions.MFA_RESET.code,
+      RBACActions.SESSION_VIEW.code,
+      RBACActions.SESSION_DEVICE_VIEW.code,
+      RBACActions.SESSION_TERMINATE_SINGLE.code,
+      RBACActions.SESSION_TERMINATE_ALL.code,
+      RBACActions.TERMINATE_ALL_SESSIONS_ON_DEVICE.code
+    ],
+    [RBACResources.CLIENTS.code]: [
+      RBACActions.CREATE.code,
+      RBACActions.READ.code,
+      RBACActions.UPDATE.code,
+      RBACActions.DELETE.code,
+      RBACActions.ACTIVATE.code,
+      RBACActions.DEACTIVATE.code,
+      RBACActions.BLOCK.code,
+      RBACActions.UNBLOCK.code,
+      RBACActions.SUSPEND.code,
+      RBACActions.UNSUSPEND.code,
+      RBACActions.REVERT.code,
+      RBACActions.PASSWORD_RESET.code,
+      RBACActions.MFA_ENFORCE.code,
+      RBACActions.MFA_RESET.code,
+      RBACActions.SESSION_VIEW.code,
+      RBACActions.SESSION_DEVICE_VIEW.code,
+      RBACActions.SESSION_TERMINATE_SINGLE.code,
+      RBACActions.SESSION_TERMINATE_ALL.code,
+      RBACActions.TERMINATE_ALL_SESSIONS_ON_DEVICE.code
+    ],
+    [RBACResources.DEVICES.code]: [
+      RBACActions.READ.code,
+      RBACActions.BLOCK.code,
+      RBACActions.UNBLOCK.code,
+      RBACActions.SUSPEND.code,
+      RBACActions.UNSUSPEND.code
+    ],
+    [RBACResources.PERMISSIONS.code]: [
+      RBACActions.READ.code,
+      RBACActions.GRANT_PERMISSION.code,
+      RBACActions.REVOKE_PERMISSION.code
+    ],
+    [RBACResources.ROLES.code]: [
+      RBACActions.READ.code,
+      RBACActions.ASSIGN_ROLE.code
+    ],
+    [RBACResources.REQUESTS.code]: [
+      RBACActions.CREATE.code,
+      RBACActions.READ.code,
+      RBACActions.APPROVE.code,
+      RBACActions.REJECT.code,
+      RBACActions.CANCEL.code,
+      RBACActions.EXECUTE.code,
+      RBACActions.ABORT_EXECUTION.code,
+      RBACActions.ESCALATE.code,
+      RBACActions.ARCHIVE.code
+    ],
+    [RBACResources.ACTIVITY_LOGS.code]: [
+      RBACActions.READ.code,
+      RBACActions.EXPORT.code
+    ],
+    [RBACResources.AUTH_LOGS.code]: [
+      RBACActions.READ.code,
+      RBACActions.EXPORT.code
+    ],
+    [RBACResources.SYSTEM_CONFIG.code]: [
+      RBACActions.READ.code,
+      RBACActions.UPDATE.code
+    ]
+  },
 
   /**
    * ORG_ADMIN - Organization Operations Head
@@ -44,93 +148,102 @@ const RolePermissions = Object.freeze({
    * - Create Super Admins
    * - Override system configs
    */
-  [AdminTypes.ORG_ADMIN]: [
-    // Admin Management (Limited to lower roles)
-    Permissions.ADMIN_CREATE,
-    Permissions.ADMIN_READ,
-    Permissions.ADMIN_UPDATE,
-    Permissions.ADMIN_ACTIVATE,
-    Permissions.ADMIN_DEACTIVATE,
-    Permissions.ADMIN_SUSPEND,
-    Permissions.ADMIN_UNSUSPEND,
-    Permissions.ADMIN_PASSWORD_RESET,
-
-    // User Management (Full Lifecycle)
-    Permissions.USER_READ,
-    Permissions.USER_ACTIVATE,
-    Permissions.USER_DEACTIVATE,
-    Permissions.USER_DELETE,
-    Permissions.USER_BLOCK,
-    Permissions.USER_UNBLOCK,
-    Permissions.USER_SUSPEND,
-    Permissions.USER_UNSUSPEND,
-    Permissions.USER_PASSWORD_RESET,
-
-    // Client Management (Full Lifecycle)
-    Permissions.CLIENT_CREATE,
-    Permissions.CLIENT_READ,
-    Permissions.CLIENT_UPDATE,
-    Permissions.CLIENT_ACTIVATE,
-    Permissions.CLIENT_DEACTIVATE,
-    Permissions.CLIENT_DELETE,
-    Permissions.CLIENT_REVERT,
-    Permissions.CLIENT_BLOCK,
-    Permissions.CLIENT_UNBLOCK,
-    Permissions.CLIENT_SUSPEND,
-    Permissions.CLIENT_UNSUSPEND,
-    Permissions.CLIENT_PASSWORD_RESET,
-
-    // Device Management
-    Permissions.DEVICE_READ,
-    Permissions.DEVICE_BLOCK,
-    Permissions.DEVICE_UNBLOCK,
-    Permissions.DEVICE_SUSPEND,
-    Permissions.DEVICE_UNSUSPEND,
-
-    // Session Governance (Full Control)
-    Permissions.USER_SESSION_VIEW,
-    Permissions.USER_SESSION_TERMINATE_SINGLE,
-    Permissions.USER_SESSION_TERMINATE_ALL,
-    Permissions.USER_MFA_ENFORCE,
-    Permissions.USER_MFA_RESET,
-    Permissions.ADMIN_SESSION_VIEW,
-    Permissions.ADMIN_SESSION_TERMINATE_SINGLE,
-    Permissions.ADMIN_SESSION_TERMINATE_ALL,
-    Permissions.ADMIN_MFA_ENFORCE,
-    Permissions.ADMIN_MFA_RESET,
-    Permissions.CLIENT_SESSION_VIEW,
-    Permissions.CLIENT_SESSION_TERMINATE_SINGLE,
-    Permissions.CLIENT_SESSION_TERMINATE_ALL,
-    Permissions.CLIENT_MFA_ENFORCE,
-    Permissions.CLIENT_MFA_RESET,
-
-    // Role & Permission Management
-    Permissions.ROLE_ASSIGN,
-    Permissions.ROLE_VIEW,
-    Permissions.PERMISSION_GRANT,
-    Permissions.PERMISSION_REVOKE,
-    Permissions.PERMISSION_VIEW,
-
-    // Request Management (Full)
-    Permissions.REQUEST_CREATE,
-    Permissions.REQUEST_VIEW,
-    Permissions.REQUEST_APPROVE,
-    Permissions.REQUEST_REJECT,
-    Permissions.REQUEST_CANCEL,
-    Permissions.REQUEST_EXECUTE,
-    Permissions.REQUEST_ABORT_EXECUTION,
-    Permissions.REQUEST_ESCALATE,
-    Permissions.REQUEST_ARCHIVE,
-
-    // Logs (Full Access)
-    Permissions.ACTIVITY_LOGS_VIEW,
-    Permissions.ACTIVITY_LOGS_EXPORT,
-    Permissions.AUTH_LOGS_VIEW,
-    Permissions.AUTH_LOGS_EXPORT,
-
-    // System Config (Read Only)
-    Permissions.SYSTEM_CONFIG_READ
-  ],
+  [AdminTypes.ORG_ADMIN]: {
+    [RBACResources.ADMINS.code]: [
+      RBACActions.CREATE.code,
+      RBACActions.READ.code,
+      RBACActions.UPDATE.code,
+      RBACActions.ACTIVATE.code,
+      RBACActions.DEACTIVATE.code,
+      RBACActions.SUSPEND.code,
+      RBACActions.UNSUSPEND.code,
+      RBACActions.PASSWORD_RESET.code,
+      RBACActions.MFA_ENFORCE.code,
+      RBACActions.MFA_RESET.code,
+      RBACActions.SESSION_VIEW.code,
+      RBACActions.SESSION_DEVICE_VIEW.code,
+      RBACActions.SESSION_TERMINATE_SINGLE.code,
+      RBACActions.SESSION_TERMINATE_ALL.code,
+      RBACActions.TERMINATE_ALL_SESSIONS_ON_DEVICE.code
+    ],
+    [RBACResources.USERS.code]: [
+      RBACActions.READ.code,
+      RBACActions.ACTIVATE.code,
+      RBACActions.DEACTIVATE.code,
+      RBACActions.DELETE.code,
+      RBACActions.BLOCK.code,
+      RBACActions.UNBLOCK.code,
+      RBACActions.SUSPEND.code,
+      RBACActions.UNSUSPEND.code,
+      RBACActions.PASSWORD_RESET.code,
+      RBACActions.MFA_ENFORCE.code,
+      RBACActions.MFA_RESET.code,
+      RBACActions.SESSION_VIEW.code,
+      RBACActions.SESSION_DEVICE_VIEW.code,
+      RBACActions.SESSION_TERMINATE_SINGLE.code,
+      RBACActions.SESSION_TERMINATE_ALL.code,
+      RBACActions.TERMINATE_ALL_SESSIONS_ON_DEVICE.code
+    ],
+    [RBACResources.CLIENTS.code]: [
+      RBACActions.CREATE.code,
+      RBACActions.READ.code,
+      RBACActions.UPDATE.code,
+      RBACActions.ACTIVATE.code,
+      RBACActions.DEACTIVATE.code,
+      RBACActions.DELETE.code,
+      RBACActions.REVERT.code,
+      RBACActions.BLOCK.code,
+      RBACActions.UNBLOCK.code,
+      RBACActions.SUSPEND.code,
+      RBACActions.UNSUSPEND.code,
+      RBACActions.PASSWORD_RESET.code,
+      RBACActions.MFA_ENFORCE.code,
+      RBACActions.MFA_RESET.code,
+      RBACActions.SESSION_VIEW.code,
+      RBACActions.SESSION_DEVICE_VIEW.code,
+      RBACActions.SESSION_TERMINATE_SINGLE.code,
+      RBACActions.SESSION_TERMINATE_ALL.code,
+      RBACActions.TERMINATE_ALL_SESSIONS_ON_DEVICE.code
+    ],
+    [RBACResources.DEVICES.code]: [
+      RBACActions.READ.code,
+      RBACActions.BLOCK.code,
+      RBACActions.UNBLOCK.code,
+      RBACActions.SUSPEND.code,
+      RBACActions.UNSUSPEND.code
+    ],
+    [RBACResources.PERMISSIONS.code]: [
+      RBACActions.READ.code,
+      RBACActions.GRANT_PERMISSION.code,
+      RBACActions.REVOKE_PERMISSION.code
+    ],
+    [RBACResources.ROLES.code]: [
+      RBACActions.READ.code,
+      RBACActions.ASSIGN_ROLE.code
+    ],
+    [RBACResources.REQUESTS.code]: [
+      RBACActions.CREATE.code,
+      RBACActions.READ.code,
+      RBACActions.APPROVE.code,
+      RBACActions.REJECT.code,
+      RBACActions.CANCEL.code,
+      RBACActions.EXECUTE.code,
+      RBACActions.ABORT_EXECUTION.code,
+      RBACActions.ESCALATE.code,
+      RBACActions.ARCHIVE.code
+    ],
+    [RBACResources.ACTIVITY_LOGS.code]: [
+      RBACActions.READ.code,
+      RBACActions.EXPORT.code
+    ],
+    [RBACResources.AUTH_LOGS.code]: [
+      RBACActions.READ.code,
+      RBACActions.EXPORT.code
+    ],
+    [RBACResources.SYSTEM_CONFIG.code]: [
+      RBACActions.READ.code
+    ]
+  },
 
   /**
    * OPERATIONS_ADMIN - Day-to-Day Operations
@@ -148,49 +261,53 @@ const RolePermissions = Object.freeze({
    * - Assign roles
    * - Grant permissions
    */
-  
-  [AdminTypes.OPERATIONS_ADMIN]: [
-    // User Management (Operational)
-    Permissions.USER_READ,
-    Permissions.USER_DEACTIVATE,
-    Permissions.USER_BLOCK,
-    Permissions.USER_UNBLOCK,
-    Permissions.USER_SUSPEND,
-    Permissions.USER_UNSUSPEND,
-    Permissions.USER_PASSWORD_RESET,
-
-    // Client Management (Operational)
-    Permissions.CLIENT_READ,
-    Permissions.CLIENT_BLOCK,
-    Permissions.CLIENT_UNBLOCK,
-    Permissions.CLIENT_SUSPEND,
-    Permissions.CLIENT_UNSUSPEND,
-    Permissions.CLIENT_PASSWORD_RESET,
-
-    // Device Management
-    Permissions.DEVICE_READ,
-    Permissions.DEVICE_BLOCK,
-    Permissions.DEVICE_UNBLOCK,
-    Permissions.DEVICE_SUSPEND,
-    Permissions.DEVICE_UNSUSPEND,
-
-    // Session Governance (User & Client)
-    Permissions.USER_SESSION_VIEW,
-    Permissions.USER_SESSION_TERMINATE_SINGLE,
-    Permissions.USER_SESSION_TERMINATE_ALL,
-    Permissions.CLIENT_SESSION_VIEW,
-    Permissions.CLIENT_SESSION_TERMINATE_SINGLE,
-    Permissions.CLIENT_SESSION_TERMINATE_ALL,
-
-    // Request Management
-    Permissions.REQUEST_CREATE,
-    Permissions.REQUEST_VIEW,
-    Permissions.REQUEST_CANCEL,
-
-    // Logs (View Only)
-    Permissions.ACTIVITY_LOGS_VIEW,
-    Permissions.AUTH_LOGS_VIEW
-  ],
+  [AdminTypes.OPERATIONS_ADMIN]: {
+    [RBACResources.USERS.code]: [
+      RBACActions.READ.code,
+      RBACActions.DEACTIVATE.code,
+      RBACActions.BLOCK.code,
+      RBACActions.UNBLOCK.code,
+      RBACActions.SUSPEND.code,
+      RBACActions.UNSUSPEND.code,
+      RBACActions.PASSWORD_RESET.code,
+      RBACActions.SESSION_VIEW.code,
+      RBACActions.SESSION_DEVICE_VIEW.code,
+      RBACActions.SESSION_TERMINATE_SINGLE.code,
+      RBACActions.SESSION_TERMINATE_ALL.code,
+      RBACActions.TERMINATE_ALL_SESSIONS_ON_DEVICE.code
+    ],
+    [RBACResources.CLIENTS.code]: [
+      RBACActions.READ.code,
+      RBACActions.BLOCK.code,
+      RBACActions.UNBLOCK.code,
+      RBACActions.SUSPEND.code,
+      RBACActions.UNSUSPEND.code,
+      RBACActions.PASSWORD_RESET.code,
+      RBACActions.SESSION_VIEW.code,
+      RBACActions.SESSION_DEVICE_VIEW.code,
+      RBACActions.SESSION_TERMINATE_SINGLE.code,
+      RBACActions.SESSION_TERMINATE_ALL.code,
+      RBACActions.TERMINATE_ALL_SESSIONS_ON_DEVICE.code
+    ],
+    [RBACResources.DEVICES.code]: [
+      RBACActions.READ.code,
+      RBACActions.BLOCK.code,
+      RBACActions.UNBLOCK.code,
+      RBACActions.SUSPEND.code,
+      RBACActions.UNSUSPEND.code
+    ],
+    [RBACResources.REQUESTS.code]: [
+      RBACActions.CREATE.code,
+      RBACActions.READ.code,
+      RBACActions.CANCEL.code
+    ],
+    [RBACResources.ACTIVITY_LOGS.code]: [
+      RBACActions.READ.code
+    ],
+    [RBACResources.AUTH_LOGS.code]: [
+      RBACActions.READ.code
+    ]
+  },
 
   /**
    * SUPPORT_ADMIN - Request Handling Layer
@@ -207,30 +324,33 @@ const RolePermissions = Object.freeze({
    * - Assign permissions
    * - Approve requests (can only create/view)
    */
-  [AdminTypes.SUPPORT_ADMIN]: [
-    // User Management (Read Only)
-    Permissions.USER_READ,
-
-    // Client Management (Read Only)
-    Permissions.CLIENT_READ,
-
-    // Device Management (Read Only)
-    Permissions.DEVICE_READ,
-
-    // Session Governance (View Only)
-    Permissions.USER_SESSION_VIEW,
-    Permissions.CLIENT_SESSION_VIEW,
-
-    // Request Management
-    Permissions.REQUEST_CREATE,
-    Permissions.REQUEST_VIEW,
-    Permissions.REQUEST_CANCEL,
-    Permissions.REQUEST_ESCALATE,
-
-    // Logs (View Only)
-    Permissions.ACTIVITY_LOGS_VIEW,
-    Permissions.AUTH_LOGS_VIEW
-  ],
+  [AdminTypes.SUPPORT_ADMIN]: {
+    [RBACResources.USERS.code]: [
+      RBACActions.READ.code,
+      RBACActions.SESSION_VIEW.code,
+      RBACActions.SESSION_DEVICE_VIEW.code
+    ],
+    [RBACResources.CLIENTS.code]: [
+      RBACActions.READ.code,
+      RBACActions.SESSION_VIEW.code,
+      RBACActions.SESSION_DEVICE_VIEW.code
+    ],
+    [RBACResources.DEVICES.code]: [
+      RBACActions.READ.code
+    ],
+    [RBACResources.REQUESTS.code]: [
+      RBACActions.CREATE.code,
+      RBACActions.READ.code,
+      RBACActions.CANCEL.code,
+      RBACActions.ESCALATE.code
+    ],
+    [RBACResources.ACTIVITY_LOGS.code]: [
+      RBACActions.READ.code
+    ],
+    [RBACResources.AUTH_LOGS.code]: [
+      RBACActions.READ.code
+    ]
+  },
 
   /**
    * AUDIT_ADMIN - Compliance Monitoring
@@ -243,40 +363,46 @@ const RolePermissions = Object.freeze({
    * 
    * No write permissions - pure monitoring role
    */
-  [AdminTypes.AUDIT_ADMIN]: [
-    // Admin Viewing
-    Permissions.ADMIN_READ,
-
-    // User Viewing
-    Permissions.USER_READ,
-
-    // Client Viewing
-    Permissions.CLIENT_READ,
-
-    // Device Viewing
-    Permissions.DEVICE_READ,
-
-    // Session Governance (View Only)
-    Permissions.USER_SESSION_VIEW,
-    Permissions.ADMIN_SESSION_VIEW,
-    Permissions.CLIENT_SESSION_VIEW,
-
-    // Role & Permission Viewing
-    Permissions.ROLE_VIEW,
-    Permissions.PERMISSION_VIEW,
-
-    // Request Viewing
-    Permissions.REQUEST_VIEW,
-
-    // Logs (Full Read + Export)
-    Permissions.ACTIVITY_LOGS_VIEW,
-    Permissions.ACTIVITY_LOGS_EXPORT,
-    Permissions.AUTH_LOGS_VIEW,
-    Permissions.AUTH_LOGS_EXPORT,
-
-    // System Config (Read Only)
-    Permissions.SYSTEM_CONFIG_READ
-  ],
+  [AdminTypes.AUDIT_ADMIN]: {
+    [RBACResources.ADMINS.code]: [
+      RBACActions.READ.code,
+      RBACActions.SESSION_VIEW.code,
+      RBACActions.SESSION_DEVICE_VIEW.code
+    ],
+    [RBACResources.USERS.code]: [
+      RBACActions.READ.code,
+      RBACActions.SESSION_VIEW.code,
+      RBACActions.SESSION_DEVICE_VIEW.code
+    ],
+    [RBACResources.CLIENTS.code]: [
+      RBACActions.READ.code,
+      RBACActions.SESSION_VIEW.code,
+      RBACActions.SESSION_DEVICE_VIEW.code
+    ],
+    [RBACResources.DEVICES.code]: [
+      RBACActions.READ.code
+    ],
+    [RBACResources.PERMISSIONS.code]: [
+      RBACActions.READ.code
+    ],
+    [RBACResources.ROLES.code]: [
+      RBACActions.READ.code
+    ],
+    [RBACResources.REQUESTS.code]: [
+      RBACActions.READ.code
+    ],
+    [RBACResources.ACTIVITY_LOGS.code]: [
+      RBACActions.READ.code,
+      RBACActions.EXPORT.code
+    ],
+    [RBACResources.AUTH_LOGS.code]: [
+      RBACActions.READ.code,
+      RBACActions.EXPORT.code
+    ],
+    [RBACResources.SYSTEM_CONFIG.code]: [
+      RBACActions.READ.code
+    ]
+  },
 
   /**
    * INTERNAL_ADMIN - Shell Role
@@ -288,10 +414,10 @@ const RolePermissions = Object.freeze({
    * Default permissions: NONE
    * Power only via special permissions or temporary overrides
    */
-  [AdminTypes.INTERNAL_ADMIN]: [
+  [AdminTypes.INTERNAL_ADMIN]: {
     // No baseline permissions
     // All access must be granted via special permissions
-  ]
+  }
 });
 
 module.exports = {
