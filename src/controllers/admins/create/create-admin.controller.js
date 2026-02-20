@@ -8,7 +8,7 @@ const {
   throwDBResourceNotFoundError 
 } = require("@/responses/common/error-handler.response");
 const { createAdminSuccessResponse } = require("@/responses/success/index");
-const { AdminType, AdminErrorTypes } = require("@configs/enums.config");
+const { AdminTypes, AdminErrorTypes } = require("@configs/enums.config");
 const { fetchAdmin } = require("@/utils/fetch-admin.util");
 const { canActOnRole } = require("@/utils/role.util");
 
