@@ -112,10 +112,12 @@ const RolePermissions = Object.freeze({
     [RBACResources.REQUESTS.code]: [
       RBACActions.CREATE.code,
       RBACActions.READ.code,
+      RBACActions.REVIEW.code,           // NEW: Review requests
       RBACActions.APPROVE.code,
       RBACActions.REJECT.code,
       RBACActions.CANCEL.code,
       RBACActions.EXECUTE.code,
+      RBACActions.RETRY_EXECUTION.code,  // NEW: Retry failed executions
       RBACActions.ABORT_EXECUTION.code,
       RBACActions.ESCALATE.code,
       RBACActions.ARCHIVE.code
@@ -224,10 +226,11 @@ const RolePermissions = Object.freeze({
     [RBACResources.REQUESTS.code]: [
       RBACActions.CREATE.code,
       RBACActions.READ.code,
+      RBACActions.REVIEW.code,          // NEW: Can review requests
       RBACActions.APPROVE.code,
       RBACActions.REJECT.code,
       RBACActions.CANCEL.code,
-      RBACActions.EXECUTE.code,
+      RBACActions.EXECUTE.code,         // Can execute requests
       RBACActions.ABORT_EXECUTION.code,
       RBACActions.ESCALATE.code,
       RBACActions.ARCHIVE.code
@@ -299,7 +302,9 @@ const RolePermissions = Object.freeze({
     [RBACResources.REQUESTS.code]: [
       RBACActions.CREATE.code,
       RBACActions.READ.code,
-      RBACActions.CANCEL.code
+      RBACActions.REVIEW.code,          // NEW: Can review but not approve
+      RBACActions.CANCEL.code,
+      RBACActions.ESCALATE.code         // Can escalate for approval
     ],
     [RBACResources.ACTIVITY_LOGS.code]: [
       RBACActions.READ.code

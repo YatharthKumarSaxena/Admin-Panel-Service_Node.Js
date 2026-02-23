@@ -113,9 +113,16 @@ const requestType = Object.freeze({
 
 const requestStatus = Object.freeze({
   PENDING: "PENDING",
-  APPROVED: "APPROVED",
-  REJECTED: "REJECTED",
-  EXPIRED: "EXPIRED"
+  UNDER_REVIEW: "UNDER_REVIEW",           // Request is being reviewed
+  REVIEWED: "REVIEWED",                    // Review complete, awaiting approval
+  APPROVED: "APPROVED",                    // Approved (may or may not be executed)
+  AWAITING_EXECUTION: "AWAITING_EXECUTION", // Approved but not executed (manual execution required)
+  EXECUTING: "EXECUTING",                  // Execution in progress
+  EXECUTED: "EXECUTED",                    // Successfully executed
+  EXECUTION_FAILED: "EXECUTION_FAILED",    // Execution attempted but failed
+  REJECTED: "REJECTED",                    // Request rejected
+  CANCELLED: "CANCELLED",                  // Request cancelled by requester
+  EXPIRED: "EXPIRED"                       // Request expired (via cron job)
 });
 
 const PermissionEffect = Object.freeze({
