@@ -2,8 +2,7 @@ const { ActivityTrackerModel } = require("@models/activity-tracker.model");
 const { logWithTime } = require("@utils/time-stamps.util");
 const { errorMessage } = require("@/responses/common/error-handler.response");
 const { ACTIVITY_TRACKER_EVENTS } = require("@/configs/tracker.config");
-const { ACTIVITY_TRACKING_ENABLED } = require("@/configs/security.config");
-
+const { ACTIVITY_TRACKING_ENABLED, ADVANCED_LOGGING_ENABLED } = require("@/configs/security.config");
 
 /**
  * Logs an authentication / admin activity event (fire-and-forget)
@@ -24,8 +23,8 @@ const logActivityTrackerEvent = (
         return;
       }
 
-      // Validate Event Type
       const validEvents = Object.values(ACTIVITY_TRACKER_EVENTS);
+
       if (!validEvents.includes(eventType)) {
         logWithTime(`⚠️ Invalid eventType: ${eventType}. Skipping activity log.`);
         return;
@@ -59,6 +58,14 @@ const logActivityTrackerEvent = (
       const reason = logOptions.adminActions?.reason || null;
       const filter =
         logOptions.adminActions?.filter;
+
+      if (ADVANCED_LOGGING_ENABLED) {
+        const queryFilter = logOptions.adminActions?.queryFilter || null;
+
+        if (queryFilter) {
+          adminActions.queryFilter = queryFilter;
+        }
+      }
 
       // Decide performedOn centrally
       if (targetId) {
