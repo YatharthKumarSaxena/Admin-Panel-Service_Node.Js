@@ -9,15 +9,15 @@ const errorMessage = (err) => {
 }
 
 const getLogIdentifiers = (req) => {
-    const userId = req?.founduser?.userId || req?.user?.userId || "UNKNOWN_USER";
+    const adminId = req?.foundAdmin?.adminId || req?.admin?.adminId || "UNKNOWN_admin";
     const deviceUUID = req?.device?.deviceUUID || "UNKNOWN_DEVICE";
-    return `with user ID: (${userId}). Request is made from device ID: (${deviceUUID})`;
+    return `with admin ID: (${adminId}). Request is made from device ID: (${deviceUUID})`;
 };
 
 const logMiddlewareError = (middlewareName, reason, req) => {
-  const userId = req?.user?.userId || "UNKNOWN_USER";
+  const adminId = req?.admin?.adminId || "UNKNOWN_admin";
   const deviceUUID = req?.device?.deviceUUID || "UNKNOWN_DEVICE";
-  logWithTime(`❌ [${middlewareName}Middleware] Error: ${reason} | user: (${userId}) | device: (${deviceUUID})`);
+  logWithTime(`❌ [${middlewareName}Middleware] Error: ${reason} | admin: (${adminId}) | device: (${deviceUUID})`);
 };
 
 module.exports = {
