@@ -6,6 +6,7 @@ module.exports = {
   auditMode: getMyEnv('AUDIT_MODE', 'CHANGED_ONLY'),
   verificationMode: getMyEnv('VERIFICATION_MODE', 'optional'),
   ACTIVITY_TRACKING_ENABLED: getMyEnvAsBool('ACTIVITY_TRACKING_ENABLED', true),
+  ADVANCED_LOGGING_ENABLED: getMyEnvAsBool('ADVANCED_LOGGING_ENABLED', false),
   otp: {
     length: 6,                // digits in OTP
     maxAttempts: 5,
