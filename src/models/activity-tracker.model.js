@@ -75,6 +75,12 @@ const activityTrackerSchema = new mongoose.Schema({
           default: null,
         },
 
+        queryFilter: {
+          type: mongoose.Schema.Types.Mixed,
+          default: null,
+          select: false
+        },
+
         filter: {
           type: [String],
           validate: {

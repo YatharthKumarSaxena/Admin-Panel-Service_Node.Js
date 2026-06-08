@@ -129,6 +129,11 @@ const RBACActions = Object.freeze({
   },
   
   // ========== REQUEST WORKFLOW OPERATIONS ==========
+  REVIEW: {
+    code: "review",
+    label: "Review",
+    description: "Review pending requests (separate from approval)"
+  },
   APPROVE: {
     code: "approve",
     label: "Approve",
@@ -148,6 +153,11 @@ const RBACActions = Object.freeze({
     code: "execute",
     label: "Execute",
     description: "Execute approved requests"
+  },
+  RETRY_EXECUTION: {
+    code: "retry_execution",
+    label: "Retry Execution",
+    description: "Retry failed request execution"
   },
   ABORT_EXECUTION: {
     code: "abort_execution",
